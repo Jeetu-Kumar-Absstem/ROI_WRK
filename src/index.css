@@ -1,0 +1,224 @@
+@tailwind  base;
+@tailwind components;
+@tailwind utilities;
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@media print {
+  body {
+    font-family: serif;
+    background-color: transparent !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .print-container {
+    display: block !important;
+    position: static !important;
+  }
+
+  .print-hidden {
+    display: none !important;
+  }
+
+  .report-summary {
+    page-break-after: always;
+  }
+
+  /* Preserve CSS grid in print, but collapse to single column */
+  .grid {
+    display: grid !important;
+  }
+
+  .lg\:col-span-1, .lg\:col-span-2, .md\:grid-cols-2, .md\:grid-cols-3 {
+    grid-column: span 1 / span 1 !important;
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  }
+  
+  .bg-white.p-6.rounded-lg.shadow.border, .bg-white.p-6.rounded-lg.shadow-md.border {
+    border: none;
+    box-shadow: none;
+  }
+
+  .bg-gradient-to-br {
+    background: none !important;
+    background-color: transparent !important;
+  }
+  /* Remove gradients on print to reveal letterhead */
+  .bg-gradient-to-r {
+    background-image: none !important;
+    background-color: transparent !important;
+  }
+  /* Make white boxes transparent so letterhead shows through */
+  .bg-white, .bg-gray-50, .bg-gray-100 {
+    background-color: transparent !important;
+  }
+
+  /* Remove borders and shadows globally in print */
+  .border, .border-b, .border-t, .border-l, .border-r,
+  .shadow, .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Header date pill should be transparent over letterhead */
+  .print-container .bg-white.bg-opacity-90 {
+    background-color: transparent !important;
+  }
+
+  /* Make recharts background transparent */
+  .recharts-surface, .recharts-cartesian-grid, .recharts-legend-wrapper, .recharts-tooltip-wrapper {
+    background: transparent !important;
+  }
+
+  /* Make table backgrounds transparent */
+  table, thead, tbody, tr, th, td {
+    background-color: transparent !important;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+
+  table, figure, .recharts-wrapper {
+    page-break-inside: avoid;
+  }
+
+  /* Fixed letterhead background across all pages */
+  .print-letterhead-fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: url('/letterhead.jpg.jpeg') no-repeat top center;
+    background-size: cover;
+    z-index: 0;
+  }
+  .print-container, .report-content { position: relative; z-index: 1; }
+  
+  /* Ensure large-screen grids collapse to single column in print */
+  .lg\:grid-cols-2, .lg\:grid-cols-3 {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  }
+  
+  /* Improve text wrapping and justification to prevent clipping */
+  .report-content, .report-content p, .report-content li {
+    text-align: justify !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+  
+  /* Allow flex rows to wrap in print */
+  .print-container .flex {
+    flex-wrap: wrap !important;
+  }
+  
+  /* Charts should not overflow horizontally */
+  .recharts-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    background: transparent !important;
+  }
+  
+  /* Hide specific items for print */
+  li.print-hide-load-factor { display: none !important; }
+  
+  /* Prevent child overflow in cards and flex rows on print */
+  .print-page .bg-white { min-width: 0 !important; }
+  .print-page .flex { min-width: 0 !important; }
+  .print-page .flex > * { min-width: 0 !important; }
+
+  /* Position per-page footer correctly in PDF/print */
+  .print-page { position: relative !important; }
+  .print-page-footer {
+    position: absolute !important;
+    bottom: 20px !important;
+    left: 24px !important;
+    right: 24px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    font-size: 11px !important;
+    color: #374151 !important; /* gray-700 */
+  }
+
+  /* Add top/bottom padding so content clears letterhead and footer in print */
+  .report-content {
+    padding-top: 150px !important;
+    padding-bottom: 140px !important;
+    background: transparent !important;
+  }
+
+  /* Increase top/bottom spacing specifically for Page 2 */
+  .print-page-2 {
+    padding-top: 260px !important;
+    padding-bottom: 180px !important;
+  }
+}
+
+/* Export overlay mode: clear backgrounds to reveal letterhead, add safe padding */
+.export-mode, .export-mode * {
+  background: none !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+.export-mode {
+  display: block !important; /* override hidden on print container during capture */
+  visibility: visible !important;
+}
+
+.export-mode.print-container {
+  display: block !important;
+  /* Constrain export area to A4 width for consistent page screenshots */
+  width: 794px !important; /* ~A4 portrait at 96dpi */
+  margin: 0 auto !important;
+}
+
+.export-mode .print-letterhead-fixed {
+  display: none !important; /* hide CSS letterhead; we add it via jsPDF per page */
+}
+
+/* A4 page sizing for export captures */
+.export-mode .print-page {
+  width: 794px !important;   /* ~A4 width at 96dpi */
+  min-height: 1123px !important; /* ~A4 height at 96dpi */
+  box-sizing: border-box !important;
+  margin: 0 auto !important;
+  position: relative !important;
+}
+
+.export-mode .report-content {
+  padding-top: 24px !important;
+  padding-bottom: 50px !important;
+  background: #ffffff !important;
+}
+
+/* Per-page footer styling for exports */
+.export-mode .print-page-footer {
+  position: absolute !important;
+  bottom: 20px !important;
+  left: 24px !important;
+  right: 24px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  font-size: 11px !important;
+  color: #374151 !important; /* gray-700 */
+}
+
+/* Print helper classes */
+.print-body {
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+@media print {
+  /* legacy class kept for compatibility, not used anymore */
+  .print-letterhead { display: none; }
+}

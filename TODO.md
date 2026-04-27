@@ -1,0 +1,5 @@
+- [x] Fix duplicate useState import in DeoxoComparison.tsx
+- [x] Remove unused React import
+- [x] Remove unused DexoxDataItem import
+- [x] Change useState to const to avoid unused setInputs warning
+- [x] Remove unused useState import after changing to const
