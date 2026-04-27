@@ -1,26 +1,30 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "npm:@supabase/supabase-js"
 
-
-const corsHeaders = {
-  // for using local hosted frontend during development, allow all origins
-  "Access-Control-Allow-Origin": "*",
-  // for production, replace the above line 
-  // "Access-Control-Allow-Origin": https://absstem.com,
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-}
-
-
 serve(async (req) => {
-  // Handle preflight
+  // ✅ Allowed origins
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://absstem.com"
+  ]
+
+  const origin = req.headers.get("origin") || ""
+
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": allowedOrigins.includes(origin) ? origin : "",
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+  }
+
+  // ✅ Handle preflight FIRST
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders })
+    return new Response("ok", { headers: corsHeaders })
   }
 
   try {
-  
+    // 🔐 Env variables
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")
     const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY")
@@ -35,17 +39,20 @@ serve(async (req) => {
       throw new Error("Missing email (Brevo) configuration")
     }
 
-  
+    // 🔑 Auth header
     const authHeader = req.headers.get("Authorization")
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return new Response(
         JSON.stringify({ error: "Missing or invalid Authorization header" }),
-        { status: 401, headers: corsHeaders }
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
       )
     }
 
-   
+    // 🔗 Supabase client
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       global: {
         headers: {
@@ -54,7 +61,7 @@ serve(async (req) => {
       },
     })
 
-    // ✅ Get authenticated user
+    // 👤 Get user
     const {
       data: { user },
       error: userError,
@@ -63,13 +70,16 @@ serve(async (req) => {
     if (userError || !user) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: corsHeaders }
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
       )
     }
 
     const userEmail = user.email
 
-    // Fetch profile
+    // 📄 Fetch profile
     const { data: profile } = await supabase
       .from("profiles")
       .select("name, phone, company_name")
@@ -80,19 +90,23 @@ serve(async (req) => {
     const userPhone = profile?.phone || "Not provided"
     const userCompany = profile?.company_name || "N/A"
 
-    // Parse request body
+    // 🧪 Safe JSON parsing
     let body
     try {
       body = await req.json()
     } catch {
       return new Response(
         JSON.stringify({ error: "Invalid JSON body" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
       )
     }
 
     const { pdfBase64, tabName } = body
 
+    // ✅ Validation
     if (!pdfBase64) {
       return new Response(
         JSON.stringify({ error: "Missing required field: pdfBase64" }),
@@ -113,7 +127,7 @@ serve(async (req) => {
       )
     }
 
-    // Send email via Brevo
+    // 📧 Send email via Brevo
     const brevoRes = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: {
@@ -149,10 +163,14 @@ serve(async (req) => {
       console.error("Brevo error:", err)
       return new Response(
         JSON.stringify({ error: "Email failed", details: err }),
-        { status: 500, headers: corsHeaders }
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
       )
     }
 
+    // ✅ Success
     return new Response(
       JSON.stringify({ success: true }),
       {
@@ -160,6 +178,7 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     )
+
   } catch (err) {
     console.error("Function error:", err)
     return new Response(
