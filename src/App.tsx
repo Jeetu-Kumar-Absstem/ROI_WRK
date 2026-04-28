@@ -37,8 +37,12 @@ export default function App() {
 
   if (!session) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Login />
+      <div className="min-h-screen bg-slate-100 flex flex-col">
+        <SiteHeader />
+        <main className="flex-1">
+          <Login />
+        </main>
+        <SiteFooter />
       </div>
     );
   }
