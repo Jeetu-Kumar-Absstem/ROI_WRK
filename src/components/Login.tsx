@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../utils/supabaseClient';
 
 type AuthMode = 'login' | 'signup';
@@ -57,6 +58,9 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [signupForm, setSignupForm] = useState<SignupForm>(defaultSignupForm);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [showSignupConfirmPassword, setShowSignupConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -196,6 +200,17 @@ const Login = () => {
     setLoading(false);
   };
 
+  const renderPasswordToggle = (visible: boolean, onToggle: () => void, label: string) => (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-label={label}
+      className="absolute inset-y-0 right-0 flex items-center px-4 text-slate-500 transition hover:text-slate-700"
+    >
+      {visible ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+    </button>
+  );
+
   return (
     <div className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.14),_transparent_34%),linear-gradient(180deg,#f8fbff_0%,#eef4ff_45%,#f8fafc_100%)]">
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(148,163,184,0.09)_1px,transparent_1px),linear-gradient(rgba(148,163,184,0.09)_1px,transparent_1px)] bg-[size:38px_38px] opacity-40" />
@@ -209,22 +224,26 @@ const Login = () => {
               Secure access for industrial ROI planning.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
-              Sign in or create an account to access all ROI calculators, generate reports
+              Sign in or create an account to access all ROI calculators, generate reports.
             </p>
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <p className="text-sm font-semibold text-white">Savings against Liquid Nitrogen</p>
-                <p className="mt-2 text-sm text-slate-300">Calculate potential cost savings by replacing liquid nitrogen systems with more efficient alternatives.
-
-</p>
+                <p className="mt-2 text-sm text-slate-300">
+                  Calculate potential cost savings by replacing liquid nitrogen systems with more efficient alternatives.
+                </p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <p className="text-sm font-semibold text-white">Savings Against any PSA</p>
-                <p className="mt-2 text-sm text-slate-300">Evaluate cost benefits of upgrading from Pressure Swing Adsorption (PSA) systems to determine optimal gas generation solutions.</p>
+                <p className="mt-2 text-sm text-slate-300">
+                  Evaluate cost benefits of upgrading from Pressure Swing Adsorption (PSA) systems to determine optimal gas generation solutions.
+                </p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <p className="text-sm font-semibold text-white">Savings against Cylinders</p>
-                <p className="mt-2 text-sm text-slate-300">Assess potential savings from replacing traditional pneumatic cylinder systems with our advanced alternatives..</p>
+                <p className="mt-2 text-sm text-slate-300">
+                  Assess potential savings from replacing traditional pneumatic cylinder systems with our advanced alternatives.
+                </p>
               </div>
             </div>
           </section>
@@ -286,15 +305,22 @@ const Login = () => {
                   <label htmlFor="password" className="text-sm font-medium text-slate-700">
                     Password
                   </label>
-                  <input
-                    id="password"
-                    className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                    type="password"
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
+                  <div className="relative mt-2">
+                    <input
+                      id="password"
+                      className="w-full rounded-xl border border-slate-300 px-4 py-3 pr-12 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                      type={showLoginPassword ? 'text' : 'password'}
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                    {renderPasswordToggle(
+                      showLoginPassword,
+                      () => setShowLoginPassword((current) => !current),
+                      showLoginPassword ? 'Hide password' : 'Show password'
+                    )}
+                  </div>
                 </div>
                 <div className="flex justify-end">
                   <button
@@ -407,29 +433,43 @@ const Login = () => {
                   <label htmlFor="signup_password" className="text-sm font-medium text-slate-700">
                     Password
                   </label>
-                  <input
-                    id="signup_password"
-                    className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                    type="password"
-                    placeholder="Create a password"
-                    value={signupForm.password}
-                    onChange={(e) => updateSignupField('password', e.target.value)}
-                    required
-                  />
+                  <div className="relative mt-2">
+                    <input
+                      id="signup_password"
+                      className="w-full rounded-xl border border-slate-300 px-4 py-3 pr-12 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                      type={showSignupPassword ? 'text' : 'password'}
+                      placeholder="Create a password"
+                      value={signupForm.password}
+                      onChange={(e) => updateSignupField('password', e.target.value)}
+                      required
+                    />
+                    {renderPasswordToggle(
+                      showSignupPassword,
+                      () => setShowSignupPassword((current) => !current),
+                      showSignupPassword ? 'Hide password' : 'Show password'
+                    )}
+                  </div>
                 </div>
                 <div>
                   <label htmlFor="confirmPassword" className="text-sm font-medium text-slate-700">
                     Confirm password
                   </label>
-                  <input
-                    id="confirmPassword"
-                    className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                    type="password"
-                    placeholder="Repeat your password"
-                    value={signupForm.confirmPassword}
-                    onChange={(e) => updateSignupField('confirmPassword', e.target.value)}
-                    required
-                  />
+                  <div className="relative mt-2">
+                    <input
+                      id="confirmPassword"
+                      className="w-full rounded-xl border border-slate-300 px-4 py-3 pr-12 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                      type={showSignupConfirmPassword ? 'text' : 'password'}
+                      placeholder="Repeat your password"
+                      value={signupForm.confirmPassword}
+                      onChange={(e) => updateSignupField('confirmPassword', e.target.value)}
+                      required
+                    />
+                    {renderPasswordToggle(
+                      showSignupConfirmPassword,
+                      () => setShowSignupConfirmPassword((current) => !current),
+                      showSignupConfirmPassword ? 'Hide password' : 'Show password'
+                    )}
+                  </div>
                 </div>
                 <div className="sm:col-span-2">
                   <button
