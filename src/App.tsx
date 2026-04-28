@@ -8,18 +8,33 @@ import PSAVsAnyPSA from './components/PSAVsAnyPSA';
 import SiteHeader from './components/SiteHeader';
 import SiteFooter from './components/SiteFooter';
 import Login from './components/Login';
+import PasswordRecovery from './components/PasswordRecovery';
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [activeTab, setActiveTab] = useState('psa-vs-liquid');
+  const [isRecoveryMode, setIsRecoveryMode] = useState(false);
 
   useEffect(() => {
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    if (hashParams.get('type') === 'recovery') {
+      setIsRecoveryMode(true);
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
+
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsRecoveryMode(true);
+      }
+
+      if (event === 'SIGNED_OUT') {
+        setIsRecoveryMode(false);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -27,6 +42,10 @@ export default function App() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+  };
+
+  const handleRecoveryExit = () => {
+    setIsRecoveryMode(false);
   };
 
   const tabs = [
@@ -41,6 +60,18 @@ export default function App() {
         <SiteHeader />
         <main className="flex-1">
           <Login />
+        </main>
+        <SiteFooter />
+      </div>
+    );
+  }
+
+  if (isRecoveryMode) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex flex-col">
+        <SiteHeader />
+        <main className="flex-1">
+          <PasswordRecovery onCancel={handleRecoveryExit} />
         </main>
         <SiteFooter />
       </div>

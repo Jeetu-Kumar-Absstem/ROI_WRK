@@ -53,6 +53,7 @@ const defaultSignupForm: SignupForm = {
 const Login = () => {
   const [mode, setMode] = useState<AuthMode>('login');
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [signupForm, setSignupForm] = useState<SignupForm>(defaultSignupForm);
@@ -94,6 +95,29 @@ const Login = () => {
     }
 
     setLoading(false);
+  };
+
+  const handleForgotPassword = async () => {
+    resetMessages();
+
+    if (!email.trim()) {
+      setError('Enter your email address first, then click Forgot password.');
+      return;
+    }
+
+    setResetLoading(true);
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: window.location.origin,
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setSuccess('Password reset email sent. Open the recovery link in your inbox to set a new password.');
+    }
+
+    setResetLoading(false);
   };
 
   const updateSignupField = <K extends keyof SignupForm>(field: K, value: SignupForm[K]) => {
@@ -272,10 +296,20 @@ const Login = () => {
                     required
                   />
                 </div>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    className="text-sm font-medium text-blue-600 transition hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={loading || resetLoading}
+                  >
+                    {resetLoading ? 'Sending reset link...' : 'Forgot password?'}
+                  </button>
+                </div>
                 <button
                   type="submit"
                   className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-                  disabled={loading}
+                  disabled={loading || resetLoading}
                 >
                   {loading ? 'Signing In...' : 'Sign In'}
                 </button>
