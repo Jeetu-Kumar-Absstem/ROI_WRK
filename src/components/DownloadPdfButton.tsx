@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Download } from 'lucide-react';
@@ -12,7 +12,10 @@ interface DownloadPdfButtonProps {
 }
 
 const DownloadPdfButton: React.FC<DownloadPdfButtonProps> = ({ contentToPrint, tabName, inputs }) => {
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleDownloadPdf = async () => {
+    setIsLoading(true);
     if (contentToPrint.current) {
       try {
         contentToPrint.current.classList.add('export-mode');
@@ -189,6 +192,7 @@ const DownloadPdfButton: React.FC<DownloadPdfButtonProps> = ({ contentToPrint, t
 
       } finally {
         contentToPrint.current?.classList.remove('export-mode');
+        setIsLoading(false);
       }
     }
   };
@@ -196,10 +200,11 @@ const DownloadPdfButton: React.FC<DownloadPdfButtonProps> = ({ contentToPrint, t
   return (
     <button
       onClick={handleDownloadPdf}
+      disabled={isLoading}
       className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md"
     >
       <Download className="mr-2 h-4 w-4" />
-      Download PDF
+      {isLoading ? 'Generating PDF...' : 'Download PDF'}
     </button>
   );
 };
