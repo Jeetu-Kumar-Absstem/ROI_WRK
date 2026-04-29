@@ -8,7 +8,7 @@ export default function SiteFooter() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <h3 className="text-white font-semibold mb-3">Absstem Technologies</h3>
-            <p className="text-sm">Experts in PSA Gas Separation and Adsorption systems.</p>
+            <p className="text-sm">Experts in PSA Gas Generation.</p>
           </div>
           <div>
             <h3 className="text-white font-semibold mb-3">Company</h3>
