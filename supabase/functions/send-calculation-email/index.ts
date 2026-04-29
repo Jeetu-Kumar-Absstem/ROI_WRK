@@ -40,7 +40,7 @@ serve(async (req) => {
     "http://localhost:5173",
     "http://localhost:5177",
     "https://absstem.com",
-   "https://returnoninvestmentmoduleforabsstem.vercel.app/"
+   "https://returnoninvestmentmoduleforabsstem.vercel.app"
   ]
 
   const origin = req.headers.get("origin") || ""
