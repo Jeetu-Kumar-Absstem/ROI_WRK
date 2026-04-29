@@ -1,30 +1,60 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "npm:@supabase/supabase-js"
 
+const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024
+const MAX_TAB_NAME_LENGTH = 120
+
+const escapeHtml = (value: string) =>
+  value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;")
+
+const parsePdfAttachment = (pdfBase64: string) => {
+  const match = pdfBase64.match(/^data:application\/pdf(?:;[^;,]+=[^;,]+)*;base64,([A-Za-z0-9+/=\r\n]+)$/i)
+
+  if (!match) {
+    return { error: "Invalid pdfBase64 format. Expected a base64-encoded PDF data URI." }
+  }
+
+  const [, rawBase64Content] = match
+  const base64Content = rawBase64Content.replace(/\s+/g, "")
+  const paddingLength = (base64Content.match(/=*$/)?.[0]?.length ?? 0)
+  const estimatedBytes = Math.floor((base64Content.length * 3) / 4) - paddingLength
+
+  if (estimatedBytes <= 0) {
+    return { error: "PDF attachment is empty." }
+  }
+
+  if (estimatedBytes > MAX_ATTACHMENT_BYTES) {
+    return { error: `PDF attachment exceeds ${MAX_ATTACHMENT_BYTES / (1024 * 1024)} MB limit.` }
+  }
+
+  return { base64Content }
+}
+
 serve(async (req) => {
-  // ✅ Allowed origins
   const allowedOrigins = [
     "http://localhost:5173",
-    "http://localhost:5174",
-    "https://absstem.com"
+    "http://localhost:5177",
+    "https://absstem.com",
   ]
 
   const origin = req.headers.get("origin") || ""
 
   const corsHeaders = {
     "Access-Control-Allow-Origin": allowedOrigins.includes(origin) ? origin : "",
-    "Access-Control-Allow-Headers":
-      "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
   }
 
-  // ✅ Handle preflight FIRST
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders })
   }
 
   try {
-    // 🔐 Env variables
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")
     const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY")
@@ -39,7 +69,6 @@ serve(async (req) => {
       throw new Error("Missing email (Brevo) configuration")
     }
 
-    // 🔑 Auth header
     const authHeader = req.headers.get("Authorization")
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -52,7 +81,6 @@ serve(async (req) => {
       )
     }
 
-    // 🔗 Supabase client
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       global: {
         headers: {
@@ -61,7 +89,6 @@ serve(async (req) => {
       },
     })
 
-    // 👤 Get user
     const {
       data: { user },
       error: userError,
@@ -77,9 +104,8 @@ serve(async (req) => {
       )
     }
 
-    const userEmail = user.email
+    const userEmail = user.email || "N/A"
 
-    // 📄 Fetch profile
     const { data: profile } = await supabase
       .from("profiles")
       .select("name, phone, company_name")
@@ -90,7 +116,6 @@ serve(async (req) => {
     const userPhone = profile?.phone || "Not provided"
     const userCompany = profile?.company_name || "N/A"
 
-    // 🧪 Safe JSON parsing
     let body
     try {
       body = await req.json()
@@ -106,8 +131,7 @@ serve(async (req) => {
 
     const { pdfBase64, tabName } = body
 
-    // ✅ Validation
-    if (!pdfBase64) {
+    if (typeof pdfBase64 !== "string" || !pdfBase64.trim()) {
       return new Response(
         JSON.stringify({ error: "Missing required field: pdfBase64" }),
         {
@@ -117,7 +141,7 @@ serve(async (req) => {
       )
     }
 
-    if (!tabName) {
+    if (typeof tabName !== "string" || !tabName.trim()) {
       return new Response(
         JSON.stringify({ error: "Missing required field: tabName" }),
         {
@@ -127,7 +151,34 @@ serve(async (req) => {
       )
     }
 
-    // 📧 Send email via Brevo
+    if (tabName.length > MAX_TAB_NAME_LENGTH) {
+      return new Response(
+        JSON.stringify({ error: "tabName is too long" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      )
+    }
+
+    const parsedAttachment = parsePdfAttachment(pdfBase64.trim())
+
+    if ("error" in parsedAttachment) {
+      return new Response(
+        JSON.stringify({ error: parsedAttachment.error }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      )
+    }
+
+    const safeUserEmail = escapeHtml(userEmail)
+    const safeUserName = escapeHtml(userName)
+    const safeUserPhone = escapeHtml(userPhone)
+    const safeUserCompany = escapeHtml(userCompany)
+    const safeTabName = escapeHtml(tabName.trim())
+
     const brevoRes = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: {
@@ -139,19 +190,19 @@ serve(async (req) => {
           email: BREVO_FROM_EMAIL,
         },
         to: [{ email: BREVO_TO_EMAIL }],
-        subject: `📥 PDF Download Alert - ${tabName}`,
+        subject: `PDF Download Alert - ${safeTabName}`,
         htmlContent: `
           <h2>New PDF Download</h2>
-          <p><strong>Email:</strong> ${userEmail}</p>
-          <p><strong>Name:</strong> ${userName}</p>
-          <p><strong>Phone:</strong> ${userPhone}</p>
-          <p><strong>Company:</strong> ${userCompany}</p>
-          <p><strong>Calculation Type:</strong> ${tabName}</p>
+          <p><strong>Email:</strong> ${safeUserEmail}</p>
+          <p><strong>Name:</strong> ${safeUserName}</p>
+          <p><strong>Phone:</strong> ${safeUserPhone}</p>
+          <p><strong>Company:</strong> ${safeUserCompany}</p>
+          <p><strong>Calculation Type:</strong> ${safeTabName}</p>
           <p>This user has downloaded the PDF.</p>
         `,
         attachment: [
           {
-            content: pdfBase64.replace(/^data:.*;base64,/, ""),
+            content: parsedAttachment.base64Content,
             name: "calculation.pdf",
           },
         ],
@@ -162,7 +213,7 @@ serve(async (req) => {
       const err = await brevoRes.text()
       console.error("Brevo error:", err)
       return new Response(
-        JSON.stringify({ error: "Email failed", details: err }),
+        JSON.stringify({ error: "Email failed" }),
         {
           status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -170,7 +221,6 @@ serve(async (req) => {
       )
     }
 
-    // ✅ Success
     return new Response(
       JSON.stringify({ success: true }),
       {
@@ -178,11 +228,10 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     )
-
   } catch (err) {
     console.error("Function error:", err)
     return new Response(
-      JSON.stringify({ error: err.message }),
+      JSON.stringify({ error: err instanceof Error ? err.message : "Unexpected error" }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
