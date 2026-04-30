@@ -2,6 +2,24 @@ import { useMemo, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../utils/supabaseClient';
 
+// Lufga font faces — place the .otf files in your /public/fonts/ folder
+const lufgaFontStyle = `
+  @font-face {
+    font-family: 'Lufga';
+    src: url('/fonts/Lufga-Regular.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Lufga';
+    src: url('/fonts/Lufga-SemiBold.otf') format('opentype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+  }
+`;
+
 type AuthMode = 'login' | 'signup';
 
 type SignupForm = {
@@ -217,36 +235,37 @@ const Login = () => {
   );
 
   return (
-    <div className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.14),_transparent_34%),linear-gradient(180deg,#f8fbff_0%,#eef4ff_45%,#f8fafc_100%)]">
+    <div className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.14),_transparent_34%),linear-gradient(180deg,#f8fbff_0%,#eef4ff_45%,#f8fafc_100%)]" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+      <style>{lufgaFontStyle}</style>
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(148,163,184,0.09)_1px,transparent_1px),linear-gradient(rgba(148,163,184,0.09)_1px,transparent_1px)] bg-[size:38px_38px] opacity-40" />
       <div className="relative mx-auto flex min-h-[calc(100vh-8rem)] max-w-7xl flex-col justify-center px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr] lg:items-center">
           <section className="rounded-[2rem] border border-white/70 bg-slate-900 px-6 py-8 text-white shadow-[0_30px_80px_rgba(15,23,42,0.22)] sm:px-8 lg:px-10">
-            <div className="inline-flex items-center rounded-full border border-blue-400/30 bg-blue-400/10 px-4 py-1 text-sm font-medium text-blue-100">
+            <div className="inline-flex items-center rounded-full border border-blue-400/30 bg-blue-400/10 px-4 py-1 text-sm text-blue-100" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
               Absstem ROI Calculators
             </div>
-            <h1 className="mt-6 max-w-xl text-4xl font-semibold tracking-tight sm:text-5xl">
+            <h1 className="mt-6 max-w-xl text-4xl tracking-tight sm:text-5xl" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
               Secure access for industrial ROI planning.
             </h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
+            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
               Sign in or create an account to access all ROI calculators, generate reports.
             </p>
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-sm font-semibold text-white">Savings against Liquid Nitrogen</p>
-                <p className="mt-2 text-sm text-slate-300">
+                <p className="text-sm text-white" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Savings against Liquid Nitrogen</p>
+                <p className="mt-2 text-sm text-slate-300" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
                   Calculate potential cost savings by replacing liquid nitrogen systems with more efficient alternatives.
                 </p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-sm font-semibold text-white">Savings Against any PSA</p>
-                <p className="mt-2 text-sm text-slate-300">
+                <p className="text-sm text-white" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Savings Against any PSA</p>
+                <p className="mt-2 text-sm text-slate-300" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
                   Evaluate cost benefits of upgrading from Pressure Swing Adsorption (PSA) systems to determine optimal gas generation solutions.
                 </p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-sm font-semibold text-white">Savings against Cylinders</p>
-                <p className="mt-2 text-sm text-slate-300">
+                <p className="text-sm text-white" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Savings against Cylinders</p>
+                <p className="mt-2 text-sm text-slate-300" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
                   Assess potential savings from replacing traditional pneumatic cylinder systems with our advanced alternatives.
                 </p>
               </div>
@@ -258,7 +277,8 @@ const Login = () => {
               <button
                 type="button"
                 onClick={() => switchMode('login')}
-                className={`flex-1 rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}
+                className={`flex-1 rounded-xl px-4 py-3 text-sm transition ${
                   mode === 'login' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
@@ -267,7 +287,8 @@ const Login = () => {
               <button
                 type="button"
                 onClick={() => switchMode('signup')}
-                className={`flex-1 rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}
+                className={`flex-1 rounded-xl px-4 py-3 text-sm transition ${
                   mode === 'signup' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
@@ -275,17 +296,17 @@ const Login = () => {
               </button>
             </div>
 
-            <h2 className="text-3xl font-semibold text-slate-900">{cardTitle}</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">{cardDescription}</p>
+            <h2 className="text-3xl text-slate-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>{cardTitle}</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{cardDescription}</p>
 
             {success && (
-              <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+              <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
                 {success}
               </div>
             )}
 
             {error && (
-              <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
                 {error}
               </div>
             )}
@@ -293,12 +314,13 @@ const Login = () => {
             {mode === 'login' ? (
               <form className="mt-8 space-y-5" onSubmit={handleLogin}>
                 <div>
-                  <label htmlFor="email" className="text-sm font-medium text-slate-700">
+                  <label htmlFor="email" className="text-sm text-slate-700" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
                     Email address
                   </label>
                   <input
                     id="email"
                     className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}
                     type="email"
                     placeholder="Enter your email"
                     value={email}
@@ -307,13 +329,14 @@ const Login = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="password" className="text-sm font-medium text-slate-700">
+                  <label htmlFor="password" className="text-sm text-slate-700" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
                     Password
                   </label>
                   <div className="relative mt-2">
                     <input
                       id="password"
                       className="w-full rounded-xl border border-slate-300 px-4 py-3 pr-12 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                      style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}
                       type={showLoginPassword ? 'text' : 'password'}
                       placeholder="Enter your password"
                       value={password}
@@ -331,7 +354,8 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={handleForgotPassword}
-                    className="text-sm font-medium text-blue-600 transition hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="text-sm text-blue-600 transition hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}
                     disabled={loading || resetLoading}
                   >
                     {resetLoading ? 'Sending reset link...' : 'Forgot password?'}
@@ -339,7 +363,8 @@ const Login = () => {
                 </div>
                 <button
                   type="submit"
-                  className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}
                   disabled={loading || resetLoading}
                 >
                   {loading ? 'Signing In...' : 'Sign In'}
@@ -348,12 +373,13 @@ const Login = () => {
             ) : (
               <form className="mt-8 grid gap-5 sm:grid-cols-2" onSubmit={handleSignup}>
                 <div>
-                  <label htmlFor="name" className="text-sm font-medium text-slate-700">
+                  <label htmlFor="name" className="text-sm text-slate-700" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
                     Full name
                   </label>
                   <input
                     id="name"
                     className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}
                     type="text"
                     placeholder="Your full name"
                     value={signupForm.name}
@@ -362,12 +388,13 @@ const Login = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="company_name" className="text-sm font-medium text-slate-700">
+                  <label htmlFor="company_name" className="text-sm text-slate-700" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
                     Company name
                   </label>
                   <input
                     id="company_name"
                     className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}
                     type="text"
                     placeholder="Your company"
                     value={signupForm.company_name}
@@ -375,12 +402,13 @@ const Login = () => {
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label htmlFor="country" className="text-sm font-medium text-slate-700">
+                  <label htmlFor="country" className="text-sm text-slate-700" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
                     Country
                   </label>
                   <select
                     id="country"
                     className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}
                     value={signupForm.country}
                     onChange={(e) => updateSignupField('country', e.target.value)}
                     required
@@ -394,12 +422,13 @@ const Login = () => {
                   </select>
                 </div>
                 <div className="sm:col-span-2">
-                  <label htmlFor="signup_email" className="text-sm font-medium text-slate-700">
+                  <label htmlFor="signup_email" className="text-sm text-slate-700" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
                     Email address
                   </label>
                   <input
                     id="signup_email"
                     className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}
                     type="email"
                     placeholder="Enter your email"
                     value={signupForm.email}
@@ -408,12 +437,13 @@ const Login = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="phone" className="text-sm font-medium text-slate-700">
+                  <label htmlFor="phone" className="text-sm text-slate-700" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
                     Phone number
                   </label>
                   <input
                     id="phone"
                     className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}
                     type="tel"
                     placeholder="+91 98765 43210"
                     value={signupForm.phone}
@@ -422,12 +452,13 @@ const Login = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="engineer_reference" className="text-sm font-medium text-slate-700">
+                  <label htmlFor="engineer_reference" className="text-sm text-slate-700" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
                     Engineer reference
                   </label>
                   <input
                     id="engineer_reference"
                     className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}
                     type="text"
                     placeholder="Optional"
                     value={signupForm.engineer_reference}
@@ -435,13 +466,14 @@ const Login = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="signup_password" className="text-sm font-medium text-slate-700">
+                  <label htmlFor="signup_password" className="text-sm text-slate-700" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
                     Password
                   </label>
                   <div className="relative mt-2">
                     <input
                       id="signup_password"
                       className="w-full rounded-xl border border-slate-300 px-4 py-3 pr-12 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                      style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}
                       type={showSignupPassword ? 'text' : 'password'}
                       placeholder="Create a password"
                       value={signupForm.password}
@@ -456,13 +488,14 @@ const Login = () => {
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="confirmPassword" className="text-sm font-medium text-slate-700">
+                  <label htmlFor="confirmPassword" className="text-sm text-slate-700" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
                     Confirm password
                   </label>
                   <div className="relative mt-2">
                     <input
                       id="confirmPassword"
                       className="w-full rounded-xl border border-slate-300 px-4 py-3 pr-12 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                      style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}
                       type={showSignupConfirmPassword ? 'text' : 'password'}
                       placeholder="Repeat your password"
                       value={signupForm.confirmPassword}
@@ -479,7 +512,8 @@ const Login = () => {
                 <div className="sm:col-span-2">
                   <button
                     type="submit"
-                    className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}
                     disabled={loading}
                   >
                     {loading ? 'Creating Account...' : 'Complete Registration'}
