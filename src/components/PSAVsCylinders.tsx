@@ -9,6 +9,25 @@ import { formatIndianCurrency } from '../utils/formatting';
 import { ReportLayout } from './ReportLayout';
 import DownloadPdfButton from './DownloadPdfButton';
 
+// Lufga font faces — place the .otf files in /public/fonts/
+const lufgaFontStyle = `
+  @font-face {
+    font-family: 'Lufga';
+    src: url('/fonts/Lufga-Regular.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Lufga';
+    src: url('/fonts/Lufga-SemiBold.otf') format('opentype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+  }
+`;
+
+
 export default function PSAVsCylinders() {
   const [inputs, setInputs] = useState<CylinderInputs>({
     gasType: 'nitrogen',
@@ -122,18 +141,18 @@ export default function PSAVsCylinders() {
 
   const inputParametersSummary = (
     <div className="bg-white p-6 rounded-lg shadow border">
-      <h3 className="font-semibold text-gray-900 mb-4">Input Parameters</h3>
+      <h3 className="text-gray-900 mb-4" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Input Parameters</h3>
       <div className="space-y-2 text-sm">
-        <div className="flex justify-between"><span className="text-gray-600">Gas Type:</span><span className="font-medium">{inputs.gasType}</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Cylinders per Day:</span><span className="font-medium">{inputs.cylindersPerDay}</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Cylinder Volume:</span><span className="font-medium">{inputs.cylinderVolume === 'other' ? inputs.cylinderVolumeCustom : inputs.cylinderVolume} m³</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Running Hours:</span><span className="font-medium">{inputs.plantRunningHours} hrs/day</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Running Days:</span><span className="font-medium">{inputs.plantRunningDays} days/month</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Cylinder Cost:</span><span className="font-medium">{inputs.cylinderCost} ₹/m³</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Purity:</span><span className="font-medium">{inputs.purity}%</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Power Cost:</span><span className="font-medium">{inputs.powerCostPerUnit} ₹/kWh</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Investment Cost:</span><span className="font-medium">{formatIndianCurrency(inputs.investmentCost ?? 0)}</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Annual Maintenance:</span><span className="font-medium">{formatIndianCurrency(inputs.annualMaintenanceCost ?? 0)}</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Gas Type:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.gasType}</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Cylinders per Day:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.cylindersPerDay}</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Cylinder Volume:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.cylinderVolume === 'other' ? inputs.cylinderVolumeCustom : inputs.cylinderVolume} m³</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Running Hours:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.plantRunningHours} hrs/day</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Running Days:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.plantRunningDays} days/month</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Cylinder Cost:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.cylinderCost} ₹/m³</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Purity:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.purity}%</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Power Cost:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.powerCostPerUnit} ₹/kWh</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Investment Cost:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(inputs.investmentCost ?? 0)}</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Annual Maintenance:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(inputs.annualMaintenanceCost ?? 0)}</span></div>
       </div>
     </div>
   );
@@ -141,25 +160,25 @@ export default function PSAVsCylinders() {
   const costComparisonContent = (
     <div className="grid md:grid-cols-2 gap-6">
       <div className="bg-gradient-to-br from-red-50 to-orange-100 p-6 rounded-lg border">
-        <div className="flex items-center space-x-2 mb-4"><DollarSign className="h-5 w-5 text-red-600" /><h3 className="font-semibold text-gray-900">Cylinder System Costs</h3></div>
+        <div className="flex items-center space-x-2 mb-4"><DollarSign className="h-5 w-5 text-red-600" /><h3 className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Cylinder System Costs</h3></div>
         <div className="space-y-3">
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Gas Cost per m³:</span><span className="font-medium">₹{(results.unitPricePerM3 ?? 0).toFixed(2)}</span></div>
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Monthly Expense:</span><span className="font-medium">{formatIndianCurrency(results.monthlyExpenseCylinder)}</span></div>
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Operator Cost (Annual):</span><span className="font-medium">{formatIndianCurrency(results.cylinderOperatorCostYear)}</span></div>
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Rental Cost (Annual):</span><span className="font-medium">{formatIndianCurrency(results.annualRentalCost)}</span></div>
-          <div className="border-t pt-3"><div className="flex justify-between items-center"><span className="font-medium text-gray-900">Total Annual Cost:</span><span className="font-bold text-lg text-red-600">{formatIndianCurrency(results.totalRunningCostCylinder)}</span></div></div>
+          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Gas Cost per m³:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>₹{(results.unitPricePerM3 ?? 0).toFixed(2)}</span></div>
+          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Monthly Expense:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(results.monthlyExpenseCylinder)}</span></div>
+          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Operator Cost (Annual):</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(results.cylinderOperatorCostYear)}</span></div>
+          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Rental Cost (Annual):</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(results.annualRentalCost)}</span></div>
+          <div className="border-t pt-3"><div className="flex justify-between items-center"><span className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Total Annual Cost:</span><span className="font-bold text-lg text-red-600">{formatIndianCurrency(results.totalRunningCostCylinder)}</span></div></div>
         </div>
       </div>
       <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-6 rounded-lg border">
-        <div className="flex items-center space-x-2 mb-4"><Zap className="h-5 w-5 text-blue-600" /><h3 className="font-semibold text-gray-900">PSA System Costs</h3></div>
+        <div className="flex items-center space-x-2 mb-4"><Zap className="h-5 w-5 text-blue-600" /><h3 className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>PSA System Costs</h3></div>
         <div className="space-y-3">
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Gas Cost per m³:</span><span className="font-medium">₹{(results.unitPricePSA ?? 0).toFixed(2)}</span></div>
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Power Consumption:</span><span className="font-medium">{results.power.toFixed(2)} kW</span></div>
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Operator Cost (Annual):</span><span className="font-medium">{formatIndianCurrency(results.psaOperatorCostYear)}</span></div>
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Utilization Factor:</span><span className="font-medium">{results.utilizationFactor.toFixed(2)}</span></div>
-          {(results.annualInterest ?? 0) > 0 && (<div className="flex justify-between items-center"><span className="text-sm text-gray-600">Annual Interest:</span><span className="font-medium">{formatIndianCurrency(results.annualInterest ?? 0)}</span></div>)}
-          {(results.annualDepreciation ?? 0) > 0 && (<div className="flex justify-between items-center"><span className="text-sm text-gray-600">Annual Depreciation (Tax Shield):</span><span className="font-medium text-green-600">-{formatIndianCurrency(results.annualDepreciation ?? 0)}</span></div>)}
-          <div className="border-t pt-3"><div className="flex justify-between items-center"><span className="font-medium text-gray-900">Total Annual Cost:</span><span className="font-bold text-lg text-blue-600">{formatIndianCurrency(results.totalRunningCostPSA)}</span></div></div>
+          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Gas Cost per m³:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>₹{(results.unitPricePSA ?? 0).toFixed(2)}</span></div>
+          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Power Consumption:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{results.power.toFixed(2)} kW</span></div>
+          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Operator Cost (Annual):</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(results.psaOperatorCostYear)}</span></div>
+          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Utilization Factor:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{results.utilizationFactor.toFixed(2)}</span></div>
+          {(results.annualInterest ?? 0) > 0 && (<div className="flex justify-between items-center"><span className="text-sm text-gray-600">Annual Interest:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(results.annualInterest ?? 0)}</span></div>)}
+          {(results.annualDepreciation ?? 0) > 0 && (<div className="flex justify-between items-center"><span className="text-sm text-gray-600">Annual Depreciation (Tax Shield):</span><span className="text-green-600" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>-{formatIndianCurrency(results.annualDepreciation ?? 0)}</span></div>)}
+          <div className="border-t pt-3"><div className="flex justify-between items-center"><span className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Total Annual Cost:</span><span className="font-bold text-lg text-blue-600">{formatIndianCurrency(results.totalRunningCostPSA)}</span></div></div>
         </div>
       </div>
     </div>
@@ -170,7 +189,7 @@ export default function PSAVsCylinders() {
       {costComparisonContent}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="font-semibold text-gray-900 mb-4 text-center">Monthly & Annual Cost Comparison</h3>
+          <h3 className="text-gray-900 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Monthly & Annual Cost Comparison</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -184,7 +203,7 @@ export default function PSAVsCylinders() {
           </ResponsiveContainer>
         </div>
         <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="font-semibold text-gray-900 mb-4 text-center">Return on Investment (ROI)</h3>
+          <h3 className="text-gray-900 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Return on Investment (ROI)</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={roiData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -199,24 +218,24 @@ export default function PSAVsCylinders() {
         </div>
       </div>
       <div className="bg-white rounded-lg shadow border overflow-hidden">
-        <div className="bg-gray-50 px-6 py-4 border-b"><h3 className="font-semibold text-gray-900">10-Year Cumulative Savings</h3></div>
+        <div className="bg-gray-50 px-6 py-4 border-b"><h3 className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>10-Year Cumulative Savings</h3></div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Year</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Current System Cost</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">PSA System Cost</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cumulative Savings</th>
+                <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Year</th>
+                <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Current System Cost</th>
+                <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>PSA System Cost</th>
+                <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Cumulative Savings</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {yearlyData.map((row, index) => (
                 <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{row.year}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{row.year}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatIndianCurrency(row['Current System Cost'])}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatIndianCurrency(row['PSA System Cost'])}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">{formatIndianCurrency(row['Cumulative Savings'])}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(row['Cumulative Savings'])}</td>
                 </tr>
               ))}
             </tbody>
@@ -227,7 +246,8 @@ export default function PSAVsCylinders() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+      <style>{lufgaFontStyle}</style>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-8 flex items-center justify-end gap-3 print:hidden">
         <DownloadPdfButton contentToPrint={reportRef} tabName={'PSA_Vs_Cylinders'} inputs={inputs} />
       </div>
@@ -236,10 +256,10 @@ export default function PSAVsCylinders() {
       <div className="print:hidden p-6">
         <div className="grid lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1 bg-white p-6 rounded-lg shadow border">
-              <div className="flex items-center space-x-2 mb-4"><Database className="h-5 w-5 text-blue-600" /><h3 className="font-semibold text-gray-900">Input Parameters</h3></div>
+              <div className="flex items-center space-x-2 mb-4"><Database className="h-5 w-5 text-blue-600" /><h3 className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Input Parameters</h3></div>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Gas Type</label>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Gas Type</label>
                   <select value={inputs.gasType} onChange={(e) => updateInput('gasType', e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Gas Type">
                     {GAS_TYPES.map(type => (<option key={type.value} value={type.value}>{type.label}</option>))}
                   </select>
@@ -248,20 +268,20 @@ export default function PSAVsCylinders() {
                 <InputField label="Plant Running Hours" value={inputs.plantRunningHours} onChange={(value) => updateInput('plantRunningHours', value)} unit="hrs/day" />
                 <InputField label="Plant Running Days" value={inputs.plantRunningDays} onChange={(value) => updateInput('plantRunningDays', value)} unit="days/month" />
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Cylinder Volume</label>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Cylinder Volume</label>
                   <select value={inputs.cylinderVolume} onChange={(e) => updateInput('cylinderVolume', e.target.value === 'other' ? 'other' : Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Cylinder Volume">
                     {CYLINDER_VOLUMES.map(volume => (<option key={volume} value={volume}>{volume === 'other' ? 'Other' : `${volume} m³`}</option>))}
                   </select>
                 </div>
                 {inputs.cylinderVolume === 'other' && (<InputField label="Custom Cylinder Volume" value={inputs.cylinderVolumeCustom} onChange={(value) => updateInput('cylinderVolumeCustom', value)} unit="m³" />)}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Purity</label>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Purity</label>
                   <select value={inputs.purity} onChange={(e) => updateInput('purity', Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Purity">
                     {availablePurities.map(purity => (<option key={purity} value={purity}>{purity}%</option>))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Load Factor</label>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Load Factor</label>
                   <select value={inputs.loadFactor} onChange={(e) => updateInput('loadFactor', Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Load Factor">
                     {LOAD_FACTORS.map(factor => (<option key={factor} value={factor}>{factor}</option>))}
                   </select>
@@ -271,13 +291,13 @@ export default function PSAVsCylinders() {
                 <InputField label="Investment Cost (₹)" value={inputs.investmentCost || 0} onChange={(value) => updateInput('investmentCost', value)} />
                 <InputField label="Annual Maintenance (₹)" value={inputs.annualMaintenanceCost || 0} onChange={(value) => updateInput('annualMaintenanceCost', value)} />
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Interest Rate (%)</label>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Interest Rate (%)</label>
                   <select value={inputs.interestRate || 0} onChange={(e) => updateInput('interestRate', Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Interest Rate">
                     {INTEREST_RATES.map(r => (<option key={r} value={r}>{r}%</option>))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Depreciation Rate (%)</label>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Depreciation Rate (%)</label>
                   <select value={inputs.depreciationRate || 0} onChange={(e) => updateInput('depreciationRate', Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Depreciation Rate">
                     {DEPRECIATION_RATES.map(r => (<option key={r} value={r}>{r}%</option>))}
                   </select>
@@ -304,7 +324,7 @@ export default function PSAVsCylinders() {
           <div className="print-page space-y-8">
             <div className="avoid-break">
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-600 p-6 rounded-r-lg">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center"><div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center mr-3"><span className="text-white font-bold text-sm">2</span></div>Financial Summary & Investment Analysis</h2>
+                <h2 className="text-2xl text-gray-800 mb-4 flex items-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}><div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center mr-3"><span className="text-white text-sm" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>2</span></div>Financial Summary & Investment Analysis</h2>
                 <div className="grid md:grid-cols-3 gap-6 text-center">
                   <div className="bg-white p-6 rounded-lg border border-green-200 shadow-sm"><div className="text-4xl font-bold text-green-600 mb-2">{formatIndianCurrency(results.monthlySavingsPSA)}</div><div className="text-sm font-medium text-green-800">Estimated Monthly Savings</div></div>
                   <div className="bg-white p-6 rounded-lg border border-blue-200 shadow-sm"><div className="text-4xl font-bold text-blue-600 mb-2">{formatIndianCurrency(results.annualSavings)}</div><div className="text-sm font-medium text-blue-800">Estimated Annual Savings</div></div>
@@ -313,10 +333,10 @@ export default function PSAVsCylinders() {
               </div>
             </div>
             <div className="avoid-break">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Visual Cost Comparison</h2>
+              <h2 className="text-2xl text-gray-800 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Visual Cost Comparison</h2>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="bg-white p-6 rounded-lg shadow border">
-                  <h3 className="font-semibold text-gray-900 mb-4 text-center">Monthly & Annual Cost Comparison</h3>
+                  <h3 className="text-gray-900 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Monthly & Annual Cost Comparison</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -335,7 +355,7 @@ export default function PSAVsCylinders() {
               </ResponsiveContainer>
                 </div>
                 <div className="bg-white p-6 rounded-lg shadow border">
-                  <h3 className="font-semibold text-gray-900 mb-4 text-center">Return on Investment (ROI)</h3>
+                  <h3 className="text-gray-900 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Return on Investment (ROI)</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={roiData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -367,33 +387,33 @@ export default function PSAVsCylinders() {
           <div className="print-page space-y-8">
             <div className="avoid-break">
               <div className="bg-gradient-to-r from-slate-50 to-indigo-50 border-l-4 border-indigo-600 p-6 rounded-r-lg">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center"><div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center mr-3"><span className="text-white font-bold text-sm">3</span></div>Business Case & Recommendation</h2>
+                <h2 className="text-2xl text-gray-800 mb-4 flex items-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}><div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center mr-3"><span className="text-white text-sm" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>3</span></div>Business Case & Recommendation</h2>
                 <div className="space-y-4 text-gray-700 leading-relaxed text-justify">
                   <p>Transitioning from cylinder supply to an on-site PSA plant presents a compelling financial and operational advantage. With projected monthly savings of <span className="font-semibold text-green-700">{formatIndianCurrency(results.monthlySavingsPSA)}</span> and annual savings of <span className="font-semibold text-green-700">{formatIndianCurrency(results.annualSavings)}</span>, the initial investment is quickly recovered, leading to significant long-term cost reduction.</p>
                   <p>The calculated return on investment of <span className="font-semibold text-blue-700">{results.roiPercentage ? `${results.roiPercentage.toFixed(1)}%` : 'N/A'}</span>, with a payback period of just <span className="font-semibold text-blue-700">{results.paybackPeriodMonths ? `${results.paybackPeriodMonths.toFixed(1)} months` : 'N/A'}</span>, underscores the financial viability of this project. Beyond the numbers, on-site generation eliminates dependence on external suppliers, mitigates logistical risks, and reduces the carbon footprint associated with cylinder deliveries.</p>
-                  <p className="font-semibold">Recommendation: We strongly recommend proceeding with the implementation of the PSA generation system to realize immediate cost savings, improve operational efficiency, and achieve supply chain independence.</p>
+                  <p className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Recommendation: We strongly recommend proceeding with the implementation of the PSA generation system to realize immediate cost savings, improve operational efficiency, and achieve supply chain independence.</p>
                 </div>
               </div>
             </div>
             <div className="bg-white rounded-lg shadow border overflow-hidden">
-              <div className="bg-gray-50 px-6 py-4 border-b"><h3 className="font-semibold text-gray-900">10-Year Cumulative Savings</h3></div>
+              <div className="bg-gray-50 px-6 py-4 border-b"><h3 className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>10-Year Cumulative Savings</h3></div>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Year</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Current System Cost</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">PSA System Cost</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cumulative Savings</th>
+                      <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Year</th>
+                      <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Current System Cost</th>
+                      <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>PSA System Cost</th>
+                      <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Cumulative Savings</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {yearlyData.map((row, index) => (
                       <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{row.year}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{row.year}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatIndianCurrency(row['Current System Cost'])}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatIndianCurrency(row['PSA System Cost'])}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">{formatIndianCurrency(row['Cumulative Savings'])}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(row['Cumulative Savings'])}</td>
                       </tr>
                     ))}
                   </tbody>

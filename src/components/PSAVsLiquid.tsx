@@ -8,15 +8,34 @@ import { convertToNm3, getLiquidToGasConversionFactor } from '../utils/conversio
 import { ReportLayout } from './ReportLayout';
 import DownloadPdfButton from './DownloadPdfButton';
 
+// Lufga font faces — place the .otf files in /public/fonts/
+const lufgaFontStyle = `
+  @font-face {
+    font-family: 'Lufga';
+    src: url('/fonts/Lufga-Regular.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Lufga';
+    src: url('/fonts/Lufga-SemiBold.otf') format('opentype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+  }
+`;
+
+
 export default function PSAVsLiquid() {
   const [inputs, setInputs] = useState<RoiInputs>({
     gasType: 'nitrogen',
     liquidUsedPerDay: 10000,
-    liquidUnit: 'Sm3',
+    liquidUnit: 'Sm³',
     plantRunningHours: 24,
     workingDaysPerMonth: 25,
     gasCost: 15,
-    gasCostUnit: 'Nm3',
+    gasCostUnit: 'Nm³',
     monthlyRentalCost: 50000,
     purity: 95,
     loadFactor: 0.9,
@@ -33,7 +52,7 @@ export default function PSAVsLiquid() {
   const reportRef = useRef<HTMLDivElement>(null);
 
   const unitPricePerNm3 = convertToNm3(inputs.gasCost, inputs.gasCostUnit, inputs.gasType);
-  const gasUsedPerDay = (inputs.liquidUsedPerDay || 0) * getLiquidToGasConversionFactor(inputs.liquidUnit || 'Sm3', inputs.gasType);
+  const gasUsedPerDay = (inputs.liquidUsedPerDay || 0) * getLiquidToGasConversionFactor(inputs.liquidUnit || 'Sm³', inputs.gasType);
   const result = calculateRoi({...inputs, unitPricePerNm3, gasUsedPerDay});
   const monthlyMaintenanceCostPerMonth = (inputs.annualMaintenanceCost ?? 0) / 12;
   const monthlyPSACost = (result.monthlyConsumption ?? 0) * (result.unitPricePSA ?? 0) + monthlyMaintenanceCostPerMonth + ((result.annualInterest ?? 0) / 12) - ((result.annualDepreciation ?? 0) / 12);
@@ -109,18 +128,18 @@ export default function PSAVsLiquid() {
 
   const inputParametersSummary = (
     <div className="bg-white p-6 rounded-lg shadow border">
-      <h3 className="font-semibold text-gray-900 mb-4">Input Parameters</h3>
+      <h3 className="text-gray-900 mb-4" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Input Parameters</h3>
       <div className="space-y-2 text-sm">
-        <div className="flex justify-between"><span className="text-gray-600">Gas Type:</span><span className="font-medium">{inputs.gasType}</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Daily Use:</span><span className="font-medium">{inputs.liquidUsedPerDay} {inputs.liquidUnit}</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Running Hours:</span><span className="font-medium">{inputs.plantRunningHours} hrs/day</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Working Days:</span><span className="font-medium">{inputs.workingDaysPerMonth} days/month</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Current Gas Cost:</span><span className="font-medium">{inputs.gasCost} ₹/{inputs.gasCostUnit}</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Monthly Rental:</span><span className="font-medium">{formatIndianCurrency(inputs.monthlyRentalCost ?? 0)}</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Purity:</span><span className="font-medium">{inputs.purity}%</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Power Cost:</span><span className="font-medium">{inputs.powerCostPerUnit} ₹/kWh</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Investment Cost:</span><span className="font-medium">{formatIndianCurrency(inputs.investmentCost ?? 0)}</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Annual Maintenance:</span><span className="font-medium">{formatIndianCurrency(inputs.annualMaintenanceCost ?? 0)}</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Gas Type:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.gasType}</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Daily Use:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.liquidUsedPerDay} {inputs.liquidUnit}</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Running Hours:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.plantRunningHours} hrs/day</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Working Days:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.workingDaysPerMonth} days/month</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Current Gas Cost:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.gasCost} ₹/{inputs.gasCostUnit}</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Monthly Rental:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(inputs.monthlyRentalCost ?? 0)}</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Purity:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.purity}%</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Power Cost:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.powerCostPerUnit} ₹/kWh</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Investment Cost:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(inputs.investmentCost ?? 0)}</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Annual Maintenance:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(inputs.annualMaintenanceCost ?? 0)}</span></div>
       </div>
     </div>
   );
@@ -130,28 +149,28 @@ export default function PSAVsLiquid() {
       <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-6 rounded-lg border">
         <div className="flex items-center space-x-2 mb-4">
           <DollarSign className="h-5 w-5 text-blue-600" />
-          <h3 className="font-semibold text-gray-900">Current System Costs</h3>
+          <h3 className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Current System Costs</h3>
         </div>
         <div className="space-y-3">
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Monthly Consumption:</span>
-            <span className="font-medium">{formatNumber(result.monthlyConsumption)} Nm3</span>
+            <span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatNumber(result.monthlyConsumption)} Nm³</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Unit Cost:</span>
-            <span className="font-medium">₹{formatNumber(result.unitPricePerM3, 2)}/Nm3</span>
+            <span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>₹{formatNumber(result.unitPricePerM3, 2)}/Nm³</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Monthly Gas Cost:</span>
-            <span className="font-medium">{formatIndianCurrency((result.monthlyConsumption ?? 0) * (result.unitPricePerM3 ?? 0))}</span>
+            <span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency((result.monthlyConsumption ?? 0) * (result.unitPricePerM3 ?? 0))}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Monthly Rental:</span>
-            <span className="font-medium">{formatIndianCurrency(inputs.monthlyRentalCost ?? 0)}</span>
+            <span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(inputs.monthlyRentalCost ?? 0)}</span>
           </div>
           <div className="border-t pt-3">
             <div className="flex justify-between items-center">
-              <span className="font-medium text-gray-900">Total Monthly Cost:</span>
+              <span className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Total Monthly Cost:</span>
               <span className="font-bold text-lg text-blue-600">{formatIndianCurrency(result.monthlyExpenseCylinder)}</span>
             </div>
           </div>
@@ -161,52 +180,52 @@ export default function PSAVsLiquid() {
       <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-lg border">
         <div className="flex items-center space-x-2 mb-4">
           <Zap className="h-5 w-5 text-green-600" />
-          <h3 className="font-semibold text-gray-900">PSA System Costs</h3>
+          <h3 className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>PSA System Costs</h3>
         </div>
         <div className="space-y-3">
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Per Hour Consumption:</span>
-            <span className="font-medium">{formatNumber(result.perHourConsumption)} Nm3/hr</span>
+            <span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatNumber(result.perHourConsumption)} Nm³/hr</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Plant Selected:</span>
-            <span className="font-medium">{result.psaPlantFlow ? formatNumber(result.psaPlantFlow) : 'N/A'} Nm3/hr</span>
+            <span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{result.psaPlantFlow ? formatNumber(result.psaPlantFlow) : 'N/A'} Nm³/hr</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Compressor KW:</span>
-            <span className="font-medium">{result.compressorKW ? formatNumber(result.compressorKW) : 'N/A'} kW</span>
+            <span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{result.compressorKW ? formatNumber(result.compressorKW) : 'N/A'} kW</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Power Consumption:</span>
-            <span className="font-medium">{formatNumber(result.power)} kW</span>
+            <span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatNumber(result.power)} kW</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Unit Cost PSA:</span>
-            <span className="font-medium">₹{formatNumber(result.unitPricePSA, 2)}/Nm3</span>
+            <span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>₹{formatNumber(result.unitPricePSA, 2)}/Nm³</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Monthly Power Cost:</span>
-            <span className="font-medium">{formatIndianCurrency((result.monthlyConsumption ?? 0) * (result.unitPricePSA ?? 0))}</span>
+            <span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency((result.monthlyConsumption ?? 0) * (result.unitPricePSA ?? 0))}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Monthly Maintenance:</span>
-            <span className="font-medium">{formatIndianCurrency(monthlyMaintenanceCostPerMonth)}</span>
+            <span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(monthlyMaintenanceCostPerMonth)}</span>
           </div>
           {result.annualInterest > 0 && (
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Monthly Interest:</span>
-              <span className="font-medium">{formatIndianCurrency(result.annualInterest / 12)}</span>
+              <span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(result.annualInterest / 12)}</span>
             </div>
           )}
           {result.annualDepreciation > 0 && (
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Monthly Depreciation (Tax Deduction):</span>
-              <span className="font-medium text-green-600">-{formatIndianCurrency(result.annualDepreciation / 12)}</span>
+              <span className="text-green-600" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>-{formatIndianCurrency(result.annualDepreciation / 12)}</span>
             </div>
           )}
           <div className="border-t pt-3">
             <div className="flex justify-between items-center">
-              <span className="font-medium text-gray-900">Total Monthly Cost:</span>
+              <span className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Total Monthly Cost:</span>
               <span className="font-bold text-lg text-green-600">{formatIndianCurrency(monthlyPSACost)}</span>
             </div>
           </div>
@@ -220,7 +239,7 @@ export default function PSAVsLiquid() {
       {costComparisonContent}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="font-semibold text-gray-900 mb-4 text-center">Monthly & Annual Cost Comparison</h3>
+          <h3 className="text-gray-900 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Monthly & Annual Cost Comparison</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -234,7 +253,7 @@ export default function PSAVsLiquid() {
           </ResponsiveContainer>
         </div>
         <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="font-semibold text-gray-900 mb-4 text-center">Return on Investment (ROI)</h3>
+          <h3 className="text-gray-900 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Return on Investment (ROI)</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={roiData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -250,25 +269,25 @@ export default function PSAVsLiquid() {
       </div>
       <div className="bg-white rounded-lg shadow border overflow-hidden">
         <div className="bg-gray-50 px-6 py-4 border-b">
-          <h3 className="font-semibold text-gray-900">10-Year Cumulative Savings</h3>
+          <h3 className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>10-Year Cumulative Savings</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Year</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Current System Cost</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">PSA System Cost</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cumulative Savings</th>
+                <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Year</th>
+                <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Current System Cost</th>
+                <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>PSA System Cost</th>
+                <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Cumulative Savings</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {yearlyData.map((row, index) => (
                 <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{row.year}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{row.year}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatIndianCurrency(row['Current System Cost'])}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatIndianCurrency(row['PSA System Cost'])}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">{formatIndianCurrency(row['Cumulative Savings'])}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(row['Cumulative Savings'])}</td>
                 </tr>
               ))}
             </tbody>
@@ -279,7 +298,8 @@ export default function PSAVsLiquid() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+      <style>{lufgaFontStyle}</style>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-8 flex items-center justify-end gap-3 print:hidden">
         <DownloadPdfButton contentToPrint={reportRef} tabName={'PSA_Vs_Liquid'} inputs={inputs} />
       </div>
@@ -290,11 +310,11 @@ export default function PSAVsLiquid() {
             <div className="lg:col-span-1 bg-white p-6 rounded-lg shadow border">
               <div className="flex items-center space-x-2 mb-4">
                 <Calculator className="h-5 w-5 text-blue-600" />
-                <h3 className="font-semibold text-gray-900">System Configuration</h3>
+                <h3 className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>System Configuration</h3>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Gas Type</label>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Gas Type</label>
                   <select
                     value={inputs.gasType ?? 'nitrogen'}
                     onChange={(e) => setInputs({...inputs, gasType: e.target.value as 'nitrogen' | 'oxygen', purity: 95})}
@@ -310,7 +330,7 @@ export default function PSAVsLiquid() {
                 
                 <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Daily Use</label>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Daily Use</label>
                   <input
                     type="number"
                     value={inputs.liquidUsedPerDay ?? ''}
@@ -319,12 +339,12 @@ export default function PSAVsLiquid() {
                     title="Daily Use"
                     placeholder="Enter daily use"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Daily Use in Nm3: {((inputs.liquidUsedPerDay || 0) * getLiquidToGasConversionFactor(inputs.liquidUnit || 'Sm3', inputs.gasType)).toFixed(2)}</p>
+                  <p className="text-xs text-gray-500 mt-1">Daily Use in Nm³: {((inputs.liquidUsedPerDay || 0) * getLiquidToGasConversionFactor(inputs.liquidUnit || 'Sm³', inputs.gasType)).toFixed(2)}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Unit</label>
                   <select
-                    value={inputs.liquidUnit ?? 'Sm3'}
+                    value={inputs.liquidUnit ?? 'Sm³'}
                     onChange={(e) => setInputs({...inputs, liquidUnit: e.target.value})}
                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     aria-label="Liquid Unit"
@@ -339,7 +359,7 @@ export default function PSAVsLiquid() {
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Hours/Day</label>
+                    <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Hours/Day</label>
                     <input
                       type="number"
                       value={inputs.plantRunningHours ?? ''}
@@ -350,7 +370,7 @@ export default function PSAVsLiquid() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Days/Month</label>
+                    <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Days/Month</label>
                     <input
                       type="number"
                       value={inputs.workingDaysPerMonth ?? ''}
@@ -363,7 +383,7 @@ export default function PSAVsLiquid() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Current Gas Cost</label>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Current Gas Cost</label>
                   <div className="grid grid-cols-2 gap-2 items-center">
                     <input
                       type="number"
@@ -375,22 +395,22 @@ export default function PSAVsLiquid() {
                       placeholder="Enter gas cost"
                     />
                     <select
-                      value={inputs.gasCostUnit ?? 'Nm3'}
+                      value={inputs.gasCostUnit ?? 'Nm³'}
                       onChange={(e) => setInputs({...inputs, gasCostUnit: e.target.value})}
                       className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                       aria-label="Gas Cost Unit"
                     >
-                      <option value="Sm3">Sm3</option>
-                      <option value="Nm3">Nm3</option>
+                      <option value="Sm³">Sm³</option>
+                      <option value="Nm³">Nm³</option>
                       <option value="Kg">Kg</option>
                       <option value="Liters">Liters</option>
                     </select>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Cost per Nm3: {formatNumber(unitPricePerNm3, 2)}</p>
+                  <p className="text-xs text-gray-500 mt-1">Cost per Nm³: {formatNumber(unitPricePerNm3, 2)}</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Rental (₹)</label>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Monthly Rental (₹)</label>
                   <input
                     type="number"
                     value={inputs.monthlyRentalCost || 0}
@@ -402,7 +422,7 @@ export default function PSAVsLiquid() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Purity (%)</label>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Purity (%)</label>
                   <select
                     value={inputs.purity ?? 95}
                     onChange={(e) => setInputs({...inputs, purity: Number(e.target.value)})}
@@ -417,7 +437,7 @@ export default function PSAVsLiquid() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Load Factor</label>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Load Factor</label>
                   <select
                     value={inputs.loadFactor ?? 0.9}
                     onChange={(e) => setInputs({...inputs, loadFactor: Number(e.target.value)})}
@@ -432,7 +452,7 @@ export default function PSAVsLiquid() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Power Cost (₹/kWh)</label>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Power Cost (₹/kWh)</label>
                   <input
                     type="number"
                     step="0.1"
@@ -445,7 +465,7 @@ export default function PSAVsLiquid() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Investment Cost (₹)</label>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Investment Cost (₹)</label>
                   <input
                     type="number"
                     value={inputs.investmentCost ?? ''}
@@ -457,7 +477,7 @@ export default function PSAVsLiquid() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Annual Maintenance (₹)</label>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Annual Maintenance (₹)</label>
                   <input
                     type="number"
                     value={inputs.annualMaintenanceCost ?? ''}
@@ -469,7 +489,7 @@ export default function PSAVsLiquid() {
                 </div>
 
                 <div className={`${(inputs.interestRate ?? 0) === 0 ? 'print-hidden' : ''}`}>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Interest Rate (%)</label>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Interest Rate (%)</label>
                   <select
                     value={inputs.interestRate ?? 0}
                     onChange={(e) => setInputs({...inputs, interestRate: Number(e.target.value)})}
@@ -484,7 +504,7 @@ export default function PSAVsLiquid() {
                 </div>
 
                 <div className={`${(inputs.depreciationRate ?? 0) === 0 ? 'print-hidden' : ''}`}>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Depreciation Rate (%)</label>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Depreciation Rate (%)</label>
                   <select
                     value={inputs.depreciationRate ?? 0}
                     onChange={(e) => setInputs({...inputs, depreciationRate: Number(e.target.value)})}
@@ -522,9 +542,9 @@ export default function PSAVsLiquid() {
       <div className="print-page space-y-8">
         <div className="avoid-break">
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-600 p-6 rounded-r-lg">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+            <h2 className="text-2xl text-gray-800 mb-4 flex items-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
               <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center mr-3">
-                <span className="text-white font-bold text-sm">2</span>
+                <span className="text-white text-sm" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>2</span>
               </div>
               Financial Summary & Investment Analysis
             </h2>
@@ -547,10 +567,10 @@ export default function PSAVsLiquid() {
         </div>
 
         <div className="avoid-break">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Visual Cost Comparison</h2>
+          <h2 className="text-2xl text-gray-800 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Visual Cost Comparison</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="bg-white p-6 rounded-lg shadow border">
-              <h3 className="font-semibold text-gray-900 mb-4 text-center">Monthly & Annual Cost Comparison</h3>
+              <h3 className="text-gray-900 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Monthly & Annual Cost Comparison</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -569,7 +589,7 @@ export default function PSAVsLiquid() {
               </ResponsiveContainer>
             </div>
             <div className="bg-white p-6 rounded-lg shadow border">
-              <h3 className="font-semibold text-gray-900 mb-4 text-center">Return on Investment (ROI)</h3>
+              <h3 className="text-gray-900 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Return on Investment (ROI)</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={roiData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -603,9 +623,9 @@ export default function PSAVsLiquid() {
       <div className="print-page space-y-8">
         <div className="avoid-break">
           <div className="bg-gradient-to-r from-slate-50 to-indigo-50 border-l-4 border-indigo-600 p-6 rounded-r-lg">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+            <h2 className="text-2xl text-gray-800 mb-4 flex items-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
               <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center mr-3">
-                <span className="text-white font-bold text-sm">3</span>
+                <span className="text-white text-sm" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>3</span>
               </div>
               Business Case & Recommendation
             </h2>
@@ -616,7 +636,7 @@ export default function PSAVsLiquid() {
               <p>
                 The calculated return on investment of <span className="font-semibold text-blue-700">{result.roiPercentage ? `${result.roiPercentage.toFixed(1)}%` : 'N/A'}</span>, with a payback period of just <span className="font-semibold text-blue-700">{result.paybackPeriodMonths ? `${result.paybackPeriodMonths.toFixed(1)} months` : 'N/A'}</span>, underscores the financial viability of this project. Beyond the numbers, on-site generation eliminates dependence on external suppliers, mitigates logistical risks, and reduces the carbon footprint associated with liquid gas deliveries.
               </p>
-              <p className="font-semibold">
+              <p className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
                 Recommendation: We strongly recommend proceeding with the implementation of the PSA generation system to realize immediate cost savings, improve operational efficiency, and achieve supply chain independence.
               </p>
             </div>
@@ -624,25 +644,25 @@ export default function PSAVsLiquid() {
         </div>
         <div className="bg-white rounded-lg shadow border overflow-hidden">
           <div className="bg-gray-50 px-6 py-4 border-b">
-            <h3 className="font-semibold text-gray-900">10-Year Cumulative Savings</h3>
+            <h3 className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>10-Year Cumulative Savings</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Year</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Current System Cost</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">PSA System Cost</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cumulative Savings</th>
+                  <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Year</th>
+                  <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Current System Cost</th>
+                  <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>PSA System Cost</th>
+                  <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Cumulative Savings</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {yearlyData.map((row, index) => (
                   <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{row.year}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{row.year}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatIndianCurrency(row['Current System Cost'])}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatIndianCurrency(row['PSA System Cost'])}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">{formatIndianCurrency(row['Cumulative Savings'])}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(row['Cumulative Savings'])}</td>
                   </tr>
                 ))}
               </tbody>

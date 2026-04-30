@@ -222,6 +222,22 @@ serve(async (req) => {
       )
     }
 
+    // ✅ Log the PDF download activity to the logs table
+    const { error: logError } = await supabase
+      .from("logs")
+      .insert({
+        user_id: user.id,
+        user_name: userName,
+        user_email: userEmail,
+        action: "pdf_download",
+        details: `User downloaded PDF for: ${tabName.trim()}`,
+      })
+
+    if (logError) {
+      // Don't fail the request — email already sent — just warn
+      console.error("Failed to insert log:", logError.message)
+    }
+
     return new Response(
       JSON.stringify({ success: true }),
       {
