@@ -16,8 +16,11 @@ export default function App() {
   const [isRecoveryMode, setIsRecoveryMode] = useState(false);
 
   useEffect(() => {
+    const path = window.location.pathname;
     const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-    if (hashParams.get('type') === 'recovery') {
+
+    // ✅ FIX: detect /reset-password path OR recovery hash type
+    if (path === '/reset-password' || hashParams.get('type') === 'recovery') {
       setIsRecoveryMode(true);
     }
 
@@ -46,13 +49,28 @@ export default function App() {
 
   const handleRecoveryExit = () => {
     setIsRecoveryMode(false);
+    // ✅ Clean up the URL after recovery is done
+    window.history.replaceState(null, '', '/');
   };
 
   const tabs = [
     { id: 'psa-vs-liquid', label: 'PSA Vs Liquid', icon: Database },
-    { id: 'psa-vs-cylinders', label: 'PSA Vs Cylinders', icon: Database },
+    { id: 'psa-vs-cylinders', label: 'PSA Vs Cylinders', icon: Settings },
     { id: 'psa-vs-any-psa', label: 'PSA vs Any PSA', icon: Settings }
   ];
+
+  // Show recovery screen if on /reset-password path (user not logged in yet)
+  if (isRecoveryMode) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex flex-col">
+        <SiteHeader />
+        <main className="flex-1">
+          <PasswordRecovery onCancel={handleRecoveryExit} />
+        </main>
+        <SiteFooter />
+      </div>
+    );
+  }
 
   if (!session) {
     return (
@@ -60,18 +78,6 @@ export default function App() {
         <SiteHeader />
         <main className="flex-1">
           <Login />
-        </main>
-        <SiteFooter />
-      </div>
-    );
-  }
-
-  if (isRecoveryMode) {
-    return (
-      <div className="min-h-screen bg-slate-100 flex flex-col">
-        <SiteHeader />
-        <main className="flex-1">
-          <PasswordRecovery onCancel={handleRecoveryExit} />
         </main>
         <SiteFooter />
       </div>
