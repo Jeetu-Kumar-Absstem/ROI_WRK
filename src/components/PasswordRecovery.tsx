@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../utils/supabaseClient';
 
@@ -12,8 +12,35 @@ export default function PasswordRecovery({ onCancel }: PasswordRecoveryProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash) {
+      setError('Invalid or expired recovery link. Please request a new one.');
+      return;
+    }
+
+    const params = new URLSearchParams(hash.substring(1));
+    const access_token = params.get('access_token');
+    const refresh_token = params.get('refresh_token');
+    const type = params.get('type');
+
+    if (type === 'recovery' && access_token && refresh_token) {
+      supabase.auth.setSession({ access_token, refresh_token }).then(({ error }) => {
+        if (error) {
+          setError('Recovery session expired. Please request a new reset link.');
+        } else {
+          setSessionReady(true);
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+      });
+    } else {
+      setError('Invalid recovery link. Please request a new one.');
+    }
+  }, []);
 
   const handlePasswordUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -59,6 +86,10 @@ export default function PasswordRecovery({ onCancel }: PasswordRecoveryProps) {
             Your recovery link has been verified. Create a new password to regain access to the ROI calculators.
           </p>
 
+          {!sessionReady && !error && (
+            <p className="mt-6 text-sm text-slate-500">Verifying your recovery link...</p>
+          )}
+
           {success && (
             <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
               {success}
@@ -88,7 +119,7 @@ export default function PasswordRecovery({ onCancel }: PasswordRecoveryProps) {
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword((current) => !current)}
+                  onClick={() => setShowPassword((c) => !c)}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                   className="absolute inset-y-0 right-0 flex items-center px-4 text-slate-500 transition hover:text-slate-700"
                 >
@@ -113,7 +144,7 @@ export default function PasswordRecovery({ onCancel }: PasswordRecoveryProps) {
                 />
                 <button
                   type="button"
-                  onClick={() => setShowConfirmPassword((current) => !current)}
+                  onClick={() => setShowConfirmPassword((c) => !c)}
                   aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                   className="absolute inset-y-0 right-0 flex items-center px-4 text-slate-500 transition hover:text-slate-700"
                 >
@@ -126,7 +157,7 @@ export default function PasswordRecovery({ onCancel }: PasswordRecoveryProps) {
               <button
                 type="submit"
                 className="flex-1 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={loading}
+                disabled={loading || !sessionReady}
               >
                 {loading ? 'Updating Password...' : 'Update Password'}
               </button>
