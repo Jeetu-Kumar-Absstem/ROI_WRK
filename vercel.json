@@ -1,7 +1,5 @@
 {
-  "name": "psa-vs-liquid-project"
-}
-{
+  "name": "psa-vs-liquid-project",
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }
   ]
