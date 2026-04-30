@@ -10,6 +10,24 @@ import SiteFooter from './components/SiteFooter';
 import Login from './components/Login';
 import PasswordRecovery from './components/PasswordRecovery';
 
+
+// Lufga font faces — place the .otf files in /public/fonts/
+const lufgaFontStyle = `
+  @font-face {
+    font-family: 'Lufga';
+    src: url('/fonts/Lufga-Regular.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Lufga';
+    src: url('/fonts/Lufga-SemiBold.otf') format('opentype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+  }
+`;
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [activeTab, setActiveTab] = useState('psa-vs-liquid');
@@ -85,7 +103,8 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+      <style>{lufgaFontStyle}</style>
       <SiteHeader />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
@@ -102,7 +121,7 @@ export default function App() {
                       activeTab === tab.id
                         ? 'border-blue-500 text-blue-600'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2`}
+                    } whitespace-nowrap py-4 px-1 border-b-2 text-sm flex items-center space-x-2`} style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}
                   >
                     <Icon className="h-4 w-4" />
                     <span>{tab.label}</span>
@@ -115,7 +134,7 @@ export default function App() {
               className="flex items-center space-x-2 text-gray-500 hover:text-gray-700 py-4 px-4 mr-2"
             >
               <LogOut className="h-4 w-4" />
-              <span className="text-sm font-medium">Sign Out</span>
+              <span className="text-sm" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Sign Out</span>
             </button>
           </div>
 
