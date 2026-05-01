@@ -84,12 +84,12 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ gasType, onGasTypeChange,
   const gasName = gasType.charAt(0).toUpperCase() + gasType.slice(1);
 
   return (
-    <div className="bg-blue-50 rounded-lg p-4 shadow-sm border border-blue-200">
-      <h3 className="text-xl font-semibold text-blue-800 mb-4">Absstem System Configuration</h3>
+    <div className="bg-blue-50 rounded-lg p-4 shadow-sm border border-blue-200" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+      <h3 className="text-xl text-blue-800 mb-4" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Absstem System Configuration</h3>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="gas-type-select" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="gas-type-select" className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
             Gas Type
           </label>
           <select
@@ -107,7 +107,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ gasType, onGasTypeChange,
           </select>
         </div>
         <div>
-          <label htmlFor="purity-select" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="purity-select" className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
             Required {gasName} Purity
           </label>
           <select
@@ -123,7 +123,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ gasType, onGasTypeChange,
         </div>
         
         <div>
-          <label htmlFor="flow-select" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="flow-select" className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
             Available {gasName} Flow (Nm³/hr)
           </label>
           <select
@@ -142,7 +142,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ gasType, onGasTypeChange,
           </select>
         </div>
         <div>
-          <label htmlFor="absstem-utilization" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="absstem-utilization" className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
             Utilization Factor
           </label>
           <select
@@ -163,7 +163,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ gasType, onGasTypeChange,
       
       {selectedModel && (
         <div className="mt-4">
-          <label htmlFor="compressor-select" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="compressor-select" className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
             Compressor Selection
           </label>
           <select
@@ -187,19 +187,19 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ gasType, onGasTypeChange,
       
       {selectedModel && selectedCompressor && (
         <div className="mt-6 border-t border-blue-100 pt-4">
-          <h4 className="font-medium text-blue-700 mb-3">Selected Model Specifications</h4>
+          <h4 className="text-blue-700 mb-3" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Selected Model Specifications</h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div className="bg-white p-3 rounded shadow-sm">
               <p className="text-gray-500">Available {gasName} Flow:</p>
-              <p className="font-medium">{selectedModel.Flow} Nm³/hr</p>
+              <p className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{selectedModel.Flow} Nm³/hr</p>
             </div>
             <div className="bg-white p-3 rounded shadow-sm">
               <p className="text-gray-500">Required Air Flow:</p>
-              <p className="font-medium">{selectedModel.AirRequirement} CFM</p>
+              <p className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{selectedModel.AirRequirement} CFM</p>
             </div>
             <div className="bg-white p-3 rounded shadow-sm">
               <p className="text-gray-500">Compressor Power:</p>
-              <p className="font-medium">{selectedCompressor.kw} kW</p>
+              <p className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{selectedCompressor.kw} kW</p>
             </div>
           </div>
         </div>
