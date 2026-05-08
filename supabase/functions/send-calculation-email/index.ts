@@ -180,35 +180,41 @@ serve(async (req) => {
     const safeUserCompany = escapeHtml(userCompany)
     const safeTabName = escapeHtml(tabName.trim())
 
-    const brevoRes = await fetch("https://api.brevo.com/v3/smtp/email", {
-      method: "POST",
-      headers: {
-        "api-key": BREVO_API_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        sender: {
-          email: BREVO_FROM_EMAIL,
+    let brevoRes = { ok: true }
+
+    const isCompanyUser = userEmail.toLowerCase().endsWith("@absstem.com")
+
+    if (!isCompanyUser) {
+      brevoRes = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: {
+          "api-key": BREVO_API_KEY,
+          "Content-Type": "application/json",
         },
-        to: [{ email: BREVO_TO_EMAIL }],
-        subject: `PDF Download Alert - ${safeTabName}`,
-        htmlContent: `
-          <h2>New PDF Download</h2>
-          <p><strong>Email:</strong> ${safeUserEmail}</p>
-          <p><strong>Name:</strong> ${safeUserName}</p>
-          <p><strong>Phone:</strong> ${safeUserPhone}</p>
-          <p><strong>Company:</strong> ${safeUserCompany}</p>
-          <p><strong>Calculation Type:</strong> ${safeTabName}</p>
-          <p>This user has downloaded the PDF.</p>
-        `,
-        attachment: [
-          {
-            content: parsedAttachment.base64Content,
-            name: "calculation.pdf",
+        body: JSON.stringify({
+          sender: {
+            email: BREVO_FROM_EMAIL,
           },
-        ],
-      }),
-    })
+          to: [{ email: BREVO_TO_EMAIL }],
+          subject: `PDF Download Alert - ${safeTabName}`,
+          htmlContent: `
+            <h2>New PDF Download</h2>
+            <p><strong>Email:</strong> ${safeUserEmail}</p>
+            <p><strong>Name:</strong> ${safeUserName}</p>
+            <p><strong>Phone:</strong> ${safeUserPhone}</p>
+            <p><strong>Company:</strong> ${safeUserCompany}</p>
+            <p><strong>Calculation Type:</strong> ${safeTabName}</p>
+            <p>This user has downloaded the PDF.</p>
+          `,
+          attachment: [
+            {
+              content: parsedAttachment.base64Content,
+              name: "calculation.pdf",
+            },
+          ],
+        }),
+      })
+    }
 
     if (!brevoRes.ok) {
       const err = await brevoRes.text()
