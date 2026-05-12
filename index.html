@@ -5,6 +5,25 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PSA Gas Comparison Tool - Built by Absstem</title>
+    <!-- Preload custom fonts to prevent layout shift -->
+    <link rel="preload" href="/fonts/Lufga-Regular.otf" as="font" type="font/otf" crossorigin>
+    <link rel="preload" href="/fonts/Lufga-SemiBold.otf" as="font" type="font/otf" crossorigin>
+    <style>
+      @font-face {
+        font-family: 'Lufga';
+        src: url('/fonts/Lufga-Regular.otf') format('opentype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: optional;
+      }
+      @font-face {
+        font-family: 'Lufga';
+        src: url('/fonts/Lufga-SemiBold.otf') format('opentype');
+        font-weight: 600;
+        font-style: normal;
+        font-display: optional;
+      }
+    </style>
     <meta name="description" content="Built by Absstem - Professional PSA gas system comparison tool for industrial applications with ROI analysis and cost optimization" />
     <meta property="og:title" content="PSA Gas Comparison Tool - Built by Absstem" />
     <meta property="og:description" content="Built by Absstem - Professional PSA gas system comparison tool for industrial applications with ROI analysis and cost optimization" />
