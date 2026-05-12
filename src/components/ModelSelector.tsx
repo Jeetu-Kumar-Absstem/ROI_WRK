@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FLOW_DATA, OXYGEN_FLOW_DATA, PURITIES, OXYGEN_PURITIES, COMPRESSOR_DATA, LOAD_FACTORS } from '../types/calculator.ts';
 import { NitrogenModel, FlowData, CompressorData } from './types.ts';
-import { formatLoadFactor } from '../utils/formatting';
 
 interface ModelSelectorProps {
   gasType: 'nitrogen' | 'oxygen';
@@ -156,7 +155,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ gasType, onGasTypeChange,
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-green-50"
           >
             {LOAD_FACTORS.map(factor => (
-              <option key={factor} value={factor}>{formatLoadFactor(factor)}</option>
+              <option key={factor} value={factor}>{factor}</option>
             ))}
           </select>
         </div>

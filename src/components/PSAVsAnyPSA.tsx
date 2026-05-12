@@ -9,7 +9,7 @@ import { OperationalParams as OperationalParamsType } from './types.ts';
 import { calculateResults } from './calculator';
 import { ReportLayout } from './ReportLayout.tsx';
 import DownloadPdfButton from './DownloadPdfButton';
-import { formatIndianCurrency, formatLoadFactor, formatNumber } from '../utils/formatting';
+import { formatIndianCurrency, formatNumber } from '../utils/formatting';
 
 // Lufga font faces — place the .otf files in /public/fonts/
 const lufgaFontStyle = `
@@ -144,7 +144,7 @@ function PSAVsAnyPSA() {
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Compressor KW:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatNumber(results.absstem.compressorKW)} kW</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Total Input Power:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatNumber(results.absstem.totalInputPower)} kW</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Specific Power:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatNumber(results.absstem.specificPower, 3)}</span></div>
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Utilization Factor:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatLoadFactor(results.absstem.utilizationFactor)}</span></div>
+          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Utilization Factor:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatNumber(results.absstem.utilizationFactor * 100)}%</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Annual Power Cost:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(results.absstem.annualPowerCost)}</span></div>
           <div className="border-t pt-3"><div className="flex justify-between items-center"><span className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>10 Year Cost:</span><span className="font-bold text-lg text-blue-600">{formatIndianCurrency(results.absstem.tenYearCost)}</span></div></div>
         </div>
@@ -156,7 +156,7 @@ function PSAVsAnyPSA() {
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Compressor KW:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatNumber(results.competition.compressorKW)} kW</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Total Input Power:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatNumber(results.competition.totalInputPower)} kW</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Specific Power:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatNumber(results.competition.specificPower, 3)}</span></div>
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Utilization Factor:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatLoadFactor(results.competition.utilizationFactor)}</span></div>
+          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Utilization Factor:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatNumber(results.competition.utilizationFactor * 100)}%</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Annual Power Cost:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(results.competition.annualPowerCost)}</span></div>
           <div className="border-t pt-3"><div className="flex justify-between items-center"><span className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>10 Year Cost:</span><span className="font-bold text-lg text-green-600">{formatIndianCurrency(results.competition.tenYearCost)}</span></div></div>
         </div>

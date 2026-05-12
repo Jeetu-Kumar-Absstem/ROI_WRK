@@ -2,55 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-.roi-calculator-app {
-  font-family: 'Lufga', sans-serif;
-  line-height: 1.5;
-  color: #0f172a;
-  isolation: isolate;
-}
-
-.roi-calculator-app,
-.roi-calculator-app * {
-  box-sizing: border-box;
-}
-
-.roi-calculator-app h1,
-.roi-calculator-app h2,
-.roi-calculator-app h3,
-.roi-calculator-app h4,
-.roi-calculator-app h5,
-.roi-calculator-app h6,
-.roi-calculator-app p {
-  margin: 0;
-}
-
-.roi-calculator-app button,
-.roi-calculator-app input,
-.roi-calculator-app select,
-.roi-calculator-app textarea {
-  font: inherit;
-  letter-spacing: inherit;
-  text-transform: none;
-}
-
-.roi-calculator-app input,
-.roi-calculator-app select,
-.roi-calculator-app textarea {
-  margin: 0;
-  min-height: 0;
-}
-
-.roi-calculator-app input[type='number']::-webkit-outer-spin-button,
-.roi-calculator-app input[type='number']::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.roi-calculator-app input[type='number'] {
-  appearance: textfield;
-  -moz-appearance: textfield;
-}
-
 @page {
   size: A4;
   margin: 12mm;
@@ -197,8 +148,8 @@
 
   /* Add top/bottom padding so content clears letterhead and footer in print */
   .report-content {
-    padding-top: 140px !important;
-    padding-bottom: 170px !important;
+    padding-top: 150px !important;
+    padding-bottom: 140px !important;
     background: transparent !important;
   }
 
@@ -243,8 +194,8 @@
 }
 
 .export-mode .report-content {
-  padding-top: 18px !important;
-  padding-bottom: 88px !important;
+  padding-top: 24px !important;
+  padding-bottom: 50px !important;
   background: #ffffff !important;
 }
 

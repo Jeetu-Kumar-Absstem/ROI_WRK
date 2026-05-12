@@ -1,13 +1,12 @@
 import { YearlyData } from './types';
 
 export function formatCurrency(amount: number): string {
-  const prefix = amount < 0 ? '-₹' : '₹';
-  const absoluteAmount = Math.abs(amount);
-
-  return `${prefix}${new Intl.NumberFormat('en-IN', {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
     maximumFractionDigits: 0,
     minimumFractionDigits: 0
-  }).format(absoluteAmount)}/-`;
+  }).format(amount);
 }
 
 export function calculateResults(data: any) {

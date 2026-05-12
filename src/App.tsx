@@ -5,7 +5,6 @@ import { Database, Settings, LogOut } from 'lucide-react';
 import PSAVsLiquid from './components/PSAVsLiquid';
 import PSAVsCylinders from './components/PSAVsCylinders';
 import PSAVsAnyPSA from './components/PSAVsAnyPSA';
-import PSAVsPSADeoxo from './components/PSAVsPSADeoxo';
 import SiteHeader from './components/SiteHeader';
 import SiteFooter from './components/SiteFooter';
 import Login from './components/Login';
@@ -75,14 +74,13 @@ export default function App() {
   const tabs = [
     { id: 'psa-vs-liquid', label: 'PSA Vs Liquid', icon: Database },
     { id: 'psa-vs-cylinders', label: 'PSA Vs Cylinders', icon: Settings },
-    { id: 'psa-vs-any-psa', label: 'PSA vs Any PSA', icon: Settings },
-    { id: 'psa-vs-psa-deoxo', label: 'PSA vs PSA + Deoxo', icon: Settings }
+    { id: 'psa-vs-any-psa', label: 'PSA vs Any PSA', icon: Settings }
   ];
 
   // Show recovery screen if on /reset-password path (user not logged in yet)
   if (isRecoveryMode) {
     return (
-      <div className="roi-calculator-app min-h-screen bg-slate-100 flex flex-col">
+      <div className="min-h-screen bg-slate-100 flex flex-col">
         <SiteHeader />
         <main className="flex-1">
           <PasswordRecovery onCancel={handleRecoveryExit} />
@@ -94,17 +92,20 @@ export default function App() {
 
   if (!session) {
     return (
-      <div className="roi-calculator-app min-h-screen bg-slate-100 flex flex-col">
+      <div className="min-h-screen bg-slate-100 flex flex-col">
+        <SiteHeader />
         <main className="flex-1">
           <Login />
         </main>
+        <SiteFooter />
       </div>
     );
   }
 
   return (
-    <div className="roi-calculator-app min-h-screen bg-gray-50 flex flex-col" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+    <div className="min-h-screen bg-gray-50 flex flex-col" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
       <style>{lufgaFontStyle}</style>
+      <SiteHeader />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
         <div className="bg-white rounded-lg shadow">
@@ -141,10 +142,10 @@ export default function App() {
             {activeTab === 'psa-vs-liquid' && <PSAVsLiquid />}
             {activeTab === 'psa-vs-cylinders' && <PSAVsCylinders />}
             {activeTab === 'psa-vs-any-psa' && <PSAVsAnyPSA />}
-            {activeTab === 'psa-vs-psa-deoxo' && <PSAVsPSADeoxo />}
           </div>
         </div>
       </div>
+      <SiteFooter />
     </div>
   );
 }

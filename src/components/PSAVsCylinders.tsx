@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { Database, Zap, IndianRupee } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
+import { Database, Zap, DollarSign } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, Legend, ReferenceLine, LabelList } from 'recharts';
 import { CylinderInputs, CylinderResult, GAS_TYPES, CYLINDER_VOLUMES, LOAD_FACTORS, PURITIES, OXYGEN_PURITIES, INTEREST_RATES, DEPRECIATION_RATES } from '../types/calculator';
 import { calculateCylinderRoi } from '../utils/cylinderCalculations';
 import { findMatchingFlow, findMatchingCompressor } from '../utils/flowMatching';
 import { InputField } from './InputField';
-import { formatIndianCurrency, formatLoadFactor } from '../utils/formatting';
+import { formatIndianCurrency } from '../utils/formatting';
 import { ReportLayout } from './ReportLayout';
 import DownloadPdfButton from './DownloadPdfButton';
 
@@ -55,7 +55,14 @@ export default function PSAVsCylinders() {
   const reportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setResults(calculateCylinderRoi(inputs));
+    const cylinderVolume = inputs.cylinderVolume === 'other' ? (inputs.cylinderVolumeCustom || 0) : Number(inputs.cylinderVolume);
+    const perHourConsumption = cylinderVolume > 0 && inputs.plantRunningHours > 0 ? (inputs.cylindersPerDay * cylinderVolume) / inputs.plantRunningHours : 0;
+    const utilizationFactor = inputs.psaPlantFlow > 0 ? perHourConsumption / inputs.psaPlantFlow : 0;
+    const tempInputs: CylinderInputs = { ...inputs, loadFactor: utilizationFactor };
+    const calculatedResults = calculateCylinderRoi(tempInputs);
+    const annualPowerCost = (calculatedResults.power * inputs.powerCostPerUnit * inputs.plantRunningHours * inputs.plantRunningDays * 12) * inputs.loadFactor;
+    const adjustedTotalRunningCostPSA = annualPowerCost + calculatedResults.psaOperatorCostYear + (inputs.annualMaintenanceCost ?? 0) + (calculatedResults.annualInterest ?? 0) - (calculatedResults.annualDepreciation ?? 0);
+    setResults({ ...calculatedResults, totalRunningCostPSA: adjustedTotalRunningCostPSA, annualPowerCost: annualPowerCost });
   }, [inputs]);
 
   useEffect(() => {
@@ -103,21 +110,27 @@ export default function PSAVsCylinders() {
     { name: 'PSA System', 'Monthly Cost': results.totalRunningCostPSA / 12, 'Annual Cost': results.totalRunningCostPSA }
   ] : [];
 
-  const monthlyComparisonData = results ? [
-    { name: 'Cylinder System', value: results.totalRunningCostCylinder / 12 },
-    { name: 'PSA System', value: results.totalRunningCostPSA / 12 }
-  ] : [];
-
-  const annualComparisonData = results ? [
-    { name: 'Cylinder System', value: results.totalRunningCostCylinder },
-    { name: 'PSA System', value: results.totalRunningCostPSA }
-  ] : [];
-
-  const monthlySavings = results ? results.annualSavings / 12 : 0;
-
   // Helpers for print charts
   const formatAxisINRShort = (value: number) => `₹${(Number(value) / 100000).toFixed(1)}L`;
+  const CurrencyBarLabel = (props: any) => {
+    const { x, y, value } = props;
+    if (value == null) return null;
+    return (
+      <text x={x} y={y} dy={-6} fill="#111827" fontSize={12} textAnchor="middle">
+        {formatIndianCurrency(Number(value))}
+      </text>
+    );
+  };
+
   // Domains for print charts
+  const monthlyMax = Math.max(
+    chartData[0]?.['Monthly Cost'] || 0,
+    chartData[1]?.['Monthly Cost'] || 0
+  );
+  const annualMax = Math.max(
+    chartData[0]?.['Annual Cost'] || 0,
+    chartData[1]?.['Annual Cost'] || 0
+  );
   const roiMin = Math.min(...roiData.map(d => d.cumulativeCashFlow));
   const roiMax = Math.max(...roiData.map(d => d.cumulativeCashFlow));
   const roiRange = Math.max(roiMax - roiMin, 1);
@@ -147,7 +160,7 @@ export default function PSAVsCylinders() {
   const costComparisonContent = (
     <div className="grid md:grid-cols-2 gap-6">
       <div className="bg-gradient-to-br from-red-50 to-orange-100 p-6 rounded-lg border">
-        <div className="flex items-center space-x-2 mb-4"><IndianRupee className="h-5 w-5 text-red-600" /><h3 className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Cylinder System Costs</h3></div>
+        <div className="flex items-center space-x-2 mb-4"><DollarSign className="h-5 w-5 text-red-600" /><h3 className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Cylinder System Costs</h3></div>
         <div className="space-y-3">
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Gas Cost per m³:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>₹{(results.unitPricePerM3 ?? 0).toFixed(2)}</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Monthly Expense:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(results.monthlyExpenseCylinder)}</span></div>
@@ -162,7 +175,7 @@ export default function PSAVsCylinders() {
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Gas Cost per m³:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>₹{(results.unitPricePSA ?? 0).toFixed(2)}</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Power Consumption:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{results.power.toFixed(2)} kW</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Operator Cost (Annual):</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(results.psaOperatorCostYear)}</span></div>
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Utilization Factor:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatLoadFactor(results.utilizationFactor)}</span></div>
+          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Utilization Factor:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{results.utilizationFactor.toFixed(2)}</span></div>
           {(results.annualInterest ?? 0) > 0 && (<div className="flex justify-between items-center"><span className="text-sm text-gray-600">Annual Interest:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(results.annualInterest ?? 0)}</span></div>)}
           {(results.annualDepreciation ?? 0) > 0 && (<div className="flex justify-between items-center"><span className="text-sm text-gray-600">Annual Depreciation (Tax Shield):</span><span className="text-green-600" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>-{formatIndianCurrency(results.annualDepreciation ?? 0)}</span></div>)}
           <div className="border-t pt-3"><div className="flex justify-between items-center"><span className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Total Annual Cost:</span><span className="font-bold text-lg text-blue-600">{formatIndianCurrency(results.totalRunningCostPSA)}</span></div></div>
@@ -270,7 +283,7 @@ export default function PSAVsCylinders() {
                 <div>
                   <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Load Factor</label>
                   <select value={inputs.loadFactor} onChange={(e) => updateInput('loadFactor', Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Load Factor">
-                    {LOAD_FACTORS.map(factor => (<option key={factor} value={factor}>{formatLoadFactor(factor)}</option>))}
+                    {LOAD_FACTORS.map(factor => (<option key={factor} value={factor}>{factor}</option>))}
                   </select>
                 </div>
                 <InputField label="Cylinder Cost" value={inputs.cylinderCost} onChange={(value) => updateInput('cylinderCost', value)} unit="₹/m³" />
@@ -310,48 +323,40 @@ export default function PSAVsCylinders() {
         <>
           <div className="print-page space-y-8">
             <div className="avoid-break">
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-600 p-5 rounded-r-lg">
-                <h2 className="text-xl text-gray-800 mb-3 flex items-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}><div className="w-7 h-7 bg-green-600 rounded-full flex items-center justify-center mr-3"><span className="text-white text-xs" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>2</span></div>Financial Summary & Investment Analysis</h2>
-                <div className="grid md:grid-cols-3 gap-4 text-center">
-                  <div className="bg-white p-4 rounded-lg border border-green-200 shadow-sm"><div className="text-3xl font-bold text-green-600 mb-2">{formatIndianCurrency(monthlySavings)}</div><div className="text-sm font-medium text-green-800">Estimated Monthly Savings</div></div>
-                  <div className="bg-white p-4 rounded-lg border border-blue-200 shadow-sm"><div className="text-3xl font-bold text-blue-600 mb-2">{formatIndianCurrency(results.annualSavings)}</div><div className="text-sm font-medium text-blue-800">Estimated Annual Savings</div></div>
-                  <div className="bg-white p-4 rounded-lg border border-purple-200 shadow-sm flex flex-col justify-center min-h-[112px]"><div className="text-3xl font-bold text-purple-600 mb-2 leading-tight break-words">Immediate/N/A</div><div className="text-sm font-medium text-purple-800">Return on Investment</div><div className="text-sm font-medium text-purple-800">(Payback)</div></div>
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-600 p-6 rounded-r-lg">
+                <h2 className="text-2xl text-gray-800 mb-4 flex items-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}><div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center mr-3"><span className="text-white text-sm" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>2</span></div>Financial Summary & Investment Analysis</h2>
+                <div className="grid md:grid-cols-3 gap-6 text-center">
+                  <div className="bg-white p-6 rounded-lg border border-green-200 shadow-sm"><div className="text-4xl font-bold text-green-600 mb-2">{formatIndianCurrency(results.monthlySavingsPSA)}</div><div className="text-sm font-medium text-green-800">Estimated Monthly Savings</div></div>
+                  <div className="bg-white p-6 rounded-lg border border-blue-200 shadow-sm"><div className="text-4xl font-bold text-blue-600 mb-2">{formatIndianCurrency(results.annualSavings)}</div><div className="text-sm font-medium text-blue-800">Estimated Annual Savings</div></div>
+                  <div className="bg-white p-6 rounded-lg border border-purple-200 shadow-sm"><div className="text-4xl font-bold text-purple-600 mb-2">{results.roiPercentage?.toFixed(1)}%</div><div className="text-sm font-medium text-purple-800">Return on Investment (ROI)</div><div className="text-xs text-gray-500 mt-1">Payback in {results.paybackPeriodMonths?.toFixed(1)} months</div></div>
                 </div>
               </div>
             </div>
             <div className="avoid-break">
-              <h2 className="text-xl text-gray-800 mb-3 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Visual Cost Comparison</h2>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                <div className="bg-white p-4 rounded-lg shadow border">
-                  <h3 className="text-gray-900 mb-3 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Monthly Cost Comparison</h3>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={monthlyComparisonData} margin={{ top: 12, right: 20, left: 12, bottom: 10 }}>
+              <h2 className="text-2xl text-gray-800 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Visual Cost Comparison</h2>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="bg-white p-6 rounded-lg shadow border">
+                  <h3 className="text-gray-900 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Monthly & Annual Cost Comparison</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
-                  <YAxis tickFormatter={(value) => formatAxisINRShort(Number(value))} />
+                  <YAxis yAxisId="left" orientation="left" tickFormatter={(value) => formatAxisINRShort(Number(value))} domain={[0, monthlyMax * 1.2]} />
+                  <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => formatAxisINRShort(Number(value))} domain={[0, annualMax * 1.2]} />
                   <Tooltip formatter={(value) => formatIndianCurrency(Number(value))} />
-                  <Bar dataKey="value" fill="#3b82f6" name="Monthly Cost" isAnimationActive={false} />
+                  <Legend />
+                  <Bar yAxisId="left" dataKey="Monthly Cost" fill="#3b82f6" name="Monthly Cost" isAnimationActive={false}>
+                    <LabelList position="top" content={CurrencyBarLabel} />
+                  </Bar>
+                  <Bar yAxisId="right" dataKey="Annual Cost" fill="#10b981" name="Annual Cost" isAnimationActive={false}>
+                    <LabelList position="top" content={CurrencyBarLabel} />
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
                 </div>
-                <div className="bg-white p-4 rounded-lg shadow border">
-                  <h3 className="text-gray-900 mb-3 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Annual Cost Comparison</h3>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={annualComparisonData} margin={{ top: 12, right: 20, left: 12, bottom: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis tickFormatter={(value) => formatAxisINRShort(Number(value))} />
-                  <Tooltip formatter={(value) => formatIndianCurrency(Number(value))} />
-                  <Bar dataKey="value" fill="#10b981" name="Annual Cost" isAnimationActive={false} />
-                </BarChart>
-              </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-            <div className="avoid-break">
-              <div className="bg-white p-4 rounded-lg shadow border">
-                <h3 className="text-gray-900 mb-3 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Return on Investment (ROI)</h3>
-              <ResponsiveContainer width="100%" height={230}>
+                <div className="bg-white p-6 rounded-lg shadow border">
+                  <h3 className="text-gray-900 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Return on Investment (ROI)</h3>
+              <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={roiData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="year" />
@@ -375,6 +380,7 @@ export default function PSAVsCylinders() {
                   />
                 </LineChart>
               </ResponsiveContainer>
+                </div>
               </div>
             </div>
           </div>
@@ -383,8 +389,8 @@ export default function PSAVsCylinders() {
               <div className="bg-gradient-to-r from-slate-50 to-indigo-50 border-l-4 border-indigo-600 p-6 rounded-r-lg">
                 <h2 className="text-2xl text-gray-800 mb-4 flex items-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}><div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center mr-3"><span className="text-white text-sm" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>3</span></div>Business Case & Recommendation</h2>
                 <div className="space-y-4 text-gray-700 leading-relaxed text-justify">
-                  <p>Transitioning from cylinder supply to an on-site PSA plant presents a compelling financial and operational advantage. With projected monthly savings of <span className="font-semibold text-green-700">{formatIndianCurrency(monthlySavings)}</span> and annual savings of <span className="font-semibold text-green-700">{formatIndianCurrency(results.annualSavings)}</span>, the initial investment is quickly recovered, leading to significant long-term cost reduction.</p>
-                  <p>Beyond the direct cost savings, on-site generation strengthens financial viability by eliminating dependence on external suppliers, mitigating logistical risks, and reducing the carbon footprint associated with cylinder deliveries.</p>
+                  <p>Transitioning from cylinder supply to an on-site PSA plant presents a compelling financial and operational advantage. With projected monthly savings of <span className="font-semibold text-green-700">{formatIndianCurrency(results.monthlySavingsPSA)}</span> and annual savings of <span className="font-semibold text-green-700">{formatIndianCurrency(results.annualSavings)}</span>, the initial investment is quickly recovered, leading to significant long-term cost reduction.</p>
+                  <p>The calculated return on investment of <span className="font-semibold text-blue-700">{results.roiPercentage ? `${results.roiPercentage.toFixed(1)}%` : 'N/A'}</span>, with a payback period of just <span className="font-semibold text-blue-700">{results.paybackPeriodMonths ? `${results.paybackPeriodMonths.toFixed(1)} months` : 'N/A'}</span>, underscores the financial viability of this project. Beyond the numbers, on-site generation eliminates dependence on external suppliers, mitigates logistical risks, and reduces the carbon footprint associated with cylinder deliveries.</p>
                   <p className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Recommendation: We strongly recommend proceeding with the implementation of the PSA generation system to realize immediate cost savings, improve operational efficiency, and achieve supply chain independence.</p>
                 </div>
               </div>

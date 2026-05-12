@@ -1,11 +1,10 @@
-export const formatIndianCurrency = (amount: number): string => {
-  const prefix = amount < 0 ? '-₹' : '₹';
-  const absoluteAmount = Math.abs(amount);
-
-  return `${prefix}${new Intl.NumberFormat('en-IN', {
+export  const formatIndianCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
     minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(absoluteAmount)}/-`;
+    maximumFractionDigits: 0
+  }).format(amount);
 };
 
 export const formatNumber = (num: number, decimals: number = 2): string => {
@@ -14,8 +13,6 @@ export const formatNumber = (num: number, decimals: number = 2): string => {
     maximumFractionDigits: decimals
   }).format(num);
 };
-
-export const formatLoadFactor = (value: number): string => formatNumber(value, 2);
  
 export const getISTDateTimeForFilename = (): string => {
   const now = new Date();

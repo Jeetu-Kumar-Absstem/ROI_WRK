@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { LOAD_FACTORS } from '../types/calculator';
-import { formatLoadFactor } from '../utils/formatting';
 
 interface CompetitionInputProps {
   gasType: 'nitrogen' | 'oxygen';
@@ -128,7 +127,7 @@ const CompetitionInput: React.FC<CompetitionInputProps> = ({ gasType, onCompetit
             className="input-field highlighted"
           >
             {LOAD_FACTORS.map(factor => (
-              <option key={factor} value={factor}>{formatLoadFactor(factor)}</option>
+              <option key={factor} value={factor}>{factor}</option>
             ))}
           </select></div>
 

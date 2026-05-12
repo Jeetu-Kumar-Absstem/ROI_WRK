@@ -1,14 +1,10 @@
 const normalizeVolumeUnit = (unit: string): string => {
   switch (unit) {
-    case 'Sm3':
     case 'Sm³':
     case 'SmÂ³':
-    case 'SmÃ‚Â³':
       return 'Sm3';
-    case 'Nm3':
     case 'Nm³':
     case 'NmÂ³':
-    case 'NmÃ‚Â³':
       return 'Nm3';
     default:
       return unit;
@@ -26,7 +22,7 @@ export const getLiquidToGasConversionFactor = (unit: string, gasType: 'nitrogen'
       case 'Kg': return 0.8;
       default: return 1;
     }
-  } else {
+  } else { // oxygen
     switch (normalizedUnit) {
       case 'Sm3': return 0.9478;
       case 'Nm3': return 1;
@@ -48,7 +44,7 @@ export const convertToNm3 = (cost: number, unit: string, gasType: 'nitrogen' | '
       case 'Kg': return cost / 0.8;
       default: return cost;
     }
-  } else {
+  } else { // oxygen
     switch (normalizedUnit) {
       case 'Sm3': return cost * 1.055;
       case 'Nm3': return cost;
@@ -58,3 +54,4 @@ export const convertToNm3 = (cost: number, unit: string, gasType: 'nitrogen' | '
     }
   }
 };
+ 
