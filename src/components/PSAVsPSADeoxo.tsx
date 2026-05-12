@@ -14,22 +14,7 @@ import {
   calculateDeoxoComparisonResults,
 } from '../utils/deoxoCalculations';
 
-const lufgaFontStyle = `
-  @font-face {
-    font-family: 'Lufga';
-    src: url('/fonts/Lufga-Regular.otf') format('opentype');
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-  }
-  @font-face {
-    font-family: 'Lufga';
-    src: url('/fonts/Lufga-SemiBold.otf') format('opentype');
-    font-weight: 600;
-    font-style: normal;
-    font-display: swap;
-  }
-`;
+
 
 interface SystemConfigurationCardProps {
   title: string;
@@ -114,8 +99,8 @@ function MetricBox({
 }) {
   return (
     <div className="rounded-xl bg-white p-4 shadow-sm border border-slate-100">
-      <div className="text-sm text-gray-500 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{label}</div>
-      <div className={`${valueClassName} text-gray-900`} style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>{value}</div>
+      <div className="text-sm text-gray-500 mb-2">{label}</div>
+      <div className={`${valueClassName} text-gray-900 font-semibold`}>{value}</div>
     </div>
   );
 }
@@ -137,23 +122,23 @@ function CumulativeCostTooltip({
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-lg">
-      <div className="text-sm text-slate-500 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+      <div className="text-sm text-slate-500 mb-2">
         Year {label}
       </div>
       <div className="space-y-1 text-sm">
         {payload.map((entry) => (
           <div key={entry.name} className="flex items-center justify-between gap-4">
-            <span style={{ color: entry.color, fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{entry.name}</span>
-            <span className="text-slate-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+            <span style={{ color: entry.color }}>{entry.name}</span>
+            <span className="text-slate-900 font-semibold">
               {formatIndianCurrency(Number(entry.value ?? 0))}
             </span>
           </div>
         ))}
         <div className="mt-2 border-t border-slate-200 pt-2 flex items-center justify-between gap-4">
-          <span className="text-emerald-700" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+          <span className="text-emerald-700">
             Cumulative Savings
           </span>
-          <span className="text-emerald-700" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+          <span className="text-emerald-700 font-semibold">
             {formatIndianCurrency(Number(pointData?.savings ?? 0))}
           </span>
         </div>
@@ -181,18 +166,18 @@ function SystemCostCard({
 }) {
   return (
     <div className={`rounded-2xl border bg-white shadow-sm ${compact ? 'p-5' : 'p-6'} ${accentClassName}`}>
-      <h3 className={`${compact ? 'text-xl mb-4' : 'text-2xl mb-5'} ${titleClassName}`} style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>{title}</h3>
+      <h3 className={`font-semibold ${compact ? 'text-xl mb-4' : 'text-2xl mb-5'} ${titleClassName}`}>{title}</h3>
       <div className={compact ? 'space-y-2.5' : 'space-y-3'}>
         {rows.map((row) => (
           <div key={row.label} className="flex items-start justify-between gap-4">
-            <span className={`text-gray-600 ${compact ? 'text-sm' : ''}`} style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{row.label}</span>
-            <span className={`text-right text-gray-900 ${compact ? 'text-sm' : ''}`} style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{row.value}</span>
+            <span className={`text-gray-600 ${compact ? 'text-sm' : ''}`}>{row.label}</span>
+            <span className={`text-right text-gray-900 ${compact ? 'text-sm' : ''}`}>{row.value}</span>
           </div>
         ))}
       </div>
       <div className={`${compact ? 'mt-4 pt-3' : 'mt-5 pt-4'} border-t border-slate-200 flex items-start justify-between gap-4`}>
-        <span className={`${compact ? 'text-base' : 'text-lg'} ${titleClassName}`} style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>{footerLabel}</span>
-        <span className={`${compact ? 'text-xl' : 'text-2xl'} ${titleClassName}`} style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>{footerValue}</span>
+        <span className={`font-semibold ${compact ? 'text-base' : 'text-lg'} ${titleClassName}`}>{footerLabel}</span>
+        <span className={`font-semibold ${compact ? 'text-xl' : 'text-2xl'} ${titleClassName}`}>{footerValue}</span>
       </div>
     </div>
   );
@@ -221,10 +206,10 @@ function SystemConfigurationCard({
 
   return (
     <div className={`rounded-2xl border p-5 shadow-sm bg-slate-50 ${borderClassName}`}>
-      <h2 className={`text-2xl mb-5 ${titleClassName}`} style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>{title}</h2>
+      <h2 className={`text-2xl font-semibold mb-5 ${titleClassName}`}>{title}</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm text-gray-700 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+          <label className="block text-sm text-gray-700 mb-2">
             Gas Type
           </label>
           <select value="nitrogen" disabled className="w-full rounded-xl border border-slate-200 bg-green-50 px-4 py-3 text-gray-900">
@@ -232,7 +217,7 @@ function SystemConfigurationCard({
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-700 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+          <label className="block text-sm text-gray-700 mb-2">
             Required Nitrogen Purity
           </label>
           <select
@@ -254,7 +239,7 @@ function SystemConfigurationCard({
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-700 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+          <label className="block text-sm text-gray-700 mb-2">
             Available Nitrogen Flow (Nm<sup>3</sup>/hr)
           </label>
           <select
@@ -271,7 +256,7 @@ function SystemConfigurationCard({
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-700 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+          <label className="block text-sm text-gray-700 mb-2">
             Utilization Factor
           </label>
           <select
@@ -290,7 +275,7 @@ function SystemConfigurationCard({
 
       {selectedModel && (
         <div className="mt-4">
-          <label className="block text-sm text-gray-700 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+          <label className="block text-sm text-gray-700 mb-2">
             Compressor Selection
           </label>
           <select
@@ -309,7 +294,7 @@ function SystemConfigurationCard({
 
       {selectedModel && selectedCompressor && title === 'Absstem PSA + Deoxo Configuration' && (
         <div className="mt-6 border-t border-slate-200 pt-5">
-          <h3 className={`text-xl mb-3 ${titleClassName}`} style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Selected PSA Model Specifications</h3>
+          <h3 className={`text-xl font-semibold mb-3 ${titleClassName}`}>Selected PSA Model Specifications</h3>
           <div className={`grid grid-cols-1 ${chosenPsaAnnualPowerCost !== undefined && chosenPsaAnnualPowerCost !== null ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-3`}>
             <MetricBox label={<>Available Nitrogen Flow</>} value={<>{selectedModel.Flow} Nm³/hr</>} />
             <MetricBox label={<>Required Air Flow</>} value={<>{selectedModel.AirRequirement} CFM</>} />
@@ -328,8 +313,8 @@ function SystemConfigurationCard({
       {extraContent}
 
       <div className="mt-5 border-t border-slate-200 pt-5">
-        <h3 className={`text-xl mb-3 ${titleClassName}`} style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>System Data</h3>
-        <label className="block text-sm text-gray-700 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+        <h3 className={`text-xl font-semibold mb-3 ${titleClassName}`}>System Data</h3>
+        <label className="block text-sm text-gray-700 mb-2">
           Plant Cost (₹)
         </label>
         <input
@@ -343,7 +328,7 @@ function SystemConfigurationCard({
 
       {selectedModel && selectedCompressor && title !== 'Absstem PSA + Deoxo Configuration' && (
         <div className="mt-6 border-t border-slate-200 pt-5">
-          <h3 className={`text-xl mb-3 ${titleClassName}`} style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Selected PSA Model Specifications</h3>
+          <h3 className={`text-xl font-semibold mb-3 ${titleClassName}`}>Selected PSA Model Specifications</h3>
           <div className={`grid grid-cols-1 ${chosenPsaAnnualPowerCost !== undefined && chosenPsaAnnualPowerCost !== null ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-3`}>
             <MetricBox label={<>Available Nitrogen Flow</>} value={<>{selectedModel.Flow} Nm³/hr</>} />
             <MetricBox label={<>Required Air Flow</>} value={<>{selectedModel.AirRequirement} CFM</>} />
@@ -555,13 +540,13 @@ function PSAVsPSADeoxo() {
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex items-center gap-3 mb-5">
         <Calculator className="h-6 w-6 text-blue-600" />
-        <h2 className="text-2xl text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Input Parameters</h2>
+        <h2 className="text-2xl font-semibold text-gray-900">Input Parameters</h2>
       </div>
       <div className="rounded-2xl bg-slate-50 p-5">
-        <h3 className="text-xl text-gray-900 mb-4" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Operational Parameters</h3>
+        <h3 className="text-xl font-semibold text-gray-900 mb-4">Operational Parameters</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           <div>
-            <label className="block text-sm text-gray-700 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+            <label className="block text-sm text-gray-700 mb-2">
               Required Flow (Nm<sup>3</sup>/hr)
             </label>
             <input
@@ -573,7 +558,7 @@ function PSAVsPSADeoxo() {
             />
           </div>
           <div>
-            <label className="block text-sm text-gray-700 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+            <label className="block text-sm text-gray-700 mb-2">
               Power Cost (₹/kWh)
             </label>
             <input
@@ -586,7 +571,7 @@ function PSAVsPSADeoxo() {
             />
           </div>
           <div>
-            <label className="block text-sm text-gray-700 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+            <label className="block text-sm text-gray-700 mb-2">
               Annual Operating Hours
             </label>
             <input
@@ -645,12 +630,12 @@ function PSAVsPSADeoxo() {
           chosenPsaAnnualPowerCost={results?.deoxo.annualPowerCost ?? null}
           extraContent={
             <div className="mt-5 space-y-4 border-t border-slate-200 pt-5">
-              <h3 className="text-xl text-emerald-800" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+              <h3 className="text-xl font-semibold text-emerald-800">
                 Deoxo Data
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-gray-700 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+                  <label className="block text-sm text-gray-700 mb-2">
                     Required  Nitrogen Purity
                   </label>
                   <select
@@ -667,7 +652,7 @@ function PSAVsPSADeoxo() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-700 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+                  <label className="block text-sm text-gray-700 mb-2">
                     Hydrogen / Ammonia
                   </label>
                   <select
@@ -680,7 +665,7 @@ function PSAVsPSADeoxo() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-700 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+                  <label className="block text-sm text-gray-700 mb-2">
                     {reagentType === 'hydrogen' ? 'Hydrogen Cost (₹/m³)' : 'Ammonia Cost (₹/kg)'}
                   </label>
                   <input
@@ -693,7 +678,7 @@ function PSAVsPSADeoxo() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-700 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+                  <label className="block text-sm text-gray-700 mb-2">
                     Water Cost (₹/m<sup>3</sup>)
                   </label>
                   <input
@@ -706,7 +691,7 @@ function PSAVsPSADeoxo() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-700 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+                  <label className="block text-sm text-gray-700 mb-2">
                     Deoxo Flow (Nm<sup>3</sup>/hr)
                   </label>
                   <select
@@ -808,7 +793,7 @@ function PSAVsPSADeoxo() {
           </div>
 
           <div className="rounded-2xl border border-emerald-100 bg-gradient-to-r from-emerald-50 to-lime-50 p-6 shadow-sm">
-            <h3 className="text-2xl text-emerald-800 mb-5" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Savings Analysis</h3>
+            <h3 className="text-2xl font-semibold text-emerald-800 mb-5">Savings Analysis</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <MetricBox label="Annual Operating Cost Savings" value={formatIndianCurrency(results.comparison.annualSavings)} />
               <MetricBox label="Total 10-Year Lifecycle Savings" value={formatIndianCurrency(results.comparison.totalSavings)} />
@@ -821,7 +806,7 @@ function PSAVsPSADeoxo() {
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h3 className="text-2xl text-gray-900 mb-5" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-5">
                 10-Year Cumulative Cost Projection
               </h3>
               <div className="h-[420px]">
@@ -840,7 +825,7 @@ function PSAVsPSADeoxo() {
             </div>
 
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h3 className="text-2xl text-gray-900 mb-5" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-5">
                 Total Input Power Comparison (kW)
               </h3>
               <div className="h-[420px]">
@@ -883,23 +868,23 @@ function PSAVsPSADeoxo() {
 
   const reportInputParameters = (
     <div className="bg-white p-6 rounded-lg shadow border">
-      <h3 className="text-gray-900 mb-4" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Input Parameters</h3>
+      <h3 className="text-gray-900 font-semibold mb-4">Input Parameters</h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
         <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
           <div className="text-gray-500 mb-2">Required Flow (Nm<sup>3</sup>/hr)</div>
-          <div className="text-lg text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+          <div className="text-lg font-semibold text-gray-900">
             {formatNumber(operationalParams.flowRequired, 0)}
           </div>
         </div>
         <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
           <div className="text-gray-500 mb-2">Power Cost (Rs/kWh)</div>
-          <div className="text-lg text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+          <div className="text-lg font-semibold text-gray-900">
             {formatNumber(operationalParams.powerCostPerUnit, 2)}
           </div>
         </div>
         <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
           <div className="text-gray-500 mb-2">Annual Operating Hours</div>
-          <div className="text-lg text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+          <div className="text-lg font-semibold text-gray-900">
             {formatNumber(operationalParams.totalRunningHours, 0)}
           </div>
         </div>
@@ -953,8 +938,7 @@ function PSAVsPSADeoxo() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
-      <style>{lufgaFontStyle}</style>
+    <div className="min-h-screen bg-gray-50 w-full">
       <div className="flex justify-end pb-6 print:hidden">
         <DownloadPdfButton
           contentToPrint={reportRef}
@@ -1006,27 +990,27 @@ function PSAVsPSADeoxo() {
           {results && (
             <>
               <div className="avoid-break bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-600 p-6 rounded-r-lg">
-                <h2 className="text-2xl text-gray-800 mb-4 flex items-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+                <h2 className="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
                   <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center mr-3">
-                    <span className="text-white text-sm" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>2</span>
+                    <span className="text-white text-sm font-semibold">2</span>
                   </div>
                   Savings Analysis
                 </h2>
                 <div className="grid md:grid-cols-3 gap-4 text-center">
                   <div className="bg-white p-4 rounded-lg border border-green-200 shadow-sm">
-                    <div className="text-3xl text-green-600 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+                    <div className="text-3xl font-semibold text-green-600 mb-2">
                       {formatIndianCurrency(results.comparison.annualSavings)}
                     </div>
                     <div className="text-sm text-green-800">Annual Operating Cost Savings</div>
                   </div>
                   <div className="bg-white p-4 rounded-lg border border-blue-200 shadow-sm">
-                    <div className="text-3xl text-blue-600 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+                    <div className="text-3xl font-semibold text-blue-600 mb-2">
                       {formatIndianCurrency(results.comparison.totalSavings)}
                     </div>
                     <div className="text-sm text-blue-800">Total 10-Year Lifecycle Savings</div>
                   </div>
                   <div className="bg-white p-4 rounded-lg border border-violet-200 shadow-sm flex flex-col justify-center min-h-[132px]">
-                    <div className="text-3xl text-violet-600 mb-2 leading-tight break-words" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+                    <div className="text-3xl font-semibold text-violet-600 mb-2 leading-tight break-words">
                       Immediate/N/A
                     </div>
                     <div className="text-sm text-violet-800">Return on Investment</div>
@@ -1036,7 +1020,7 @@ function PSAVsPSADeoxo() {
               </div>
 
               <div className="avoid-break rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <h3 className="text-xl text-gray-900 mb-4" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">
                   10-Year Cumulative Cost Projection
                 </h3>
                 <div className="h-[310px]">
@@ -1056,7 +1040,7 @@ function PSAVsPSADeoxo() {
 
               <div className="avoid-break grid grid-cols-2 gap-4">
                 <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                  <h3 className="text-lg text-gray-900 mb-3" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
                     Total Input Power Comparison (kW)
                   </h3>
                   <div className="h-[255px]">
@@ -1091,9 +1075,9 @@ function PSAVsPSADeoxo() {
             <>
               <div className="avoid-break">
                 <div className="bg-gradient-to-r from-slate-50 to-indigo-50 border-l-4 border-indigo-600 p-6 rounded-r-lg">
-                  <h2 className="text-2xl text-gray-800 mb-4 flex items-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+                  <h2 className="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
                     <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-white text-sm" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>3</span>
+                      <span className="text-white text-sm font-semibold">3</span>
                     </div>
                     Business Case & Recommendation
                   </h2>
@@ -1110,7 +1094,7 @@ function PSAVsPSADeoxo() {
                       <span className="font-semibold text-blue-700"> {formatNumber(results.deoxo.totalInputPower)} kW</span>
                       and adds reagent plus utility costs that should be weighed against purity requirements and downstream process needs.
                     </p>
-                    <p style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+                    <p className="font-semibold">
                       Recommendation: Use the standalone Absstem PSA system when the required purity can be met without Deoxo. Choose PSA + Deoxo when the higher final purity justifies the additional lifecycle cost and utility consumption.
                     </p>
                   </div>
@@ -1119,16 +1103,16 @@ function PSAVsPSADeoxo() {
 
               <div className="bg-white rounded-lg shadow border overflow-hidden">
                 <div className="bg-gray-50 px-6 py-4 border-b">
-                  <h3 className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>10-Year Cumulative Savings</h3>
+                  <h3 className="text-gray-900 font-semibold">10-Year Cumulative Savings</h3>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Year</th>
-                        <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>PSA+Deoxo Cost</th>
-                        <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Only PSA Cost</th>
-                        <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Cumulative Savings</th>
+                        <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase">Year</th>
+                        <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase">PSA+Deoxo Cost</th>
+                        <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase">Only PSA Cost</th>
+                        <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase">Cumulative Savings</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -1136,12 +1120,12 @@ function PSAVsPSADeoxo() {
                         .filter((row: any) => typeof row.year === 'number' ? row.year >= 1 && row.year <= 10 : true)
                         .map((row: any, index: number) => (
                           <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {typeof row.year === 'number' ? 'Year ' + row.year : row.year}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatIndianCurrency(row.competitionCost)}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatIndianCurrency(row.absstemCost)}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">
                               {formatIndianCurrency(row.savings)}
                             </td>
                           </tr>
