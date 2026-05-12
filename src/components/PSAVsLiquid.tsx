@@ -3,7 +3,7 @@ import { Calculator, DollarSign, Zap } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, Legend, ReferenceLine, LabelList } from 'recharts';
 import { RoiInputs, GAS_TYPES, LIQUID_UNITS, PURITIES, OXYGEN_PURITIES, LOAD_FACTORS, INTEREST_RATES, DEPRECIATION_RATES } from '../types/calculator';
 import { calculateRoi } from '../utils/calculations';
-import { formatIndianCurrency, formatNumber } from '../utils/formatting';
+import { formatIndianCurrency, formatLoadFactor, formatNumber } from '../utils/formatting';
 import { convertToNm3, getLiquidToGasConversionFactor } from '../utils/conversions';
 import { ReportLayout } from './ReportLayout';
 import DownloadPdfButton from './DownloadPdfButton';
@@ -446,7 +446,7 @@ export default function PSAVsLiquid() {
                     title="Load Factor"
                   >
                     {LOAD_FACTORS.map(factor => (
-                      <option key={factor} value={factor}>{factor}</option>
+                      <option key={factor} value={factor}>{formatLoadFactor(factor)}</option>
                     ))}
                   </select>
                 </div>

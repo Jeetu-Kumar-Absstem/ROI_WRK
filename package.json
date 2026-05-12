@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "export:pdf:liquid": "node scripts/export-pdf.mjs --tab=psa-vs-liquid --out=exports/Report-PSA_Vs_Liquid.pdf",
     "export:pdf:cylinders": "node scripts/export-pdf.mjs --tab=psa-vs-cylinders --out=exports/Report-PSA_Vs_Cylinders.pdf",
-    "export:pdf:anypsa": "node scripts/export-pdf.mjs --tab=psa-vs-any-psa --out=exports/Report-PSA_Vs_Any_PSA.pdf"
+    "export:pdf:anypsa": "node scripts/export-pdf.mjs --tab=psa-vs-any-psa --out=exports/Report-PSA_Vs_Any_PSA.pdf",
+    "export:pdf:deoxo": "node scripts/export-pdf.mjs --tab=psa-vs-psa-deoxo --out=exports/Report-PSA_Vs_PSA_Deoxo.pdf"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.103.0",

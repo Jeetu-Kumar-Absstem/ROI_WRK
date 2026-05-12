@@ -5,7 +5,7 @@ import { CylinderInputs, CylinderResult, GAS_TYPES, CYLINDER_VOLUMES, LOAD_FACTO
 import { calculateCylinderRoi } from '../utils/cylinderCalculations';
 import { findMatchingFlow, findMatchingCompressor } from '../utils/flowMatching';
 import { InputField } from './InputField';
-import { formatIndianCurrency } from '../utils/formatting';
+import { formatIndianCurrency, formatLoadFactor } from '../utils/formatting';
 import { ReportLayout } from './ReportLayout';
 import DownloadPdfButton from './DownloadPdfButton';
 
@@ -175,7 +175,7 @@ export default function PSAVsCylinders() {
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Gas Cost per m³:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>₹{(results.unitPricePSA ?? 0).toFixed(2)}</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Power Consumption:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{results.power.toFixed(2)} kW</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Operator Cost (Annual):</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(results.psaOperatorCostYear)}</span></div>
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Utilization Factor:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{results.utilizationFactor.toFixed(2)}</span></div>
+          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Utilization Factor:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatLoadFactor(results.utilizationFactor)}</span></div>
           {(results.annualInterest ?? 0) > 0 && (<div className="flex justify-between items-center"><span className="text-sm text-gray-600">Annual Interest:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(results.annualInterest ?? 0)}</span></div>)}
           {(results.annualDepreciation ?? 0) > 0 && (<div className="flex justify-between items-center"><span className="text-sm text-gray-600">Annual Depreciation (Tax Shield):</span><span className="text-green-600" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>-{formatIndianCurrency(results.annualDepreciation ?? 0)}</span></div>)}
           <div className="border-t pt-3"><div className="flex justify-between items-center"><span className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Total Annual Cost:</span><span className="font-bold text-lg text-blue-600">{formatIndianCurrency(results.totalRunningCostPSA)}</span></div></div>
@@ -283,7 +283,7 @@ export default function PSAVsCylinders() {
                 <div>
                   <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Load Factor</label>
                   <select value={inputs.loadFactor} onChange={(e) => updateInput('loadFactor', Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Load Factor">
-                    {LOAD_FACTORS.map(factor => (<option key={factor} value={factor}>{factor}</option>))}
+                    {LOAD_FACTORS.map(factor => (<option key={factor} value={factor}>{formatLoadFactor(factor)}</option>))}
                   </select>
                 </div>
                 <InputField label="Cylinder Cost" value={inputs.cylinderCost} onChange={(value) => updateInput('cylinderCost', value)} unit="₹/m³" />

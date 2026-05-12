@@ -5,6 +5,7 @@ import { Database, Settings, LogOut } from 'lucide-react';
 import PSAVsLiquid from './components/PSAVsLiquid';
 import PSAVsCylinders from './components/PSAVsCylinders';
 import PSAVsAnyPSA from './components/PSAVsAnyPSA';
+import PSAVsPSADeoxo from './components/PSAVsPSADeoxo';
 import SiteHeader from './components/SiteHeader';
 import SiteFooter from './components/SiteFooter';
 import Login from './components/Login';
@@ -74,7 +75,8 @@ export default function App() {
   const tabs = [
     { id: 'psa-vs-liquid', label: 'PSA Vs Liquid', icon: Database },
     { id: 'psa-vs-cylinders', label: 'PSA Vs Cylinders', icon: Settings },
-    { id: 'psa-vs-any-psa', label: 'PSA vs Any PSA', icon: Settings }
+    { id: 'psa-vs-any-psa', label: 'PSA vs Any PSA', icon: Settings },
+    { id: 'psa-vs-psa-deoxo', label: 'PSA vs PSA + Deoxo', icon: Settings }
   ];
 
   // Show recovery screen if on /reset-password path (user not logged in yet)
@@ -142,6 +144,7 @@ export default function App() {
             {activeTab === 'psa-vs-liquid' && <PSAVsLiquid />}
             {activeTab === 'psa-vs-cylinders' && <PSAVsCylinders />}
             {activeTab === 'psa-vs-any-psa' && <PSAVsAnyPSA />}
+            {activeTab === 'psa-vs-psa-deoxo' && <PSAVsPSADeoxo />}
           </div>
         </div>
       </div>

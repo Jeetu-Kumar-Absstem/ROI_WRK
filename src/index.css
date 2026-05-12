@@ -148,8 +148,8 @@
 
   /* Add top/bottom padding so content clears letterhead and footer in print */
   .report-content {
-    padding-top: 150px !important;
-    padding-bottom: 140px !important;
+    padding-top: 140px !important;
+    padding-bottom: 170px !important;
     background: transparent !important;
   }
 
@@ -194,8 +194,8 @@
 }
 
 .export-mode .report-content {
-  padding-top: 24px !important;
-  padding-bottom: 50px !important;
+  padding-top: 18px !important;
+  padding-bottom: 88px !important;
   background: #ffffff !important;
 }
 

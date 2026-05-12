@@ -78,8 +78,8 @@ const DownloadPdfButton: React.FC<DownloadPdfButtonProps> = ({ contentToPrint, t
 
         const marginLeft = 10;
         const marginRight = 10;
-        const topMargin = 25;
-        const bottomMargin = 20;
+        const topMargin = 22;
+        const bottomMargin = 30;
 
         const contentWidth = pdfWidth - marginLeft - marginRight;
         const contentPageHeight = pdfHeight - topMargin - bottomMargin;
