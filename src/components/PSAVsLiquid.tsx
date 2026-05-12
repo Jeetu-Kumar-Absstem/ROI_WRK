@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
-import { Calculator, DollarSign, Zap } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, Legend, ReferenceLine, LabelList } from 'recharts';
+import { Calculator, Zap, IndianRupee } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
 import { RoiInputs, GAS_TYPES, LIQUID_UNITS, PURITIES, OXYGEN_PURITIES, LOAD_FACTORS, INTEREST_RATES, DEPRECIATION_RATES } from '../types/calculator';
 import { calculateRoi } from '../utils/calculations';
 import { formatIndianCurrency, formatLoadFactor, formatNumber } from '../utils/formatting';
@@ -26,6 +26,16 @@ const lufgaFontStyle = `
   }
 `;
 
+const displayVolumeUnit = (unit: string) => {
+  switch (unit) {
+    case 'Sm3':
+      return 'Sm³';
+    case 'Nm3':
+      return 'Nm³';
+    default:
+      return unit;
+  }
+};
 
 export default function PSAVsLiquid() {
   const [inputs, setInputs] = useState<RoiInputs>({
@@ -61,17 +71,6 @@ export default function PSAVsLiquid() {
   // Axis tick formatter for INR in Lakhs (short form)
   const formatAxisINRShort = (value: number) => `₹${(Number(value) / 100000).toFixed(1)}L`;
 
-  // Currency label for bar tops
-  const CurrencyBarLabel = (props: any) => {
-    const { x, y, value } = props;
-    if (value == null) return null;
-    return (
-      <text x={x} y={y} dy={-6} fill="#111827" fontSize={12} textAnchor="middle">
-        {formatIndianCurrency(Number(value))}
-      </text>
-    );
-  };
-  
   const chartData = [
     {
       name: 'Current Liquid Supply',
@@ -83,6 +82,16 @@ export default function PSAVsLiquid() {
       'Monthly Cost': monthlyPSACost,
       'Annual Cost': result.totalRunningCostPSA ?? 0,
     },
+  ];
+
+  const monthlyComparisonData = [
+    { name: 'Current Liquid Supply', value: result.monthlyExpenseCylinder ?? 0 },
+    { name: 'Proposed PSA System', value: monthlyPSACost },
+  ];
+
+  const annualComparisonData = [
+    { name: 'Current Liquid Supply', value: result.totalRunningCostCylinder ?? 0 },
+    { name: 'Proposed PSA System', value: result.totalRunningCostPSA ?? 0 },
   ];
 
   const yearlyData = Array.from({ length: 10 }, (_, i) => {
@@ -105,16 +114,6 @@ export default function PSAVsLiquid() {
     };
   });
 
-  // Separate scales for Monthly vs Annual bars so both are visible
-  const monthlyMax = Math.max(
-    chartData[0]['Monthly Cost'] || 0,
-    chartData[1]['Monthly Cost'] || 0
-  ) || 1;
-  const annualMax = Math.max(
-    chartData[0]['Annual Cost'] || 0,
-    chartData[1]['Annual Cost'] || 0
-  ) || 1;
-
   // ROI axis domain to ensure line visibility
   const roiMin = Math.min(...roiData.map(d => d.cumulativeCashFlow));
   const roiMax = Math.max(...roiData.map(d => d.cumulativeCashFlow));
@@ -131,7 +130,7 @@ export default function PSAVsLiquid() {
       <h3 className="text-gray-900 mb-4" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Input Parameters</h3>
       <div className="space-y-2 text-sm">
         <div className="flex justify-between"><span className="text-gray-600">Gas Type:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.gasType}</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Daily Use:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.liquidUsedPerDay} {inputs.liquidUnit}</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Daily Use:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.liquidUsedPerDay} {displayVolumeUnit(inputs.liquidUnit ?? '')}</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Running Hours:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.plantRunningHours} hrs/day</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Working Days:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.workingDaysPerMonth} days/month</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Current Gas Cost:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.gasCost} ₹/{inputs.gasCostUnit}</span></div>
@@ -148,7 +147,7 @@ export default function PSAVsLiquid() {
     <div className="grid md:grid-cols-2 gap-6">
       <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-6 rounded-lg border">
         <div className="flex items-center space-x-2 mb-4">
-          <DollarSign className="h-5 w-5 text-blue-600" />
+          <IndianRupee className="h-5 w-5 text-blue-600" />
           <h3 className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Current System Costs</h3>
         </div>
         <div className="space-y-3">
@@ -351,7 +350,7 @@ export default function PSAVsLiquid() {
                     title="Liquid Unit"
                   >
                     {LIQUID_UNITS.map(unit => (
-                      <option key={unit} value={unit}>{unit}</option>
+                      <option key={unit} value={unit}>{displayVolumeUnit(unit)}</option>
                     ))}
                   </select>
                 </div>
@@ -557,10 +556,10 @@ export default function PSAVsLiquid() {
                 <div className="text-4xl font-bold text-blue-600 mb-2">{formatIndianCurrency(result.annualSavings ?? 0)}</div>
                 <div className="text-sm font-medium text-blue-800">Estimated Annual Savings</div>
               </div>
-              <div className="bg-white p-6 rounded-lg border border-purple-200 shadow-sm">
-                <div className="text-4xl font-bold text-purple-600 mb-2">{result.roiPercentage?.toFixed(1)}%</div>
-                <div className="text-sm font-medium text-purple-800">Return on Investment (ROI)</div>
-                <div className="text-xs text-gray-500 mt-1">Payback in {result.paybackPeriodMonths?.toFixed(1)} months</div>
+              <div className="bg-white p-6 rounded-lg border border-purple-200 shadow-sm flex flex-col justify-center min-h-[132px]">
+                <div className="text-4xl font-bold text-purple-600 mb-2 leading-tight break-words">Immediate/N/A</div>
+                <div className="text-sm font-medium text-purple-800">Return on Investment</div>
+                <div className="text-sm font-medium text-purple-800">(Payback)</div>
               </div>
             </div>
           </div>
@@ -568,29 +567,37 @@ export default function PSAVsLiquid() {
 
         <div className="avoid-break">
           <h2 className="text-2xl text-gray-800 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Visual Cost Comparison</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white p-6 rounded-lg shadow border">
-              <h3 className="text-gray-900 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Monthly & Annual Cost Comparison</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <h3 className="text-gray-900 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Monthly Cost Comparison</h3>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={monthlyComparisonData} margin={{ top: 12, right: 20, left: 12, bottom: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
-                  <YAxis yAxisId="left" orientation="left" tickFormatter={(value) => formatAxisINRShort(Number(value))} domain={[0, monthlyMax * 1.2]} />
-                  <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => formatAxisINRShort(Number(value))} domain={[0, annualMax * 1.2]} />
+                  <YAxis tickFormatter={(value) => formatAxisINRShort(Number(value))} />
                   <Tooltip formatter={(value) => formatIndianCurrency(Number(value))} />
-                  <Legend />
-                  <Bar yAxisId="left" dataKey="Monthly Cost" fill="#3b82f6" name="Monthly Cost">
-                    <LabelList position="top" content={CurrencyBarLabel} />
-                  </Bar>
-                  <Bar yAxisId="right" dataKey="Annual Cost" fill="#10b981" name="Annual Cost">
-                    <LabelList position="top" content={CurrencyBarLabel} />
-                  </Bar>
+                  <Bar dataKey="value" fill="#3b82f6" name="Monthly Cost" isAnimationActive={false} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
             <div className="bg-white p-6 rounded-lg shadow border">
+              <h3 className="text-gray-900 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Annual Cost Comparison</h3>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={annualComparisonData} margin={{ top: 12, right: 20, left: 12, bottom: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis tickFormatter={(value) => formatAxisINRShort(Number(value))} />
+                  <Tooltip formatter={(value) => formatIndianCurrency(Number(value))} />
+                  <Bar dataKey="value" fill="#10b981" name="Annual Cost" isAnimationActive={false} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+        <div className="avoid-break">
+          <div className="bg-white p-6 rounded-lg shadow border">
               <h3 className="text-gray-900 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Return on Investment (ROI)</h3>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={260}>
                 <LineChart data={roiData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="year" />
@@ -614,7 +621,6 @@ export default function PSAVsLiquid() {
                   />
                 </LineChart>
               </ResponsiveContainer>
-            </div>
           </div>
         </div>
       </div>
@@ -634,7 +640,7 @@ export default function PSAVsLiquid() {
                 Transitioning from liquid supply to an on-site PSA plant presents a compelling financial and operational advantage. With projected monthly savings of <span className="font-semibold text-green-700">{formatIndianCurrency(monthlySavings)}</span> and annual savings of <span className="font-semibold text-green-700">{formatIndianCurrency(result.annualSavings ?? 0)}</span>, the initial investment is quickly recovered, leading to significant long-term cost reduction.
               </p>
               <p>
-                The calculated return on investment of <span className="font-semibold text-blue-700">{result.roiPercentage ? `${result.roiPercentage.toFixed(1)}%` : 'N/A'}</span>, with a payback period of just <span className="font-semibold text-blue-700">{result.paybackPeriodMonths ? `${result.paybackPeriodMonths.toFixed(1)} months` : 'N/A'}</span>, underscores the financial viability of this project. Beyond the numbers, on-site generation eliminates dependence on external suppliers, mitigates logistical risks, and reduces the carbon footprint associated with liquid gas deliveries.
+                Beyond the direct cost savings, on-site generation strengthens financial viability by eliminating dependence on external suppliers, mitigating logistical risks, and reducing the carbon footprint associated with liquid gas deliveries.
               </p>
               <p className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
                 Recommendation: We strongly recommend proceeding with the implementation of the PSA generation system to realize immediate cost savings, improve operational efficiency, and achieve supply chain independence.

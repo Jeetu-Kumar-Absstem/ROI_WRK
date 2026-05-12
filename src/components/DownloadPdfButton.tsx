@@ -20,6 +20,19 @@ const DownloadPdfButton: React.FC<DownloadPdfButtonProps> = ({ contentToPrint, t
       try {
         contentToPrint.current.classList.add('export-mode');
 
+        if (document.fonts?.ready) {
+          await document.fonts.ready;
+        }
+
+        const waitForLayout = async () => {
+          await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+          await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+          await new Promise<void>((resolve) => setTimeout(resolve, 180));
+        };
+
+        window.dispatchEvent(new Event('resize'));
+        await waitForLayout();
+
         const captureScale = 1.5;
         const pageJpegQuality = 0.82;
         const letterheadJpegQuality = 0.75;
@@ -89,6 +102,7 @@ const DownloadPdfButton: React.FC<DownloadPdfButtonProps> = ({ contentToPrint, t
 
         if (pageNodes.length > 0) {
           for (const node of Array.from(pageNodes)) {
+            await waitForLayout();
             const canvas = await html2canvas(node as HTMLElement, {
               scale: captureScale,
               useCORS: true,
@@ -97,6 +111,7 @@ const DownloadPdfButton: React.FC<DownloadPdfButtonProps> = ({ contentToPrint, t
             canvases.push(canvas);
           }
         } else {
+          await waitForLayout();
           const canvas = await html2canvas(contentToPrint.current, {
             scale: captureScale,
             useCORS: true,

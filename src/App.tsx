@@ -82,7 +82,7 @@ export default function App() {
   // Show recovery screen if on /reset-password path (user not logged in yet)
   if (isRecoveryMode) {
     return (
-      <div className="min-h-screen bg-slate-100 flex flex-col">
+      <div className="roi-calculator-app min-h-screen bg-slate-100 flex flex-col">
         <SiteHeader />
         <main className="flex-1">
           <PasswordRecovery onCancel={handleRecoveryExit} />
@@ -94,20 +94,17 @@ export default function App() {
 
   if (!session) {
     return (
-      <div className="min-h-screen bg-slate-100 flex flex-col">
-        <SiteHeader />
+      <div className="roi-calculator-app min-h-screen bg-slate-100 flex flex-col">
         <main className="flex-1">
           <Login />
         </main>
-        <SiteFooter />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+    <div className="roi-calculator-app min-h-screen bg-gray-50 flex flex-col" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
       <style>{lufgaFontStyle}</style>
-      <SiteHeader />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
         <div className="bg-white rounded-lg shadow">
@@ -148,7 +145,6 @@ export default function App() {
           </div>
         </div>
       </div>
-      <SiteFooter />
     </div>
   );
 }
