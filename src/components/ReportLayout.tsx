@@ -20,32 +20,32 @@ export const ReportLayout = React.forwardRef<HTMLDivElement, ReportLayoutProps>(
       <div className="print-letterhead-fixed" aria-hidden="true" />
       
       {/* Header with Logo and Report Date */}
-      <div className="relative pt-24 pb-4 px-8 flex justify-between items-center">
-        <img src="https://absstem.com/wp-content/uploads/2025/03/Absstem_logo.svg" alt="Absstem Logo" className="h-12" loading="lazy" crossOrigin="anonymous" />
+      <div className="relative pt-20 pb-3 px-7 flex justify-between items-center">
+        <img src="https://absstem.com/wp-content/uploads/2025/03/Absstem_logo.svg" alt="Absstem Logo" className="h-11" loading="lazy" crossOrigin="anonymous" />
         <div className="bg-white bg-opacity-90 px-4 py-2 rounded-lg shadow-sm">
           <p className="text-sm text-gray-600" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Report Date: {currentDate}</p>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="px-8 py-6 report-content">
+      <div className="px-7 py-5 report-content">
         <div className="print-page">
           {/* Title Section */}
-          <div className="text-center mb-10 border-b-4 border-blue-700 pb-8">
-            <h1 className="text-5xl text-gray-800 mb-3" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>{title}</h1>
+          <div className="text-center mb-8 border-b-4 border-blue-700 pb-7">
+            <h1 className="text-4xl text-gray-800 mb-3" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>{title}</h1>
             <div className="w-32 h-1.5 bg-gradient-to-r from-blue-700 to-green-500 mx-auto rounded-full"></div>
           </div>
 
           {/* Executive Summary */}
-          <div className="mb-10">
-            <div className="bg-gradient-to-r from-blue-50 to-green-50 border-l-8 border-blue-700 p-8 rounded-r-xl shadow-lg">
-              <div className="flex items-center mb-5">
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-blue-50 to-green-50 border-l-8 border-blue-700 p-6 rounded-r-xl shadow-lg">
+              <div className="flex items-center mb-4">
                 <div className="w-10 h-10 bg-blue-700 rounded-full flex items-center justify-center mr-4">
                   <span className="text-white text-lg" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>ES</span>
                 </div>
-                <h2 className="text-3xl text-gray-800" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Executive Summary</h2>
+                <h2 className="text-2xl text-gray-800" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Executive Summary</h2>
               </div>
-              <div className="text-gray-700 leading-relaxed text-lg text-justify" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+              <div className="text-gray-700 leading-relaxed text-base text-justify" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
                 {summary}
               </div>
             </div>

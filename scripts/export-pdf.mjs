@@ -15,7 +15,7 @@ const TAB_LABELS = {
   'psa-vs-liquid': 'PSA Vs Liquid',
   'psa-vs-cylinders': 'PSA Vs Cylinders',
   'psa-vs-any-psa': 'PSA vs Any PSA',
-  'deoxo-comparison': 'Deoxo Comparison',
+  'psa-vs-psa-deoxo': 'PSA vs PSA+Deoxo',
 };
 
 (async () => {

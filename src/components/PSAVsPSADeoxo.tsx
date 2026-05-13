@@ -1005,28 +1005,28 @@ function PSAVsPSADeoxo() {
         <div className="print-page space-y-6">
           {results && (
             <>
-              <div className="avoid-break bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-600 p-5 rounded-r-lg">
-                <h2 className="text-xl text-gray-800 mb-3 flex items-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
-                  <div className="w-7 h-7 bg-green-600 rounded-full flex items-center justify-center mr-3">
-                    <span className="text-white text-xs" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>2</span>
+              <div className="avoid-break bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-600 p-6 rounded-r-lg">
+                <h2 className="text-2xl text-gray-800 mb-4 flex items-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+                  <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-white text-sm" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>2</span>
                   </div>
                   Savings Analysis
                 </h2>
-                <div className="grid md:grid-cols-3 gap-3 text-center">
-                  <div className="bg-white p-3 rounded-lg border border-green-200 shadow-sm">
-                    <div className="text-2xl text-green-600 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+                <div className="grid md:grid-cols-3 gap-4 text-center">
+                  <div className="bg-white p-4 rounded-lg border border-green-200 shadow-sm">
+                    <div className="text-3xl text-green-600 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
                       {formatIndianCurrency(results.comparison.annualSavings)}
                     </div>
                     <div className="text-sm text-green-800">Annual Operating Cost Savings</div>
                   </div>
-                  <div className="bg-white p-3 rounded-lg border border-blue-200 shadow-sm">
-                    <div className="text-2xl text-blue-600 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+                  <div className="bg-white p-4 rounded-lg border border-blue-200 shadow-sm">
+                    <div className="text-3xl text-blue-600 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
                       {formatIndianCurrency(results.comparison.totalSavings)}
                     </div>
                     <div className="text-sm text-blue-800">Total 10-Year Lifecycle Savings</div>
                   </div>
-                  <div className="bg-white p-3 rounded-lg border border-violet-200 shadow-sm flex flex-col justify-center min-h-[112px]">
-                    <div className="text-2xl text-violet-600 mb-2 leading-tight break-words" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+                  <div className="bg-white p-4 rounded-lg border border-violet-200 shadow-sm flex flex-col justify-center min-h-[132px]">
+                    <div className="text-3xl text-violet-600 mb-2 leading-tight break-words" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
                       Immediate/N/A
                     </div>
                     <div className="text-sm text-violet-800">Return on Investment</div>
@@ -1035,11 +1035,11 @@ function PSAVsPSADeoxo() {
                 </div>
               </div>
 
-              <div className="avoid-break rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                <h3 className="text-lg text-gray-900 mb-3" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+              <div className="avoid-break rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <h3 className="text-xl text-gray-900 mb-4" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
                   10-Year Cumulative Cost Projection
                 </h3>
-                <div className="h-[255px]">
+                <div className="h-[310px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={results.comparison.yearlyData} margin={{ top: 10, right: 12, left: 28, bottom: 8 }}>
                       <CartesianGrid strokeDasharray="3 3" />
@@ -1054,12 +1054,12 @@ function PSAVsPSADeoxo() {
                 </div>
               </div>
 
-              <div className="avoid-break grid grid-cols-2 gap-3">
-                <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-                  <h3 className="text-base text-gray-900 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+              <div className="avoid-break grid grid-cols-2 gap-4">
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <h3 className="text-lg text-gray-900 mb-3" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
                     Total Input Power Comparison (kW)
                   </h3>
-                  <div className="h-[220px]">
+                  <div className="h-[255px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
                         data={[
