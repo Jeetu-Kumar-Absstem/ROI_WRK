@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Database, Zap, DollarSign } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, Legend, ReferenceLine, LabelList } from 'recharts';
+import { Database, Zap, DollarSign, IndianRupee } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
 import { CylinderInputs, CylinderResult, GAS_TYPES, CYLINDER_VOLUMES, LOAD_FACTORS, PURITIES, OXYGEN_PURITIES, INTEREST_RATES, DEPRECIATION_RATES } from '../types/calculator';
 import { calculateCylinderRoi } from '../utils/cylinderCalculations';
 import { findMatchingFlow, findMatchingCompressor } from '../utils/flowMatching';
@@ -112,25 +112,6 @@ export default function PSAVsCylinders() {
 
   // Helpers for print charts
   const formatAxisINRShort = (value: number) => `₹${(Number(value) / 100000).toFixed(1)}L`;
-  const CurrencyBarLabel = (props: any) => {
-    const { x, y, value } = props;
-    if (value == null) return null;
-    return (
-      <text x={x} y={y} dy={-6} fill="#111827" fontSize={12} textAnchor="middle">
-        {formatIndianCurrency(Number(value))}
-      </text>
-    );
-  };
-
-  // Domains for print charts
-  const monthlyMax = Math.max(
-    chartData[0]?.['Monthly Cost'] || 0,
-    chartData[1]?.['Monthly Cost'] || 0
-  );
-  const annualMax = Math.max(
-    chartData[0]?.['Annual Cost'] || 0,
-    chartData[1]?.['Annual Cost'] || 0
-  );
   const roiMin = Math.min(...roiData.map(d => d.cumulativeCashFlow));
   const roiMax = Math.max(...roiData.map(d => d.cumulativeCashFlow));
   const roiRange = Math.max(roiMax - roiMin, 1);
@@ -138,6 +119,20 @@ export default function PSAVsCylinders() {
   const breakEvenYearLabel = results?.paybackPeriodMonths ? `Year ${Math.ceil((results.paybackPeriodMonths ?? 0) / 12)}` : undefined;
 
   if (!results) return <div>Loading...</div>;
+
+  const monthlyAnnualCostComparisonChart = (
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="name" />
+        <YAxis tickFormatter={(value) => formatAxisINRShort(Number(value))} />
+        <Tooltip formatter={(value) => formatIndianCurrency(Number(value))} />
+        <Legend />
+        <Bar dataKey="Monthly Cost" fill="#3b82f6" name="Monthly Cost" isAnimationActive={false} />
+        <Bar dataKey="Annual Cost" fill="#10b981" name="Annual Cost" isAnimationActive={false} />
+      </BarChart>
+    </ResponsiveContainer>
+  );
 
   const inputParametersSummary = (
     <div className="bg-white p-6 rounded-lg shadow border">
@@ -160,7 +155,7 @@ export default function PSAVsCylinders() {
   const costComparisonContent = (
     <div className="grid md:grid-cols-2 gap-6">
       <div className="bg-gradient-to-br from-red-50 to-orange-100 p-6 rounded-lg border">
-        <div className="flex items-center space-x-2 mb-4"><DollarSign className="h-5 w-5 text-red-600" /><h3 className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Cylinder System Costs</h3></div>
+        <div className="flex items-center space-x-2 mb-4"><IndianRupee className="h-5 w-5 text-red-600" /><h3 className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Cylinder System Costs</h3></div>
         <div className="space-y-3">
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Gas Cost per m³:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>₹{(results.unitPricePerM3 ?? 0).toFixed(2)}</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Monthly Expense:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(results.monthlyExpenseCylinder)}</span></div>
@@ -341,16 +336,11 @@ export default function PSAVsCylinders() {
                 <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
-                  <YAxis yAxisId="left" orientation="left" tickFormatter={(value) => formatAxisINRShort(Number(value))} domain={[0, monthlyMax * 1.2]} />
-                  <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => formatAxisINRShort(Number(value))} domain={[0, annualMax * 1.2]} />
+                  <YAxis tickFormatter={(value) => formatAxisINRShort(Number(value))} />
                   <Tooltip formatter={(value) => formatIndianCurrency(Number(value))} />
                   <Legend />
-                  <Bar yAxisId="left" dataKey="Monthly Cost" fill="#3b82f6" name="Monthly Cost" isAnimationActive={false}>
-                    <LabelList position="top" content={CurrencyBarLabel} />
-                  </Bar>
-                  <Bar yAxisId="right" dataKey="Annual Cost" fill="#10b981" name="Annual Cost" isAnimationActive={false}>
-                    <LabelList position="top" content={CurrencyBarLabel} />
-                  </Bar>
+                  <Bar dataKey="Monthly Cost" fill="#3b82f6" name="Monthly Cost" isAnimationActive={false} />
+                  <Bar dataKey="Annual Cost" fill="#10b981" name="Annual Cost" isAnimationActive={false} />
                 </BarChart>
               </ResponsiveContainer>
                 </div>

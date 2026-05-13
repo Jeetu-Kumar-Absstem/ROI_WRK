@@ -31,6 +31,17 @@ const lufgaFontStyle = `
   }
 `;
 
+function getRoiMetrics(annualSavings: number, plantCost: number) {
+  if (annualSavings <= 0 || plantCost <= 0) {
+    return { roiPercentage: null, paybackMonths: null };
+  }
+
+  return {
+    roiPercentage: (annualSavings / plantCost) * 100,
+    paybackMonths: plantCost / (annualSavings / 12),
+  };
+}
+
 interface SystemConfigurationCardProps {
   title: string;
   titleClassName: string;
@@ -399,6 +410,7 @@ function PSAVsPSADeoxo() {
       yearlyData: OperationalParamsType extends never ? never : { year: number; absstemCost: number; competitionCost: number; savings: number }[];
     };
   } | null>(null);
+  const roiMetrics = results ? getRoiMetrics(results.comparison.annualSavings, results.deoxo.plantCost) : { roiPercentage: null, paybackMonths: null };
 
   const psaFlowOptions = buildNitrogenModels(psaPurity);
   const deoxoFlowOptions = buildNitrogenModels(deoxoPurity);
@@ -813,9 +825,12 @@ function PSAVsPSADeoxo() {
               <MetricBox label="Annual Operating Cost Savings" value={formatIndianCurrency(results.comparison.annualSavings)} />
               <MetricBox label="Total 10-Year Lifecycle Savings" value={formatIndianCurrency(results.comparison.totalSavings)} />
               <MetricBox
-                label="Return on Investment"
-                value="Immediate N/A"
+                label="Return on Investment (ROI)"
+                value={roiMetrics.roiPercentage !== null ? `${roiMetrics.roiPercentage.toFixed(1)}%` : 'N/A'}
               />
+            </div>
+            <div className="mt-3 text-sm text-violet-700" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+              {roiMetrics.paybackMonths !== null ? `Payback in ${roiMetrics.paybackMonths.toFixed(1)} months` : 'Payback unavailable'}
             </div>
           </div>
 
@@ -1027,10 +1042,12 @@ function PSAVsPSADeoxo() {
                   </div>
                   <div className="bg-white p-4 rounded-lg border border-violet-200 shadow-sm flex flex-col justify-center min-h-[132px]">
                     <div className="text-3xl text-violet-600 mb-2 leading-tight break-words" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
-                      Immediate/N/A
+                      {roiMetrics.roiPercentage !== null ? `${roiMetrics.roiPercentage.toFixed(1)}%` : 'N/A'}
                     </div>
-                    <div className="text-sm text-violet-800">Return on Investment</div>
-                    <div className="text-sm text-violet-800">(Payback)</div>
+                    <div className="text-sm text-violet-800">Return on Investment (ROI)</div>
+                    <div className="text-sm text-violet-800">
+                      {roiMetrics.paybackMonths !== null ? `Payback in ${roiMetrics.paybackMonths.toFixed(1)} months` : 'Payback unavailable'}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1103,7 +1120,10 @@ function PSAVsPSADeoxo() {
                       The projected annual operating-cost difference is
                       <span className="font-semibold text-green-700"> {formatIndianCurrency(results.comparison.annualSavings)}</span>,
                       with a 10-year cumulative savings impact of
-                      <span className="font-semibold text-green-700"> {formatIndianCurrency(results.comparison.totalSavings)}</span>.
+                      <span className="font-semibold text-green-700"> {formatIndianCurrency(results.comparison.totalSavings)}</span>. The calculated payback period is
+                      <span className="font-semibold text-violet-700"> {roiMetrics.paybackMonths !== null ? `${roiMetrics.paybackMonths.toFixed(1)} months` : 'N/A'}</span>,
+                      with an ROI of
+                      <span className="font-semibold text-violet-700"> {roiMetrics.roiPercentage !== null ? `${roiMetrics.roiPercentage.toFixed(1)}%` : 'N/A'}</span>.
                     </p>
                     <p>
                       Beyond direct operating cost, the Deoxo-integrated option changes the total input power requirement to

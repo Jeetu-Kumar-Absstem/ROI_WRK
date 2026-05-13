@@ -29,6 +29,17 @@ const lufgaFontStyle = `
   }
 `;
 
+function getRoiMetrics(annualSavings: number, plantCost: number) {
+  if (annualSavings <= 0 || plantCost <= 0) {
+    return { roiPercentage: null, paybackMonths: null };
+  }
+
+  return {
+    roiPercentage: (annualSavings / plantCost) * 100,
+    paybackMonths: plantCost / (annualSavings / 12),
+  };
+}
+
 
 function PSAVsAnyPSA() {
   // State for operational parameters
@@ -87,6 +98,7 @@ function PSAVsAnyPSA() {
   });
 
   const reportRef = useRef<HTMLDivElement>(null);
+  const roiMetrics = getRoiMetrics(results.comparison.annualSavings, results.absstem.plantCost);
 
   // Calculate results when inputs change
   useEffect(() => {
@@ -357,8 +369,13 @@ function PSAVsAnyPSA() {
                     <div className="text-sm font-medium text-blue-800">Estimated 10-Year Savings</div>
                   </div>
                   <div className="bg-white p-6 rounded-lg border border-purple-200 shadow-sm">
-                    <div className="text-3xl font-bold text-purple-600 mb-2">{results.comparison.roi > 0 ? `${results.comparison.roi.toFixed(1)} Years` : 'Immediate/N/A'}</div>
-                    <div className="text-sm font-medium text-purple-800">Return on Investment (Payback)</div>
+                    <div className="text-3xl font-bold text-purple-600 mb-2">
+                      {roiMetrics.roiPercentage !== null ? `${roiMetrics.roiPercentage.toFixed(1)}%` : 'N/A'}
+                    </div>
+                    <div className="text-sm font-medium text-purple-800">Return on Investment (ROI)</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {roiMetrics.paybackMonths !== null ? `Payback in ${roiMetrics.paybackMonths.toFixed(1)} months` : 'Payback unavailable'}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -418,7 +435,9 @@ function PSAVsAnyPSA() {
                   </p>
                   <p>
                     The indicated payback period of
-                    <span className="font-semibold text-blue-700"> {results.comparison.roi > 0 ? `${results.comparison.roi.toFixed(1)} years` : 'Immediate/N/A'}</span>
+                    <span className="font-semibold text-blue-700"> {roiMetrics.paybackMonths !== null ? `${roiMetrics.paybackMonths.toFixed(1)} months` : 'N/A'}</span>
+                    , with an ROI of
+                    <span className="font-semibold text-blue-700"> {roiMetrics.roiPercentage !== null ? `${roiMetrics.roiPercentage.toFixed(1)}%` : 'N/A'}</span>,
                     reflects efficient capital deployment. Beyond the financials, Absstem’s integrated design reduces energy consumption, simplifies maintenance, and provides single-vendor accountability for reliability and support.
                   </p>
                   <p className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Recommendation: Proceed with the Absstem PSA solution to achieve immediate operational efficiency gains, reduce long-term OPEX, and ensure dependable performance under a unified support framework.</p>

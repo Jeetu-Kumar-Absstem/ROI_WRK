@@ -93,23 +93,13 @@ export default function App() {
   }
 
   if (!session) {
-    return (
-      <div className="min-h-screen bg-slate-100 flex flex-col">
-        <SiteHeader />
-        <main className="flex-1">
-          <Login />
-        </main>
-        <SiteFooter />
-      </div>
-    );
+    return <Login />;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+    <div className="min-h-screen bg-gray-50" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
       <style>{lufgaFontStyle}</style>
-      <SiteHeader />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         <div className="bg-white rounded-lg shadow">
           <div className="border-b border-gray-200 print:hidden flex justify-between items-center">
             <nav className="-mb-px flex space-x-8" aria-label="Tabs">
@@ -148,7 +138,6 @@ export default function App() {
           </div>
         </div>
       </div>
-      <SiteFooter />
     </div>
   );
 }

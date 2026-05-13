@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
-import { Calculator, DollarSign, Zap } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, Legend, ReferenceLine, LabelList } from 'recharts';
+import { Calculator, DollarSign, Zap,IndianRupee } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
 import { RoiInputs, GAS_TYPES, LIQUID_UNITS, PURITIES, OXYGEN_PURITIES, LOAD_FACTORS, INTEREST_RATES, DEPRECIATION_RATES } from '../types/calculator';
 import { calculateRoi } from '../utils/calculations';
 import { formatIndianCurrency, formatLoadFactor, formatNumber } from '../utils/formatting';
@@ -61,17 +61,6 @@ export default function PSAVsLiquid() {
   // Axis tick formatter for INR in Lakhs (short form)
   const formatAxisINRShort = (value: number) => `₹${(Number(value) / 100000).toFixed(1)}L`;
 
-  // Currency label for bar tops
-  const CurrencyBarLabel = (props: any) => {
-    const { x, y, value } = props;
-    if (value == null) return null;
-    return (
-      <text x={x} y={y} dy={-6} fill="#111827" fontSize={12} textAnchor="middle">
-        {formatIndianCurrency(Number(value))}
-      </text>
-    );
-  };
-  
   const chartData = [
     {
       name: 'Current Liquid Supply',
@@ -105,16 +94,6 @@ export default function PSAVsLiquid() {
     };
   });
 
-  // Separate scales for Monthly vs Annual bars so both are visible
-  const monthlyMax = Math.max(
-    chartData[0]['Monthly Cost'] || 0,
-    chartData[1]['Monthly Cost'] || 0
-  ) || 1;
-  const annualMax = Math.max(
-    chartData[0]['Annual Cost'] || 0,
-    chartData[1]['Annual Cost'] || 0
-  ) || 1;
-
   // ROI axis domain to ensure line visibility
   const roiMin = Math.min(...roiData.map(d => d.cumulativeCashFlow));
   const roiMax = Math.max(...roiData.map(d => d.cumulativeCashFlow));
@@ -125,6 +104,20 @@ export default function PSAVsLiquid() {
   const breakEvenYearLabel = breakEvenYearIndex > 0 ? `Year ${breakEvenYearIndex}` : undefined;
 
   const availablePurities = inputs.gasType === 'oxygen' ? OXYGEN_PURITIES : PURITIES;
+
+  const monthlyAnnualCostComparisonChart = (
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="name" />
+        <YAxis tickFormatter={(value) => formatAxisINRShort(Number(value))} />
+        <Tooltip formatter={(value) => formatIndianCurrency(Number(value))} />
+        <Legend />
+        <Bar dataKey="Monthly Cost" fill="#3b82f6" name="Monthly Cost" />
+        <Bar dataKey="Annual Cost" fill="#10b981" name="Annual Cost" />
+      </BarChart>
+    </ResponsiveContainer>
+  );
 
   const inputParametersSummary = (
     <div className="bg-white p-6 rounded-lg shadow border">
@@ -148,7 +141,7 @@ export default function PSAVsLiquid() {
     <div className="grid md:grid-cols-2 gap-6">
       <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-6 rounded-lg border">
         <div className="flex items-center space-x-2 mb-4">
-          <DollarSign className="h-5 w-5 text-blue-600" />
+          <IndianRupee className="h-5 w-5 text-blue-600" />
           <h3 className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Current System Costs</h3>
         </div>
         <div className="space-y-3">
@@ -240,17 +233,7 @@ export default function PSAVsLiquid() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white p-6 rounded-lg shadow border">
           <h3 className="text-gray-900 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Monthly & Annual Cost Comparison</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis tickFormatter={(value) => `₹${(Number(value)/100000).toFixed(1)}L`} />
-              <Tooltip formatter={(value) => formatIndianCurrency(Number(value))} />
-              <Legend />
-              <Bar dataKey="Monthly Cost" fill="#3b82f6" name="Monthly Cost" />
-              <Bar dataKey="Annual Cost" fill="#10b981" name="Annual Cost" />
-            </BarChart>
-          </ResponsiveContainer>
+          {monthlyAnnualCostComparisonChart}
         </div>
         <div className="bg-white p-6 rounded-lg shadow border">
           <h3 className="text-gray-900 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Return on Investment (ROI)</h3>
@@ -571,22 +554,7 @@ export default function PSAVsLiquid() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="bg-white p-6 rounded-lg shadow border">
               <h3 className="text-gray-900 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Monthly & Annual Cost Comparison</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis yAxisId="left" orientation="left" tickFormatter={(value) => formatAxisINRShort(Number(value))} domain={[0, monthlyMax * 1.2]} />
-                  <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => formatAxisINRShort(Number(value))} domain={[0, annualMax * 1.2]} />
-                  <Tooltip formatter={(value) => formatIndianCurrency(Number(value))} />
-                  <Legend />
-                  <Bar yAxisId="left" dataKey="Monthly Cost" fill="#3b82f6" name="Monthly Cost">
-                    <LabelList position="top" content={CurrencyBarLabel} />
-                  </Bar>
-                  <Bar yAxisId="right" dataKey="Annual Cost" fill="#10b981" name="Annual Cost">
-                    <LabelList position="top" content={CurrencyBarLabel} />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              {monthlyAnnualCostComparisonChart}
             </div>
             <div className="bg-white p-6 rounded-lg shadow border">
               <h3 className="text-gray-900 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Return on Investment (ROI)</h3>
@@ -604,7 +572,7 @@ export default function PSAVsLiquid() {
                   <Line
                     type="monotone"
                     dataKey="cumulativeCashFlow"
-                    stroke="#2563eb" /* blue-600 for clear print visibility */
+                    stroke="#2563eb"
                     strokeOpacity={1}
                     strokeWidth={4}
                     name="Cumulative Cash Flow"

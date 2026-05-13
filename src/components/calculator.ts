@@ -61,8 +61,7 @@ export function calculateResults(data: any) {
   // Calculate savings and ROI
   const annualSavings = competitionAnnualPowerCost - absstemAnnualPowerCost;
   const totalSavings = competitionTenYearCost - absstemTenYearCost;
-  const additionalInvestment = absstemPlantCost - competitionPlantCost;
-  const roi = additionalInvestment > 0 ? additionalInvestment / annualSavings : 0;
+  const roi = annualSavings > 0 && absstemPlantCost > 0 ? absstemPlantCost / annualSavings : 0;
   
   // Generate yearly cost data
   const yearlyData: YearlyData[] = [];

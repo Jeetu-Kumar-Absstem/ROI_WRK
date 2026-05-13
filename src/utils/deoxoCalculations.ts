@@ -141,9 +141,8 @@ export function calculateDeoxoComparisonResults(
 
   const annualSavings = psa.annualOperatingCost - deoxo.annualOperatingCost;
   const totalSavings = psa.tenYearCost - deoxo.tenYearCost;
-  const additionalInvestment = deoxo.plantCost - psa.plantCost;
-  const roiYears = annualSavings > 0
-    ? Math.max(additionalInvestment, 0) / annualSavings
+  const roiYears = annualSavings > 0 && deoxo.plantCost > 0
+    ? deoxo.plantCost / annualSavings
     : null;
 
   const yearlyData: YearlyData[] = [];
