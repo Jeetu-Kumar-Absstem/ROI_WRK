@@ -29,6 +29,8 @@ const lufgaFontStyle = `
 
 
 export default function PSAVsCylinders() {
+  const cylinderLoadFactors = LOAD_FACTORS.filter((factor) => factor <= 1.1);
+
   const [inputs, setInputs] = useState<CylinderInputs>({
     gasType: 'nitrogen',
     cylindersPerDay: 10,
@@ -278,7 +280,7 @@ export default function PSAVsCylinders() {
                 <div>
                   <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Load Factor</label>
                   <select value={inputs.loadFactor} onChange={(e) => updateInput('loadFactor', Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Load Factor">
-                    {LOAD_FACTORS.map(factor => (<option key={factor} value={factor}>{formatLoadFactor(factor)}</option>))}
+                    {cylinderLoadFactors.map(factor => (<option key={factor} value={factor}>{formatLoadFactor(factor)}</option>))}
                   </select>
                 </div>
                 <InputField label="Cylinder Cost" value={inputs.cylinderCost} onChange={(value) => updateInput('cylinderCost', value)} unit="₹/m³" />

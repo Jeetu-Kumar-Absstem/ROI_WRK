@@ -28,6 +28,8 @@ const lufgaFontStyle = `
 
 
 export default function PSAVsLiquid() {
+  const liquidLoadFactors = LOAD_FACTORS.filter((factor) => factor <= 1.1);
+
   const [inputs, setInputs] = useState<RoiInputs>({
     gasType: 'nitrogen',
     liquidUsedPerDay: 10000,
@@ -428,7 +430,7 @@ export default function PSAVsLiquid() {
                     aria-label="Load Factor"
                     title="Load Factor"
                   >
-                    {LOAD_FACTORS.map(factor => (
+                    {liquidLoadFactors.map(factor => (
                       <option key={factor} value={factor}>{formatLoadFactor(factor)}</option>
                     ))}
                   </select>
