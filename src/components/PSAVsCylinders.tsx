@@ -5,7 +5,7 @@ import { CylinderInputs, CylinderResult, GAS_TYPES, CYLINDER_VOLUMES, LOAD_FACTO
 import { calculateCylinderRoi } from '../utils/cylinderCalculations';
 import { findMatchingFlow, findMatchingCompressor } from '../utils/flowMatching';
 import { InputField } from './InputField';
-import { formatIndianCurrency } from '../utils/formatting';
+import { formatIndianCurrency, formatLoadFactor } from '../utils/formatting';
 import { ReportLayout } from './ReportLayout';
 import DownloadPdfButton from './DownloadPdfButton';
 
@@ -263,7 +263,7 @@ export default function PSAVsCylinders() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Load Factor</label>
                   <select value={inputs.loadFactor} onChange={(e) => updateInput('loadFactor', Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Load Factor">
-                    {LOAD_FACTORS.map(factor => (<option key={factor} value={factor}>{factor}</option>))}
+                    {LOAD_FACTORS.map(factor => (<option key={factor} value={factor}>{formatLoadFactor(factor)}</option>))}
                   </select>
                 </div>
                 <InputField label="Cylinder Cost" value={inputs.cylinderCost} onChange={(value) => updateInput('cylinderCost', value)} unit="₹/m³" />

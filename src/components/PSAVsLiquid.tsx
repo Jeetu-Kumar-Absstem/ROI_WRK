@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { Calculator, DollarSign, Zap,IndianRupee } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
-import { RoiInputs, GAS_TYPES, LIQUID_UNITS, PURITIES, OXYGEN_PURITIES, LOAD_FACTORS, INTEREST_RATES, DEPRECIATION_RATES } from '../types/calculator';
+import { RoiInputs, GAS_TYPES, LIQUID_UNITS, PURITIES, OXYGEN_PURITIES, INTEREST_RATES, DEPRECIATION_RATES, LOAD_FACTORS } from '../types/calculator';
 import { calculateRoi } from '../utils/calculations';
 import { formatIndianCurrency, formatLoadFactor, formatNumber } from '../utils/formatting';
 import { convertToNm3, getLiquidToGasConversionFactor } from '../utils/conversions';
@@ -28,8 +28,6 @@ const lufgaFontStyle = `
 
 
 export default function PSAVsLiquid() {
-  const liquidLoadFactors = LOAD_FACTORS.filter((factor) => factor <= 1.1);
-
   const [inputs, setInputs] = useState<RoiInputs>({
     gasType: 'nitrogen',
     liquidUsedPerDay: 10000,
@@ -430,7 +428,7 @@ export default function PSAVsLiquid() {
                     aria-label="Load Factor"
                     title="Load Factor"
                   >
-                    {liquidLoadFactors.map(factor => (
+                    {LOAD_FACTORS.map(factor => (
                       <option key={factor} value={factor}>{formatLoadFactor(factor)}</option>
                     ))}
                   </select>
