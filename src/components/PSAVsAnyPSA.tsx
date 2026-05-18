@@ -145,6 +145,8 @@ function PSAVsAnyPSA() {
     </div>
   );
 
+  const gasName = gasType.charAt(0).toUpperCase() + gasType.slice(1);
+
   const costComparisonContent = (
     <div className="grid md:grid-cols-2 gap-6">
       <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-6 rounded-lg border">
@@ -152,7 +154,7 @@ function PSAVsAnyPSA() {
         <div className="space-y-3">
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Model:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{results.absstem.model?.name}</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Compressor:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{results.absstem.compressor?.name}</span></div>
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Nitrogen Supply:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatNumber(results.absstem.nitrogenSupply)} Nm³/hr</span></div>
+          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">{gasName} Supply:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatNumber(results.absstem.nitrogenSupply)} Nm³/hr</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Compressor KW:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatNumber(results.absstem.compressorKW)} kW</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Total Input Power:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatNumber(results.absstem.totalInputPower)} kW</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Specific Power:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatNumber(results.absstem.specificPower, 3)}</span></div>
@@ -177,7 +179,6 @@ function PSAVsAnyPSA() {
   );
 
   // Page 1: Use the same styled system result cards as shown on Page 3
-  const gasName = gasType.charAt(0).toUpperCase() + gasType.slice(1);
   const pageOneSystemResults = (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Absstem System Results */}

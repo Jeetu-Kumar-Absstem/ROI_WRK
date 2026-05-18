@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { Database, Zap, DollarSign } from 'lucide-react';
+import { Database, Zap, DollarSign, IndianRupee } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, Legend, ReferenceLine, LabelList } from 'recharts';
 import { CylinderInputs, CylinderResult, GAS_TYPES, CYLINDER_VOLUMES, LOAD_FACTORS, PURITIES, OXYGEN_PURITIES, INTEREST_RATES, DEPRECIATION_RATES } from '../types/calculator';
 import { calculateCylinderRoi } from '../utils/cylinderCalculations';
 import { findMatchingFlow, findMatchingCompressor } from '../utils/flowMatching';
 import { InputField } from './InputField';
-import { formatIndianCurrency, formatLoadFactor } from '../utils/formatting';
+import { formatIndianCurrency } from '../utils/formatting';
 import { ReportLayout } from './ReportLayout';
 import DownloadPdfButton from './DownloadPdfButton';
 
@@ -36,14 +36,8 @@ export default function PSAVsCylinders() {
   const reportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const cylinderVolume = inputs.cylinderVolume === 'other' ? (inputs.cylinderVolumeCustom || 0) : Number(inputs.cylinderVolume);
-    const perHourConsumption = cylinderVolume > 0 && inputs.plantRunningHours > 0 ? (inputs.cylindersPerDay * cylinderVolume) / inputs.plantRunningHours : 0;
-    const utilizationFactor = inputs.psaPlantFlow > 0 ? perHourConsumption / inputs.psaPlantFlow : 0;
-    const tempInputs: CylinderInputs = { ...inputs, loadFactor: utilizationFactor };
-    const calculatedResults = calculateCylinderRoi(tempInputs);
-    const annualPowerCost = (calculatedResults.power * inputs.powerCostPerUnit * inputs.plantRunningHours * inputs.plantRunningDays * 12) * inputs.loadFactor;
-    const adjustedTotalRunningCostPSA = annualPowerCost + calculatedResults.psaOperatorCostYear + (inputs.annualMaintenanceCost ?? 0) + (calculatedResults.annualInterest ?? 0) - (calculatedResults.annualDepreciation ?? 0);
-    setResults({ ...calculatedResults, totalRunningCostPSA: adjustedTotalRunningCostPSA, annualPowerCost: annualPowerCost });
+    const calculatedResults = calculateCylinderRoi(inputs);
+    setResults(calculatedResults);
   }, [inputs]);
 
   useEffect(() => {
@@ -59,7 +53,7 @@ export default function PSAVsCylinders() {
         setInputs(prev => ({ ...prev, psaPlantFlow: nextFlow, compressorKW: nextCompressorKw }));
       }
     }
-  }, [inputs.cylindersPerDay, inputs.cylinderVolume, inputs.cylinderVolumeCustom, inputs.purity, inputs.gasType, inputs.plantRunningHours, inputs.psaPlantFlow, inputs.compressorKW]);
+  }, [inputs.cylindersPerDay, inputs.cylinderVolume, inputs.cylinderVolumeCustom, inputs.purity, inputs.gasType, inputs.plantRunningHours]);
 
   const updateInput = (key: keyof CylinderInputs, value: any) => {
     setInputs(prev => ({ ...prev, [key]: value }));
@@ -129,7 +123,7 @@ export default function PSAVsCylinders() {
         <div className="flex justify-between"><span className="text-gray-600">Cylinder Volume:</span><span className="font-medium">{inputs.cylinderVolume === 'other' ? inputs.cylinderVolumeCustom : inputs.cylinderVolume} m³</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Running Hours:</span><span className="font-medium">{inputs.plantRunningHours} hrs/day</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Running Days:</span><span className="font-medium">{inputs.plantRunningDays} days/month</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Cylinder Cost:</span><span className="font-medium">{inputs.cylinderCost} ₹/m³</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Cylinder Cost:</span><span className="font-medium">{inputs.cylinderCost} ₹/cylinder</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Purity:</span><span className="font-medium">{inputs.purity}%</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Power Cost:</span><span className="font-medium">{inputs.powerCostPerUnit} ₹/kWh</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Investment Cost:</span><span className="font-medium">{formatIndianCurrency(inputs.investmentCost ?? 0)}</span></div>
@@ -141,7 +135,7 @@ export default function PSAVsCylinders() {
   const costComparisonContent = (
     <div className="grid md:grid-cols-2 gap-6">
       <div className="bg-gradient-to-br from-red-50 to-orange-100 p-6 rounded-lg border">
-        <div className="flex items-center space-x-2 mb-4"><DollarSign className="h-5 w-5 text-red-600" /><h3 className="font-semibold text-gray-900">Cylinder System Costs</h3></div>
+        <div className="flex items-center space-x-2 mb-4"><IndianRupee className="h-5 w-5 text-red-600" /><h3 className="font-semibold text-gray-900">Cylinder System Costs</h3></div>
         <div className="space-y-3">
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Gas Cost per m³:</span><span className="font-medium">₹{(results.unitPricePerM3 ?? 0).toFixed(2)}</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Monthly Expense:</span><span className="font-medium">{formatIndianCurrency(results.monthlyExpenseCylinder)}</span></div>
@@ -240,7 +234,19 @@ export default function PSAVsCylinders() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Gas Type</label>
-                  <select value={inputs.gasType} onChange={(e) => updateInput('gasType', e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Gas Type">
+                  <select
+                    value={inputs.gasType}
+                    onChange={(e) => {
+                      const nextGasType = e.target.value as CylinderInputs['gasType'];
+                      setInputs(prev => {
+                        const allowedPurities = nextGasType === 'oxygen' ? OXYGEN_PURITIES : PURITIES;
+                        const nextPurity = allowedPurities.includes(prev.purity as any) ? prev.purity : allowedPurities[0];
+                        return { ...prev, gasType: nextGasType, purity: nextPurity };
+                      });
+                    }}
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    aria-label="Gas Type"
+                  >
                     {GAS_TYPES.map(type => (<option key={type.value} value={type.value}>{type.label}</option>))}
                   </select>
                 </div>
@@ -263,10 +269,10 @@ export default function PSAVsCylinders() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Load Factor</label>
                   <select value={inputs.loadFactor} onChange={(e) => updateInput('loadFactor', Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Load Factor">
-                    {LOAD_FACTORS.map(factor => (<option key={factor} value={factor}>{formatLoadFactor(factor)}</option>))}
+                    {LOAD_FACTORS.map(factor => (<option key={factor} value={factor}>{factor}</option>))}
                   </select>
                 </div>
-                <InputField label="Cylinder Cost" value={inputs.cylinderCost} onChange={(value) => updateInput('cylinderCost', value)} unit="₹/m³" />
+                <InputField label="Cylinder Cost" value={inputs.cylinderCost} onChange={(value) => updateInput('cylinderCost', value)} unit="₹/cylinder" />
                 <InputField label="Power Cost per Unit" value={inputs.powerCostPerUnit} onChange={(value) => updateInput('powerCostPerUnit', value)} unit="₹/kWh" />
                 <InputField label="Investment Cost (₹)" value={inputs.investmentCost || 0} onChange={(value) => updateInput('investmentCost', value)} />
                 <InputField label="Annual Maintenance (₹)" value={inputs.annualMaintenanceCost || 0} onChange={(value) => updateInput('annualMaintenanceCost', value)} />

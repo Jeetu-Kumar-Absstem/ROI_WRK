@@ -1,13 +1,12 @@
 import { YearlyData } from './types';
 
 export function formatCurrency(amount: number): string {
-  const prefix = amount < 0 ? '-₹' : '₹';
-  const absoluteAmount = Math.abs(amount);
-
-  return `${prefix}${new Intl.NumberFormat('en-IN', {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
     maximumFractionDigits: 0,
     minimumFractionDigits: 0
-  }).format(absoluteAmount)}/-`;
+  }).format(amount);
 }
 
 export function calculateResults(data: any) {
@@ -61,7 +60,8 @@ export function calculateResults(data: any) {
   // Calculate savings and ROI
   const annualSavings = competitionAnnualPowerCost - absstemAnnualPowerCost;
   const totalSavings = competitionTenYearCost - absstemTenYearCost;
-  const roi = annualSavings > 0 && absstemPlantCost > 0 ? absstemPlantCost / annualSavings : 0;
+  const additionalInvestment = absstemPlantCost - competitionPlantCost;
+  const roi = additionalInvestment > 0 && annualSavings > 0 ? additionalInvestment / annualSavings : 0;
   
   // Generate yearly cost data
   const yearlyData: YearlyData[] = [];
