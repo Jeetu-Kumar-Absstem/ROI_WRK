@@ -61,29 +61,57 @@ export default function PSAVsCylinders() {
 
   const availablePurities = inputs.gasType === 'oxygen' ? OXYGEN_PURITIES : PURITIES;
 
+  if (!results) return <div>Loading...</div>;
+
+  // --- PSA override logic ---
+  // When psaPlantFlow or compressorKW is missing / zero / negative:
+  //   Gas Cost per m³   → 0.00
+  //   Power Consumption → 0.00 kW
+  //   PSA Annual Cost   → psaOperatorCostYear + annualMaintenanceCost  (no power, no interest/depreciation)
+  const isPSAInvalid =
+    !inputs.psaPlantFlow || inputs.psaPlantFlow <= 0 ||
+    !inputs.compressorKW || inputs.compressorKW <= 0;
+
+  const effectiveUnitPricePSA  = isPSAInvalid ? 0 : (results.unitPricePSA ?? 0);
+  const effectivePower         = isPSAInvalid ? 0 : results.power;
+  const effectivePSAAnnualCost = isPSAInvalid
+    ? results.psaOperatorCostYear + (inputs.annualMaintenanceCost ?? 0)
+    : results.totalRunningCostPSA;
+
+  // --- Yearly data (must be after isPSAInvalid is defined) ---
   const yearlyData = (() => {
-    if (!results) return [];
     let cumulativeCashFlow = -(inputs.investmentCost ?? 0);
     let wdv = inputs.investmentCost ?? 0;
     const data = [];
     for (let i = 1; i <= 10; i++) {
-      const annualInterest = wdv * ((inputs.interestRate ?? 0) / 100);
+      const annualInterest     = wdv * ((inputs.interestRate ?? 0) / 100);
       const annualDepreciation = wdv * ((inputs.depreciationRate ?? 0) / 100);
-      const psaCost = (results.annualPowerCost ?? 0) + results.psaOperatorCostYear + (inputs.annualMaintenanceCost ?? 0) + annualInterest - annualDepreciation;
+
+      // When PSA fields invalid: only operator + maintenance (flat every year, no wdv decay effect)
+      const psaCost = isPSAInvalid
+        ? results.psaOperatorCostYear + (inputs.annualMaintenanceCost ?? 0)
+        : (results.annualPowerCost ?? 0) + results.psaOperatorCostYear + (inputs.annualMaintenanceCost ?? 0) + annualInterest - annualDepreciation;
+
       const netCashFlow = results.totalRunningCostCylinder - psaCost;
       cumulativeCashFlow += netCashFlow;
       wdv -= annualDepreciation;
-      data.push({ year: `Year ${i}`, 'Current System Cost': results.totalRunningCostCylinder * i, 'PSA System Cost': psaCost * i, 'Cumulative Savings': cumulativeCashFlow });
+
+      data.push({
+        year: `Year ${i}`,
+        'Current System Cost': results.totalRunningCostCylinder * i,
+        'PSA System Cost': psaCost * i,
+        'Cumulative Savings': cumulativeCashFlow
+      });
     }
     return data;
   })();
 
-  const roiData = yearlyData.map(d => ({ year: d.year, cumulativeCashFlow: d['Cumulative Savings'] }));
+  const roiData  = yearlyData.map(d => ({ year: d.year, cumulativeCashFlow: d['Cumulative Savings'] }));
 
-  const chartData = results ? [
+  const chartData = [
     { name: 'Cylinder System', 'Monthly Cost': results.totalRunningCostCylinder / 12, 'Annual Cost': results.totalRunningCostCylinder },
-    { name: 'PSA System', 'Monthly Cost': results.totalRunningCostPSA / 12, 'Annual Cost': results.totalRunningCostPSA }
-  ] : [];
+    { name: 'PSA System',      'Monthly Cost': effectivePSAAnnualCost / 12,           'Annual Cost': effectivePSAAnnualCost }
+  ];
 
   // Helpers for print charts
   const formatAxisINRShort = (value: number) => `₹${(Number(value) / 100000).toFixed(1)}L`;
@@ -98,21 +126,15 @@ export default function PSAVsCylinders() {
   };
 
   // Domains for print charts
-  const monthlyMax = Math.max(
-    chartData[0]?.['Monthly Cost'] || 0,
-    chartData[1]?.['Monthly Cost'] || 0
-  );
-  const annualMax = Math.max(
-    chartData[0]?.['Annual Cost'] || 0,
-    chartData[1]?.['Annual Cost'] || 0
-  );
+  const monthlyMax = Math.max(chartData[0]?.['Monthly Cost'] || 0, chartData[1]?.['Monthly Cost'] || 0);
+  const annualMax  = Math.max(chartData[0]?.['Annual Cost']  || 0, chartData[1]?.['Annual Cost']  || 0);
   const roiMin = Math.min(...roiData.map(d => d.cumulativeCashFlow));
   const roiMax = Math.max(...roiData.map(d => d.cumulativeCashFlow));
-  const roiRange = Math.max(roiMax - roiMin, 1);
+  const roiRange  = Math.max(roiMax - roiMin, 1);
   const roiBuffer = roiRange * 0.05;
-  const breakEvenYearLabel = results?.paybackPeriodMonths ? `Year ${Math.ceil((results.paybackPeriodMonths ?? 0) / 12)}` : undefined;
-
-  if (!results) return <div>Loading...</div>;
+  const breakEvenYearLabel = results?.paybackPeriodMonths
+    ? `Year ${Math.ceil((results.paybackPeriodMonths ?? 0) / 12)}`
+    : undefined;
 
   const inputParametersSummary = (
     <div className="bg-white p-6 rounded-lg shadow border">
@@ -147,13 +169,13 @@ export default function PSAVsCylinders() {
       <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-6 rounded-lg border">
         <div className="flex items-center space-x-2 mb-4"><Zap className="h-5 w-5 text-blue-600" /><h3 className="font-semibold text-gray-900">PSA System Costs</h3></div>
         <div className="space-y-3">
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Gas Cost per m³:</span><span className="font-medium">₹{(results.unitPricePSA ?? 0).toFixed(2)}</span></div>
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Power Consumption:</span><span className="font-medium">{results.power.toFixed(2)} kW</span></div>
+          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Gas Cost per m³:</span><span className="font-medium">₹{effectiveUnitPricePSA.toFixed(2)}</span></div>
+          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Power Consumption:</span><span className="font-medium">{effectivePower.toFixed(2)} kW</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Operator Cost (Annual):</span><span className="font-medium">{formatIndianCurrency(results.psaOperatorCostYear)}</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Utilization Factor:</span><span className="font-medium">{results.utilizationFactor.toFixed(2)}</span></div>
           {(results.annualInterest ?? 0) > 0 && (<div className="flex justify-between items-center"><span className="text-sm text-gray-600">Annual Interest:</span><span className="font-medium">{formatIndianCurrency(results.annualInterest ?? 0)}</span></div>)}
           {(results.annualDepreciation ?? 0) > 0 && (<div className="flex justify-between items-center"><span className="text-sm text-gray-600">Annual Depreciation (Tax Shield):</span><span className="font-medium text-green-600">-{formatIndianCurrency(results.annualDepreciation ?? 0)}</span></div>)}
-          <div className="border-t pt-3"><div className="flex justify-between items-center"><span className="font-medium text-gray-900">Total Annual Cost:</span><span className="font-bold text-lg text-blue-600">{formatIndianCurrency(results.totalRunningCostPSA)}</span></div></div>
+          <div className="border-t pt-3"><div className="flex justify-between items-center"><span className="font-medium text-gray-900">Total Annual Cost:</span><span className="font-bold text-lg text-blue-600">{formatIndianCurrency(effectivePSAAnnualCost)}</span></div></div>
         </div>
       </div>
     </div>
