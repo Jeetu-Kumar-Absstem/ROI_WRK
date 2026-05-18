@@ -268,9 +268,58 @@ function PSAVsAnyPSA() {
     return Math.abs(n) >= 100000 ? `₹${(n / 100000).toFixed(1)}L` : formatIndianCurrency(n);
   };
 
+  // Monthly & Annual Cost Comparison Chart
+  const monthlyAnnualCostChart = selectedModel && selectedCompressor ? (
+    <div className="bg-white p-6 rounded-lg shadow border">
+      <h3 className="font-semibold text-gray-900 mb-6">Monthly & Annual Cost Comparison</h3>
+      <div className="flex justify-center">
+        <BarChart 
+          width={700} 
+          height={400} 
+          data={[
+            {
+              name: 'Absstem System',
+              'Monthly Cost': results.absstem.annualPowerCost / (12 * 100000),
+              'Annual Cost': results.absstem.annualPowerCost / 100000
+            },
+            {
+              name: 'Competition System',
+              'Monthly Cost': results.competition.annualPowerCost / (12 * 100000),
+              'Annual Cost': results.competition.annualPowerCost / 100000
+            }
+          ]} 
+          margin={{ top: 20, right: 40, left: 80, bottom: 80 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis 
+            dataKey="name" 
+            angle={-25}
+            textAnchor="end"
+            height={100}
+            tick={{ fontSize: 12 }}
+          />
+          <YAxis 
+            tickFormatter={(tick) => `₹${tick.toFixed(1)}L`}
+            label={{ value: 'Cost (Lakhs)', angle: -90, position: 'insideLeft', offset: 10 }}
+            tick={{ fontSize: 12 }}
+          />
+          <Tooltip 
+            formatter={(value: number) => `₹${(value).toFixed(2)}L`}
+            labelFormatter={(label) => `${label}`}
+            cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
+          />
+          <Legend wrapperStyle={{ paddingTop: 20 }} />
+          <Bar dataKey="Monthly Cost" fill="#3B82F6" />
+          <Bar dataKey="Annual Cost" fill="#10B981" />
+        </BarChart>
+      </div>
+    </div>
+  ) : null;
+
   const resultsContent = (
     <div className="lg:col-span-2 space-y-6">
       {costComparisonContent}
+      {monthlyAnnualCostChart}
       {selectedModel && selectedCompressor && (
         <ComparisonResult 
           gasType={gasType}
@@ -411,6 +460,52 @@ function PSAVsAnyPSA() {
                   <Bar dataKey="value" name="Power (kW)" isAnimationActive={false}>
                     <Cell fill="#10B981" /><Cell fill="#3B82F6" />
                   </Bar>
+                </BarChart>
+              </div>
+            </div>
+
+            {/* Monthly & Annual Cost Comparison */}
+            <div className="avoid-break">
+              <h3 className="text-xl text-gray-800 mb-4" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Monthly & Annual Cost Comparison</h3>
+              <div className="bg-white p-4 rounded-lg border shadow-sm flex justify-center">
+                <BarChart 
+                  width={700} 
+                  height={400} 
+                  data={[
+                    {
+                      name: 'Absstem System',
+                      'Monthly Cost': results.absstem.annualPowerCost / (12 * 100000),
+                      'Annual Cost': results.absstem.annualPowerCost / 100000
+                    },
+                    {
+                      name: 'Competition System',
+                      'Monthly Cost': results.competition.annualPowerCost / (12 * 100000),
+                      'Annual Cost': results.competition.annualPowerCost / 100000
+                    }
+                  ]} 
+                  margin={{ top: 20, right: 40, left: 80, bottom: 80 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="name" 
+                    angle={-25}
+                    textAnchor="end"
+                    height={100}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis 
+                    tickFormatter={(tick) => `₹${tick.toFixed(1)}L`}
+                    label={{ value: 'Cost (Lakhs)', angle: -90, position: 'insideLeft', offset: 10 }}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <Tooltip 
+                    formatter={(value: number) => `₹${(value).toFixed(2)}L`}
+                    labelFormatter={(label) => `${label}`}
+                    cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
+                  />
+                  <Legend wrapperStyle={{ paddingTop: 20 }} />
+                  <Bar dataKey="Monthly Cost" fill="#3B82F6" />
+                  <Bar dataKey="Annual Cost" fill="#10B981" />
                 </BarChart>
               </div>
             </div>
