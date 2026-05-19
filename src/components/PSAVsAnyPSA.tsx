@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import ModelSelector from './ModelSelector.tsx';
 import { Calculator } from 'lucide-react';
@@ -122,7 +121,10 @@ function PSAVsAnyPSA() {
         <div className="space-y-3">
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Model:</span><span className="font-medium">{results.absstem.model?.name}</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Compressor:</span><span className="font-medium">{results.absstem.compressor?.name}</span></div>
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Nitrogen Supply:</span><span className="font-medium">{formatNumber(results.absstem.nitrogenSupply)} Nm3/hr</span></div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-600">{gasType === 'oxygen' ? 'Oxygen Supply:' : 'Nitrogen Supply:'}</span>
+            <span className="font-medium">{formatNumber(results.absstem.nitrogenSupply)} Nm3/hr</span>
+          </div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Compressor KW:</span><span className="font-medium">{formatNumber(results.absstem.compressorKW)} kW</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Total Input Power:</span><span className="font-medium">{formatNumber(results.absstem.totalInputPower)} kW</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Specific Power:</span><span className="font-medium">{formatNumber(results.absstem.specificPower, 3)}</span></div>
@@ -134,7 +136,10 @@ function PSAVsAnyPSA() {
       <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-lg border">
         <h3 className="font-semibold text-gray-900 mb-4">Competition System Costs</h3>
         <div className="space-y-3">
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Flow:</span><span className="font-medium">{formatNumber(results.competition.flow)} Nm3/hr</span></div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-600">{gasType === 'oxygen' ? 'Oxygen Supply:' : 'Nitrogen Supply:'}</span>
+            <span className="font-medium">{formatNumber(results.competition.flow)} Nm3/hr</span>
+          </div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Compressor KW:</span><span className="font-medium">{formatNumber(results.competition.compressorKW)} kW</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Total Input Power:</span><span className="font-medium">{formatNumber(results.competition.totalInputPower)} kW</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Specific Power:</span><span className="font-medium">{formatNumber(results.competition.specificPower, 3)}</span></div>
@@ -371,8 +376,6 @@ function PSAVsAnyPSA() {
             </div>
           </div>
 
-          
-
           {/* Page 3: Business Case & Recommendation */}
           <div className="print-page space-y-8">
             <div className="avoid-break">
@@ -385,14 +388,14 @@ function PSAVsAnyPSA() {
                 </h2>
                 <div className="space-y-4 text-gray-700 leading-relaxed text-justify">
                   <p>
-                    Upgrading to an Absstem PSA system demonstrates clear economic and operational advantages over the competitor’s setup. With projected annual savings of
+                    Upgrading to an Absstem PSA system demonstrates clear economic and operational advantages over the competitor's setup. With projected annual savings of
                     <span className="font-semibold text-green-700"> {formatIndianCurrency(results.comparison.annualSavings)}</span> and cumulative ten-year savings of
                     <span className="font-semibold text-green-700"> {formatIndianCurrency(results.comparison.totalSavings)}</span>, the investment is supported by strong lifecycle economics.
                   </p>
                   <p>
                     The indicated payback period of
                     <span className="font-semibold text-blue-700"> {results.comparison.roi > 0 ? `${results.comparison.roi.toFixed(1)} years` : 'Immediate/N/A'}</span>
-                    reflects efficient capital deployment. Beyond the financials, Absstem’s integrated design reduces energy consumption, simplifies maintenance, and provides single-vendor accountability for reliability and support.
+                    reflects efficient capital deployment. Beyond the financials, Absstem's integrated design reduces energy consumption, simplifies maintenance, and provides single-vendor accountability for reliability and support.
                   </p>
                   <p className="font-semibold">Recommendation: Proceed with the Absstem PSA solution to achieve immediate operational efficiency gains, reduce long-term OPEX, and ensure dependable performance under a unified support framework.</p>
                 </div>
