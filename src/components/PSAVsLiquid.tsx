@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react';
-import { Calculator, DollarSign, Zap,IndianRupee } from 'lucide-react';
+// src/components/PSAVsLiquid.tsx
+import { useState, useRef, useEffect } from 'react';
+import { Calculator, DollarSign, Zap, IndianRupee } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
 import { RoiInputs, GAS_TYPES, LIQUID_UNITS, PURITIES, OXYGEN_PURITIES, INTEREST_RATES, DEPRECIATION_RATES, LOAD_FACTORS } from '../types/calculator';
 import { calculateRoi } from '../utils/calculations';
@@ -7,8 +8,12 @@ import { formatIndianCurrency, formatLoadFactor, formatNumber } from '../utils/f
 import { convertToNm3, getLiquidToGasConversionFactor } from '../utils/conversions';
 import { ReportLayout } from './ReportLayout';
 import DownloadPdfButton from './DownloadPdfButton';
+import { 
+  StaticMonthlyAnnualCostChart, 
+  CumulativeSavingsTable 
+} from './StaticChartComponents';
 
-// Lufga font faces — place the .otf files in /public/fonts/
+// Lufga font faces
 const lufgaFontStyle = `
   @font-face {
     font-family: 'Lufga';
@@ -26,6 +31,14 @@ const lufgaFontStyle = `
   }
 `;
 
+// Common Y-axis tick formatter for Lakhs (used in both UI and PDF)
+const formatToLakhs = (value: number): string => {
+  const val = Number(value);
+  const lakhs = Math.abs(val) / 100000;
+  const isNegative = val < 0;
+  const sign = isNegative ? '-' : '';
+  return `${sign}₹${lakhs.toFixed(1)}L`;
+};
 
 export default function PSAVsLiquid() {
   const [inputs, setInputs] = useState<RoiInputs>({
@@ -46,10 +59,15 @@ export default function PSAVsLiquid() {
     annualMaintenanceCost: 75000,
     interestRate: 0,
     depreciationRate: 0,
-    gasUsedPerDay: 0, // Add missing property
+    gasUsedPerDay: 0,
   });
 
   const reportRef = useRef<HTMLDivElement>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const unitPricePerNm3 = convertToNm3(inputs.gasCost, inputs.gasCostUnit, inputs.gasType);
   const gasUsedPerDay = (inputs.liquidUsedPerDay || 0) * getLiquidToGasConversionFactor(inputs.liquidUnit || 'Sm³', inputs.gasType);
@@ -58,7 +76,7 @@ export default function PSAVsLiquid() {
   const monthlyPSACost = (result.monthlyConsumption ?? 0) * (result.unitPricePSA ?? 0) + monthlyMaintenanceCostPerMonth + ((result.annualInterest ?? 0) / 12) - ((result.annualDepreciation ?? 0) / 12);
   const monthlySavings = (result.monthlyExpenseCylinder ?? 0) - monthlyPSACost;
   
-  // Axis tick formatter for INR in Lakhs (short form)
+  // Axis tick formatter for INR in Lakhs (short form) - for UI bar chart
   const formatAxisINRShort = (value: number) => `₹${(Number(value) / 100000).toFixed(1)}L`;
 
   const chartData = [
@@ -101,10 +119,11 @@ export default function PSAVsLiquid() {
   const roiBuffer = roiRange * 0.05;
 
   const breakEvenYearIndex = Math.ceil((result.paybackPeriodMonths ?? 0) / 12);
-  const breakEvenYearLabel = breakEvenYearIndex > 0 ? `Year ${breakEvenYearIndex}` : undefined;
+  const breakEvenYearLabel = breakEvenYearIndex > 0 && breakEvenYearIndex <= 10 ? `Year ${breakEvenYearIndex}` : undefined;
 
   const availablePurities = inputs.gasType === 'oxygen' ? OXYGEN_PURITIES : PURITIES;
 
+  // UI Chart Component (Recharts - stays the same)
   const monthlyAnnualCostComparisonChart = (
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
@@ -119,8 +138,42 @@ export default function PSAVsLiquid() {
     </ResponsiveContainer>
   );
 
+  // ROI Chart Component (Recharts - for both UI and PDF with consistent Lakhs format)
+  const roiChartComponent = (
+    <ResponsiveContainer width="100%" height={300}>
+      <LineChart data={roiData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="year" />
+        <YAxis 
+          tickFormatter={formatToLakhs}
+          domain={[roiMin - roiBuffer, roiMax + roiBuffer]}
+        />
+        <Tooltip 
+          formatter={(value) => {
+            const val = Number(value);
+            const lakhs = Math.abs(val) / 100000;
+            const isNegative = val < 0;
+            const sign = isNegative ? '-' : '';
+            return `${sign}₹${lakhs.toFixed(1)} Lakhs`;
+          }}
+        />
+        <Legend />
+        <ReferenceLine y={0} stroke="#000" strokeDasharray="3 3" label={{ value: 'Break-even', position: 'top', fill: '#ef4444', fontSize: 11 }} />
+        <Line 
+          type="monotone" 
+          dataKey="cumulativeCashFlow" 
+          stroke="#8884d8" 
+          strokeWidth={3} 
+          name="Cumulative Cash Flow"
+          dot={{ r: 4, fill: "#8884d8" }}
+          activeDot={{ r: 6 }}
+        />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+
   const inputParametersSummary = (
-    <div className="bg-white p-6 rounded-lg shadow border">
+    <div className="bg-white p-6 rounded-lg shadow border" style={{ breakInside: 'avoid' }}>
       <h3 className="text-gray-900 mb-4" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Input Parameters</h3>
       <div className="space-y-2 text-sm">
         <div className="flex justify-between"><span className="text-gray-600">Gas Type:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.gasType}</span></div>
@@ -138,7 +191,7 @@ export default function PSAVsLiquid() {
   );
 
   const costComparisonContent = (
-    <div className="grid md:grid-cols-2 gap-6">
+    <div className="grid md:grid-cols-2 gap-6" style={{ breakInside: 'avoid' }}>
       <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-6 rounded-lg border">
         <div className="flex items-center space-x-2 mb-4">
           <IndianRupee className="h-5 w-5 text-blue-600" />
@@ -237,17 +290,7 @@ export default function PSAVsLiquid() {
         </div>
         <div className="bg-white p-6 rounded-lg shadow border">
           <h3 className="text-gray-900 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Return on Investment (ROI)</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={roiData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="year" />
-              <YAxis tickFormatter={(value) => `₹${(Number(value)/100000).toFixed(1)}L`} />
-              <Tooltip formatter={(value) => formatIndianCurrency(Number(value))} />
-              <Legend />
-              <ReferenceLine y={0} stroke="#000" strokeDasharray="3 3" />
-              <Line type="monotone" dataKey="cumulativeCashFlow" stroke="#8884d8" strokeWidth={3} name="Cumulative Cash Flow" />
-            </LineChart>
-          </ResponsiveContainer>
+          {roiChartComponent}
         </div>
       </div>
       <div className="bg-white rounded-lg shadow border overflow-hidden">
@@ -287,7 +330,7 @@ export default function PSAVsLiquid() {
         <DownloadPdfButton contentToPrint={reportRef} tabName={'PSA_Vs_Liquid'} inputs={inputs} />
       </div>
 
-      {/* Screen View */}
+      {/* Screen View - UI remains exactly the same */}
       <div className="print:hidden p-6">
         <div className="grid lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1 bg-white p-6 rounded-lg shadow border">
@@ -506,7 +549,7 @@ export default function PSAVsLiquid() {
         </div>
       </div>
 
-      {/* Print View */}
+      {/* Print View - PDF Report */}
       <ReportLayout
         ref={reportRef}
         title="PSA vs. Liquid Supply: A Cost-Benefit Analysis"
@@ -515,130 +558,162 @@ export default function PSAVsLiquid() {
             This report presents a comprehensive financial analysis comparing the current expenditure on liquid nitrogen/oxygen supply with the projected costs and savings of implementing an on-site PSA (Pressure Swing Adsorption) generation plant. The evaluation indicates substantial long-term financial benefits, a rapid return on investment, and enhanced operational autonomy.
           </p>
         }
-        pageOneContent={<>
-      {inputParametersSummary}
-      {costComparisonContent}
-    </>}
+        pageOneContent={
+          <div className="space-y-6">
+            {inputParametersSummary}
+            {costComparisonContent}
+          </div>
+        }
       >
         <>
-      {/* Page 2: Financial Summary & Charts */}
-      <div className="print-page space-y-8">
-        <div className="avoid-break">
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-600 p-6 rounded-r-lg">
-            <h2 className="text-2xl text-gray-800 mb-4 flex items-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
-              <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center mr-3">
-                <span className="text-white text-sm" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>2</span>
-              </div>
-              Financial Summary & Investment Analysis
-            </h2>
-            <div className="grid md:grid-cols-3 gap-6 text-center">
-              <div className="bg-white p-6 rounded-lg border border-green-200 shadow-sm">
-                <div className="text-4xl font-bold text-green-600 mb-2">{formatIndianCurrency(monthlySavings)}</div>
-                <div className="text-sm font-medium text-green-800">Estimated Monthly Savings</div>
-              </div>
-              <div className="bg-white p-6 rounded-lg border border-blue-200 shadow-sm">
-                <div className="text-4xl font-bold text-blue-600 mb-2">{formatIndianCurrency(result.annualSavings ?? 0)}</div>
-                <div className="text-sm font-medium text-blue-800">Estimated Annual Savings</div>
-              </div>
-              <div className="bg-white p-6 rounded-lg border border-purple-200 shadow-sm">
-                <div className="text-4xl font-bold text-purple-600 mb-2">{result.roiPercentage?.toFixed(1)}%</div>
-                <div className="text-sm font-medium text-purple-800">Return on Investment (ROI)</div>
-                <div className="text-xs text-gray-500 mt-1">Payback in {result.paybackPeriodMonths?.toFixed(1)} months</div>
+          {/* Page 2: Financial Summary & Investment Analysis - PDF NEW STRUCTURE */}
+          <div className="print-page space-y-8">
+            {/* Financial Summary Cards */}
+            <div className="avoid-break">
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-600 p-6 rounded-r-lg">
+                <h2 className="text-2xl text-gray-800 mb-4 flex items-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+                  <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-white text-sm" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>2</span>
+                  </div>
+                  Financial Summary & Investment Analysis
+                </h2>
+                <div className="grid md:grid-cols-3 gap-6 text-center">
+                  <div className="bg-white p-6 rounded-lg border border-green-200 shadow-sm">
+                    <div className="text-4xl font-bold text-green-600 mb-2">{formatIndianCurrency(monthlySavings)}</div>
+                    <div className="text-sm font-medium text-green-800">Estimated Monthly Savings</div>
+                  </div>
+                  <div className="bg-white p-6 rounded-lg border border-blue-200 shadow-sm">
+                    <div className="text-4xl font-bold text-blue-600 mb-2">{formatIndianCurrency(result.annualSavings ?? 0)}</div>
+                    <div className="text-sm font-medium text-blue-800">Estimated Annual Savings</div>
+                  </div>
+                  <div className="bg-white p-6 rounded-lg border border-purple-200 shadow-sm">
+                    <div className="text-4xl font-bold text-purple-600 mb-2">{result.roiPercentage?.toFixed(1)}%</div>
+                    <div className="text-sm font-medium text-purple-800">Return on Investment (ROI)</div>
+                    <div className="text-xs text-gray-500 mt-1">Payback in {result.paybackPeriodMonths?.toFixed(1)} months</div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div className="avoid-break">
-          <h2 className="text-2xl text-gray-800 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Visual Cost Comparison</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="bg-white p-6 rounded-lg shadow border">
-              <h3 className="text-gray-900 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Monthly & Annual Cost Comparison</h3>
-              {monthlyAnnualCostComparisonChart}
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow border">
-              <h3 className="text-gray-900 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Return on Investment (ROI)</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={roiData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="year" />
-                  <YAxis tickFormatter={(value) => formatAxisINRShort(Number(value))} domain={[roiMin - roiBuffer, roiMax + roiBuffer]} />
-                  <Tooltip formatter={(value) => formatIndianCurrency(Number(value))} />
-                  <Legend />
-                  <ReferenceLine y={0} stroke="#000" strokeDasharray="3 3" />
-                  {breakEvenYearLabel && (
-                    <ReferenceLine x={breakEvenYearLabel} stroke="#ef4444" label={{ value: 'Break-even', position: 'top', fill: '#ef4444' }} strokeDasharray="5 5" />
-                  )}
-                  <Line
-                    type="monotone"
-                    dataKey="cumulativeCashFlow"
-                    stroke="#2563eb"
-                    strokeOpacity={1}
-                    strokeWidth={4}
-                    name="Cumulative Cash Flow"
-                    dot={{ r: 4 }}
-                    activeDot={{ r: 6 }}
-                    isAnimationActive={false}
+            {/* Row 1: Monthly Cost Comparison - Full Width (PDF static chart) */}
+            <div className="avoid-break">
+              <div className="bg-white p-6 rounded-lg shadow border">
+                {isClient && (
+                  <StaticMonthlyAnnualCostChart 
+                    data={chartData} 
+                    width="100%" 
+                    height={350}
+                    chartType="monthly"
                   />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Page 3: Business Case & Recommendation */}
-      <div className="print-page space-y-8">
-        <div className="avoid-break">
-          <div className="bg-gradient-to-r from-slate-50 to-indigo-50 border-l-4 border-indigo-600 p-6 rounded-r-lg">
-            <h2 className="text-2xl text-gray-800 mb-4 flex items-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
-              <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center mr-3">
-                <span className="text-white text-sm" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>3</span>
+                )}
               </div>
-              Business Case & Recommendation
-            </h2>
-            <div className="space-y-4 text-gray-700 leading-relaxed text-justify">
-              <p>
-                Transitioning from liquid supply to an on-site PSA plant presents a compelling financial and operational advantage. With projected monthly savings of <span className="font-semibold text-green-700">{formatIndianCurrency(monthlySavings)}</span> and annual savings of <span className="font-semibold text-green-700">{formatIndianCurrency(result.annualSavings ?? 0)}</span>, the initial investment is quickly recovered, leading to significant long-term cost reduction.
-              </p>
-              <p>
-                The calculated return on investment of <span className="font-semibold text-blue-700">{result.roiPercentage ? `${result.roiPercentage.toFixed(1)}%` : 'N/A'}</span>, with a payback period of just <span className="font-semibold text-blue-700">{result.paybackPeriodMonths ? `${result.paybackPeriodMonths.toFixed(1)} months` : 'N/A'}</span>, underscores the financial viability of this project. Beyond the numbers, on-site generation eliminates dependence on external suppliers, mitigates logistical risks, and reduces the carbon footprint associated with liquid gas deliveries.
-              </p>
-              <p className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
-                Recommendation: We strongly recommend proceeding with the implementation of the PSA generation system to realize immediate cost savings, improve operational efficiency, and achieve supply chain independence.
-              </p>
+            </div>
+
+            {/* Row 2: Annual Cost Comparison - Full Width (PDF static chart) */}
+            <div className="avoid-break">
+              <div className="bg-white p-6 rounded-lg shadow border">
+                {isClient && (
+                  <StaticMonthlyAnnualCostChart 
+                    data={chartData} 
+                    width="100%" 
+                    height={350}
+                    chartType="annual"
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Row 3: ROI Graph - Using Recharts with consistent Lakhs format (same as UI) */}
+            <div className="avoid-break">
+              <div className="bg-white p-6 rounded-lg shadow border">
+                <h3 className="text-gray-900 mb-4 text-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Return on Investment (ROI)</h3>
+                <div style={{ width: '100%', height: '400px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={roiData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="year" 
+                        tick={{ fontSize: 11 }}
+                        interval={1}
+                      />
+                      <YAxis 
+                        tickFormatter={formatToLakhs}
+                        tick={{ fontSize: 11 }}
+                        domain={[roiMin - roiBuffer, roiMax + roiBuffer]}
+                      />
+                      <Tooltip 
+                        formatter={(value) => {
+                          const val = Number(value);
+                          const lakhs = Math.abs(val) / 100000;
+                          const isNegative = val < 0;
+                          const sign = isNegative ? '-' : '';
+                          return `${sign}₹${lakhs.toFixed(1)} Lakhs`;
+                        }}
+                        contentStyle={{ fontSize: '12px' }}
+                      />
+                      <Legend />
+                      <ReferenceLine 
+                        y={0} 
+                        stroke="#000" 
+                        strokeDasharray="3 3" 
+                        label={{ 
+                          value: 'Break-even', 
+                          position: 'top', 
+                          fill: '#ef4444', 
+                          fontSize: 11,
+                          fontWeight: 'bold'
+                        }} 
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="cumulativeCashFlow" 
+                        stroke="#8884d8" 
+                        strokeWidth={3} 
+                        name="Cumulative Cash Flow"
+                        dot={{ r: 4, fill: "#8884d8" }}
+                        activeDot={{ r: 6 }}
+                        isAnimationActive={false}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="bg-white rounded-lg shadow border overflow-hidden">
-          <div className="bg-gray-50 px-6 py-4 border-b">
-            <h3 className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>10-Year Cumulative Savings</h3>
+
+          {/* Page 3: Business Case & Recommendation */}
+          <div className="print-page space-y-8">
+            <div className="avoid-break">
+              <div className="bg-gradient-to-r from-slate-50 to-indigo-50 border-l-4 border-indigo-600 p-6 rounded-r-lg">
+                <h2 className="text-2xl text-gray-800 mb-4 flex items-center" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+                  <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-white text-sm" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>3</span>
+                  </div>
+                  Business Case & Recommendation
+                </h2>
+                <div className="space-y-4 text-gray-700 leading-relaxed text-justify">
+                  <p>
+                    Transitioning from liquid supply to an on-site PSA plant presents a compelling financial and operational advantage. With projected monthly savings of <span className="font-semibold text-green-700">{formatIndianCurrency(monthlySavings)}</span> and annual savings of <span className="font-semibold text-green-700">{formatIndianCurrency(result.annualSavings ?? 0)}</span>, the initial investment is quickly recovered, leading to significant long-term cost reduction.
+                  </p>
+                  <p>
+                    The calculated return on investment of <span className="font-semibold text-blue-700">{result.roiPercentage ? `${result.roiPercentage.toFixed(1)}%` : 'N/A'}</span>, with a payback period of just <span className="font-semibold text-blue-700">{result.paybackPeriodMonths ? `${result.paybackPeriodMonths.toFixed(1)} months` : 'N/A'}</span>, underscores the financial viability of this project. Beyond the numbers, on-site generation eliminates dependence on external suppliers, mitigates logistical risks, and reduces the carbon footprint associated with liquid gas deliveries.
+                  </p>
+                  <p className="font-semibold">
+                    Recommendation: We strongly recommend proceeding with the implementation of the PSA generation system to realize immediate cost savings, improve operational efficiency, and achieve supply chain independence.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            {/* 10-Year Cumulative Savings Table for PDF */}
+            <div className="bg-white rounded-lg shadow border overflow-hidden" style={{ breakInside: 'avoid' }}>
+              <div className="bg-gray-50 px-6 py-4 border-b">
+                <h3 className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>10-Year Cumulative Savings</h3>
+              </div>
+              {isClient && <CumulativeSavingsTable data={yearlyData} />}
+            </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Year</th>
-                  <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Current System Cost</th>
-                  <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>PSA System Cost</th>
-                  <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Cumulative Savings</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {yearlyData.map((row, index) => (
-                  <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{row.year}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatIndianCurrency(row['Current System Cost'])}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatIndianCurrency(row['PSA System Cost'])}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(row['Cumulative Savings'])}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </>
+        </>
       </ReportLayout>
     </div>
   );
