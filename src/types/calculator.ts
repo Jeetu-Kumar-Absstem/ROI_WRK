@@ -1,3 +1,5 @@
+// In your types/calculator.ts file
+export const LIQUID_UNITS = ['Nm³', 'Sm³', 'Kg', 'Liters']; // with superscript ³
 export  interface FlowData {
   purity: number;
   flow: number;
@@ -162,7 +164,7 @@ export  const GAS_TYPES = [
   { value: 'oxygen', label: 'Oxygen' }
 ] as const;
 
-export const LIQUID_UNITS = ['Sm3', 'Nm3', 'Liters', 'Kg'] as const;
+// export const LIQUID_UNITS = ['Sm3', 'Nm3', 'Liters', 'Kg'] as const;
 export const LOAD_FACTORS = [0.8, 0.85, 0.9, 0.95, 1.0, 1.05, 1.10, 1.15, 1.2, 1.25, 1.3] as const;
 export  const PURITIES = [95, 97, 98, 99, 99.5, 99.9, 99.95, 99.99, 99.995, 99.999] as const;
 export const OXYGEN_PURITIES = [95] as const;  

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Database, Zap, DollarSign, IndianRupee } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, Legend, ReferenceLine, LabelList } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
 import { CylinderInputs, CylinderResult, GAS_TYPES, CYLINDER_VOLUMES, LOAD_FACTORS, PURITIES, OXYGEN_PURITIES, INTEREST_RATES, DEPRECIATION_RATES } from '../types/calculator';
 import { calculateCylinderRoi } from '../utils/cylinderCalculations';
 import { findMatchingFlow, findMatchingCompressor } from '../utils/flowMatching';
@@ -8,6 +8,13 @@ import { InputField } from './InputField';
 import { formatIndianCurrency } from '../utils/formatting';
 import { ReportLayout } from './ReportLayout';
 import DownloadPdfButton from './DownloadPdfButton';
+
+const formatGasTypeLabel = (gasType: 'nitrogen' | 'oxygen'): string =>
+  gasType.charAt(0).toUpperCase() + gasType.slice(1);
+
+const lufgaRegularStyle = { fontFamily: "'Lufga', sans-serif", fontWeight: 400 } as const;
+const lufgaSemiboldStyle = { fontFamily: "'Lufga', sans-serif", fontWeight: 600 } as const;
+const lufgaRegularTickStyle = { fill: '#000000', fontFamily: 'Lufga, sans-serif', fontSize: 12 } as const;
 
 export default function PSAVsCylinders() {
   const [inputs, setInputs] = useState<CylinderInputs>({
@@ -109,25 +116,23 @@ export default function PSAVsCylinders() {
   const roiData  = yearlyData.map(d => ({ year: d.year, cumulativeCashFlow: d['Cumulative Savings'] }));
 
   const chartData = [
-    { name: 'Cylinder System', 'Monthly Cost': results.totalRunningCostCylinder / 12, 'Annual Cost': results.totalRunningCostCylinder },
-    { name: 'PSA System',      'Monthly Cost': effectivePSAAnnualCost / 12,           'Annual Cost': effectivePSAAnnualCost }
+    {
+      name: 'Monthly Cost',
+      'Cylinder System': results.totalRunningCostCylinder / 12,
+      'PSA System': effectivePSAAnnualCost / 12
+    },
+    {
+      name: 'Annual Cost',
+      'Cylinder System': results.totalRunningCostCylinder,
+      'PSA System': effectivePSAAnnualCost
+    }
   ];
 
   // Helpers for print charts
   const formatAxisINRShort = (value: number) => `₹${(Number(value) / 100000).toFixed(1)}L`;
-  const CurrencyBarLabel = (props: any) => {
-    const { x, y, value } = props;
-    if (value == null) return null;
-    return (
-      <text x={x} y={y} dy={-6} fill="#111827" fontSize={12} textAnchor="middle">
-        {formatIndianCurrency(Number(value))}
-      </text>
-    );
-  };
-
   // Domains for print charts
-  const monthlyMax = Math.max(chartData[0]?.['Monthly Cost'] || 0, chartData[1]?.['Monthly Cost'] || 0);
-  const annualMax  = Math.max(chartData[0]?.['Annual Cost']  || 0, chartData[1]?.['Annual Cost']  || 0);
+  const cylinderAxisMax = Math.max(...chartData.map(item => item['Cylinder System'] || 0));
+  const psaAxisMax = Math.max(...chartData.map(item => item['PSA System'] || 0));
   const roiMin = Math.min(...roiData.map(d => d.cumulativeCashFlow));
   const roiMax = Math.max(...roiData.map(d => d.cumulativeCashFlow));
   const roiRange  = Math.max(roiMax - roiMin, 1);
@@ -138,10 +143,10 @@ export default function PSAVsCylinders() {
 
   const inputParametersSummary = (
     <div className="bg-white p-6 rounded-lg shadow border">
-      <h3 className="font-semibold text-gray-900 mb-4">Input Parameters</h3>
+      <h3 className="text-gray-900 mb-4" style={lufgaSemiboldStyle}>Input Parameters</h3>
       <div className="space-y-2 text-sm">
-        <div className="flex justify-between"><span className="text-gray-600">Gas Type:</span><span className="font-medium">{inputs.gasType}</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Cylinders per Day:</span><span className="font-medium">{inputs.cylindersPerDay}</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Gas Type:</span><span style={lufgaRegularStyle}>{formatGasTypeLabel(inputs.gasType)}</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Cylinders per Day:</span><span style={lufgaRegularStyle}>{inputs.cylindersPerDay}</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Cylinder Volume:</span><span className="font-medium">{inputs.cylinderVolume === 'other' ? inputs.cylinderVolumeCustom : inputs.cylinderVolume} m³</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Running Hours:</span><span className="font-medium">{inputs.plantRunningHours} hrs/day</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Running Days:</span><span className="font-medium">{inputs.plantRunningDays} days/month</span></div>
@@ -159,7 +164,7 @@ export default function PSAVsCylinders() {
       <div className="bg-gradient-to-br from-red-50 to-orange-100 p-6 rounded-lg border">
         <div className="flex items-center space-x-2 mb-4"><IndianRupee className="h-5 w-5 text-red-600" /><h3 className="font-semibold text-gray-900">Cylinder System Costs</h3></div>
         <div className="space-y-3">
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Gas Cost per m³:</span><span className="font-medium">₹{(results.unitPricePerM3 ?? 0).toFixed(2)}</span></div>
+          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Gas Cost per m³:</span><span className="font-medium">₹{(results.unitPricePerM3 ?? 0).toFixed(2)}/-</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Monthly Expense:</span><span className="font-medium">{formatIndianCurrency(results.monthlyExpenseCylinder)}</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Operator Cost (Annual):</span><span className="font-medium">{formatIndianCurrency(results.cylinderOperatorCostYear)}</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Rental Cost (Annual):</span><span className="font-medium">{formatIndianCurrency(results.annualRentalCost)}</span></div>
@@ -169,7 +174,7 @@ export default function PSAVsCylinders() {
       <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-6 rounded-lg border">
         <div className="flex items-center space-x-2 mb-4"><Zap className="h-5 w-5 text-blue-600" /><h3 className="font-semibold text-gray-900">PSA System Costs</h3></div>
         <div className="space-y-3">
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Gas Cost per m³:</span><span className="font-medium">₹{effectiveUnitPricePSA.toFixed(2)}</span></div>
+          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Gas Cost per m³:</span><span className="font-medium">₹{effectiveUnitPricePSA.toFixed(2)}/-</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Power Consumption:</span><span className="font-medium">{effectivePower.toFixed(2)} kW</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Operator Cost (Annual):</span><span className="font-medium">{formatIndianCurrency(results.psaOperatorCostYear)}</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Utilization Factor:</span><span className="font-medium">{results.utilizationFactor.toFixed(2)}</span></div>
@@ -186,16 +191,33 @@ export default function PSAVsCylinders() {
       {costComparisonContent}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="font-semibold text-gray-900 mb-4 text-center">Monthly & Annual Cost Comparison</h3>
+          <h3 className="text-gray-900 mb-4 text-center" style={lufgaSemiboldStyle}>Monthly & Annual Cost Comparison</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }} barSize={60} barCategoryGap="30%">
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis tickFormatter={(value) => `₹${(value/100000).toFixed(1)}L`} />
+              <XAxis
+                dataKey="name"
+                interval={0}
+                height={44}
+                tickLine={false}
+                tick={(props: any) => {
+                  const { x, y, payload } = props;
+                  const words = payload.value.split(' ');
+                  return (
+                    <text textAnchor="middle" fill="#000000" fontFamily="Lufga, sans-serif" fontSize={12}>
+                      {words.map((word: string, i: number) => (
+                        <tspan key={i} x={x} dy={i === 0 ? y + 16 : 16}>{word}</tspan>
+                      ))}
+                    </text>
+                  );
+                }}
+              />
+              <YAxis yAxisId="left" orientation="left" tickFormatter={(value) => `₹${(value/100000).toFixed(1)}L`} domain={[0, cylinderAxisMax * 1.2]} tick={{ fill: '#000000', fontFamily: 'Lufga, sans-serif', fontSize: 12 }} />
+              <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => `₹${(value/100000).toFixed(1)}L`} domain={[0, psaAxisMax * 1.2]} tick={{ fill: '#000000', fontFamily: 'Lufga, sans-serif', fontSize: 12 }} />
               <Tooltip formatter={(value) => formatIndianCurrency(Number(value))} />
-              <Legend />
-              <Bar dataKey="Monthly Cost" fill="#3b82f6" name="Monthly Cost" />
-              <Bar dataKey="Annual Cost" fill="#10b981" name="Annual Cost" />
+              <Legend wrapperStyle={{ fontFamily: 'Lufga, sans-serif', fontWeight: 400 }} />
+              <Bar yAxisId="left" dataKey="Cylinder System" fill="#3b82f6" name="Cylinder System" />
+              <Bar yAxisId="right" dataKey="PSA System" fill="#10b981" name="PSA System" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -243,7 +265,30 @@ export default function PSAVsCylinders() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="psa-cylinders-root min-h-screen flex flex-col bg-gray-50" style={lufgaRegularStyle}>
+      <style>{`
+        .psa-cylinders-root, .psa-cylinders-root * {
+          font-family: 'Lufga', sans-serif;
+        }
+        .psa-cylinders-root h1,
+        .psa-cylinders-root h2,
+        .psa-cylinders-root h3,
+        .psa-cylinders-root h4,
+        .psa-cylinders-root h5,
+        .psa-cylinders-root h6 {
+          font-weight: 600;
+        }
+        .psa-cylinders-root p,
+        .psa-cylinders-root span,
+        .psa-cylinders-root label,
+        .psa-cylinders-root input,
+        .psa-cylinders-root select,
+        .psa-cylinders-root td,
+        .psa-cylinders-root th,
+        .psa-cylinders-root button {
+          font-weight: 400;
+        }
+      `}</style>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-8 flex items-center justify-end gap-3 print:hidden">
         <DownloadPdfButton contentToPrint={reportRef} tabName={'PSA_Vs_Cylinders'} />
       </div>
@@ -252,10 +297,10 @@ export default function PSAVsCylinders() {
       <div className="print:hidden p-6">
         <div className="grid lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1 bg-white p-6 rounded-lg shadow border">
-              <div className="flex items-center space-x-2 mb-4"><Database className="h-5 w-5 text-blue-600" /><h3 className="font-semibold text-gray-900">Input Parameters</h3></div>
+              <div className="flex items-center space-x-2 mb-4"><Database className="h-5 w-5 text-blue-600" /><h3 className="text-gray-900" style={lufgaSemiboldStyle}>Input Parameters</h3></div>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Gas Type</label>
+                  <label className="block text-sm text-gray-700 mb-1" style={lufgaRegularStyle}>Gas Type</label>
                   <select
                     value={inputs.gasType}
                     onChange={(e) => {
@@ -267,30 +312,31 @@ export default function PSAVsCylinders() {
                       });
                     }}
                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    style={lufgaRegularStyle}
                     aria-label="Gas Type"
                   >
                     {GAS_TYPES.map(type => (<option key={type.value} value={type.value}>{type.label}</option>))}
                   </select>
                 </div>
-                <InputField label="Cylinders per Day" value={inputs.cylindersPerDay} onChange={(value) => updateInput('cylindersPerDay', value)} />
-                <InputField label="Plant Running Hours" value={inputs.plantRunningHours} onChange={(value) => updateInput('plantRunningHours', value)} unit="hrs/day" />
-                <InputField label="Plant Running Days" value={inputs.plantRunningDays} onChange={(value) => updateInput('plantRunningDays', value)} unit="days/month" />
+                <InputField label="Cylinders per Day" value={inputs.cylindersPerDay} onChange={(value) => updateInput('cylindersPerDay', value)} labelStyle={lufgaRegularStyle} inputStyle={lufgaRegularStyle} unitStyle={lufgaRegularStyle} />
+                <InputField label="Plant Running Hours" value={inputs.plantRunningHours} onChange={(value) => updateInput('plantRunningHours', value)} unit="hrs/day" labelStyle={lufgaRegularStyle} inputStyle={lufgaRegularStyle} unitStyle={lufgaRegularStyle} />
+                <InputField label="Plant Running Days" value={inputs.plantRunningDays} onChange={(value) => updateInput('plantRunningDays', value)} unit="days/month" labelStyle={lufgaRegularStyle} inputStyle={lufgaRegularStyle} unitStyle={lufgaRegularStyle} />
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Cylinder Volume</label>
-                  <select value={inputs.cylinderVolume} onChange={(e) => updateInput('cylinderVolume', e.target.value === 'other' ? 'other' : Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Cylinder Volume">
+                  <label className="block text-sm text-gray-700 mb-1" style={lufgaRegularStyle}>Cylinder Volume</label>
+                  <select value={inputs.cylinderVolume} onChange={(e) => updateInput('cylinderVolume', e.target.value === 'other' ? 'other' : Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Cylinder Volume" style={lufgaRegularStyle}>
                     {CYLINDER_VOLUMES.map(volume => (<option key={volume} value={volume}>{volume === 'other' ? 'Other' : `${volume} m³`}</option>))}
                   </select>
                 </div>
                 {inputs.cylinderVolume === 'other' && (<InputField label="Custom Cylinder Volume" value={inputs.cylinderVolumeCustom} onChange={(value) => updateInput('cylinderVolumeCustom', value)} unit="m³" />)}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Purity</label>
-                  <select value={inputs.purity} onChange={(e) => updateInput('purity', Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Purity">
+                  <label className="block text-sm text-gray-700 mb-1" style={lufgaRegularStyle}>Purity</label>
+                  <select value={inputs.purity} onChange={(e) => updateInput('purity', Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Purity" style={lufgaRegularStyle}>
                     {availablePurities.map(purity => (<option key={purity} value={purity}>{purity}%</option>))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Load Factor</label>
-                  <select value={inputs.loadFactor} onChange={(e) => updateInput('loadFactor', Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Load Factor">
+                  <label className="block text-sm text-gray-700 mb-1" style={lufgaRegularStyle}>Load Factor</label>
+                  <select value={inputs.loadFactor} onChange={(e) => updateInput('loadFactor', Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Load Factor" style={lufgaRegularStyle}>
                     {LOAD_FACTORS.map(factor => (<option key={factor} value={factor}>{factor}</option>))}
                   </select>
                 </div>
@@ -299,14 +345,14 @@ export default function PSAVsCylinders() {
                 <InputField label="Investment Cost (₹)" value={inputs.investmentCost || 0} onChange={(value) => updateInput('investmentCost', value)} />
                 <InputField label="Annual Maintenance (₹)" value={inputs.annualMaintenanceCost || 0} onChange={(value) => updateInput('annualMaintenanceCost', value)} />
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Interest Rate (%)</label>
-                  <select value={inputs.interestRate || 0} onChange={(e) => updateInput('interestRate', Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Interest Rate">
+                  <label className="block text-sm text-gray-700 mb-1" style={lufgaRegularStyle}>Interest Rate (%)</label>
+                  <select value={inputs.interestRate || 0} onChange={(e) => updateInput('interestRate', Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Interest Rate" style={lufgaRegularStyle}>
                     {INTEREST_RATES.map(r => (<option key={r} value={r}>{r}%</option>))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Depreciation Rate (%)</label>
-                  <select value={inputs.depreciationRate || 0} onChange={(e) => updateInput('depreciationRate', Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Depreciation Rate">
+                  <label className="block text-sm text-gray-700 mb-1" style={lufgaRegularStyle}>Depreciation Rate (%)</label>
+                  <select value={inputs.depreciationRate || 0} onChange={(e) => updateInput('depreciationRate', Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Depreciation Rate" style={lufgaRegularStyle}>
                     {DEPRECIATION_RATES.map(r => (<option key={r} value={r}>{r}%</option>))}
                   </select>
                 </div>
@@ -344,21 +390,17 @@ export default function PSAVsCylinders() {
               <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Visual Cost Comparison</h2>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="bg-white p-6 rounded-lg shadow border">
-                  <h3 className="font-semibold text-gray-900 mb-4 text-center">Monthly & Annual Cost Comparison</h3>
+                  <h3 className="text-gray-900 mb-4 text-center" style={lufgaSemiboldStyle}>Monthly & Annual Cost Comparison</h3>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 28 }}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis yAxisId="left" orientation="left" tickFormatter={(value) => formatAxisINRShort(Number(value))} domain={[0, monthlyMax * 1.2]} />
-                  <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => formatAxisINRShort(Number(value))} domain={[0, annualMax * 1.2]} />
+                  <XAxis dataKey="name" interval={0} height={52} tickMargin={8} tickLine={false} tick={lufgaRegularTickStyle} />
+                  <YAxis yAxisId="left" orientation="left" tickFormatter={(value) => formatAxisINRShort(Number(value))} domain={[0, cylinderAxisMax * 1.2]} tick={{ fill: '#000000', fontFamily: 'Lufga, sans-serif', fontSize: 12 }} />
+                  <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => formatAxisINRShort(Number(value))} domain={[0, psaAxisMax * 1.2]} tick={{ fill: '#000000', fontFamily: 'Lufga, sans-serif', fontSize: 12 }} />
                   <Tooltip formatter={(value) => formatIndianCurrency(Number(value))} />
-                  <Legend />
-                  <Bar yAxisId="left" dataKey="Monthly Cost" fill="#3b82f6" name="Monthly Cost" isAnimationActive={false}>
-                    <LabelList position="top" content={CurrencyBarLabel} />
-                  </Bar>
-                  <Bar yAxisId="right" dataKey="Annual Cost" fill="#10b981" name="Annual Cost" isAnimationActive={false}>
-                    <LabelList position="top" content={CurrencyBarLabel} />
-                  </Bar>
+                  <Legend wrapperStyle={{ fontFamily: 'Lufga, sans-serif', fontWeight: 400 }} />
+                  <Bar yAxisId="left" dataKey="Cylinder System" fill="#3b82f6" name="Cylinder System" isAnimationActive={false} />
+                  <Bar yAxisId="right" dataKey="PSA System" fill="#10b981" name="PSA System" isAnimationActive={false} />
                 </BarChart>
               </ResponsiveContainer>
                 </div>

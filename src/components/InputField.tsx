@@ -5,6 +5,9 @@ interface InputFieldProps {
   unit?: string;
   placeholder?: string;
   readOnly?: boolean;
+  labelStyle?: React.CSSProperties;
+  inputStyle?: React.CSSProperties;
+  unitStyle?: React.CSSProperties;
 }
 
 export const InputField = ({
@@ -13,11 +16,16 @@ export const InputField = ({
   onChange,
   unit = '',
   placeholder = '',
-  readOnly = false
+  readOnly = false,
+  labelStyle,
+  inputStyle,
+  unitStyle
 }: InputFieldProps) => {
+  const regularLufgaStyle = { fontFamily: "'Lufga', sans-serif", fontWeight: 400 } as const;
+
   return (
     <div className="space-y-1">
-      <label className="block text-sm font-medium text-gray-700">
+      <label className="block text-sm font-medium text-gray-700" style={labelStyle ?? regularLufgaStyle}>
         {label}
       </label>
       <div className="relative">
@@ -32,9 +40,10 @@ export const InputField = ({
               ? 'bg-yellow-50 border-yellow-200'
               : 'bg-white border-gray-300 focus:ring-blue-500 focus:border-blue-500'
             }`}
+          style={inputStyle ?? regularLufgaStyle}
         />
         {unit && (
-          <span className="absolute right-3 top-1.5 text-sm text-gray-500">
+          <span className="absolute right-3 top-1.5 text-sm text-gray-500" style={unitStyle ?? regularLufgaStyle}>
             {unit}
           </span>
         )}

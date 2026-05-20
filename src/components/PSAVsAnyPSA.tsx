@@ -95,55 +95,58 @@ function PSAVsAnyPSA() {
     absstemUtilization
   ]);
 
+  const lufgaRegularStyle = { fontFamily: "'Lufga', sans-serif", fontWeight: 400 } as const;
+  const lufgaSemiboldStyle = { fontFamily: "'Lufga', sans-serif", fontWeight: 600 } as const;
+
   const inputParametersSummary = (
-    <div className="bg-white p-6 rounded-lg shadow border">
-      <h3 className="font-semibold text-gray-900 mb-4">Input Parameters</h3>
+    <div className="bg-white p-6 rounded-lg shadow border" style={lufgaRegularStyle}>
+      <h3 className="font-semibold text-gray-900 mb-4" style={lufgaSemiboldStyle}>Input Parameters</h3>
       <div className="space-y-2 text-sm">
-        <div className="flex justify-between"><span className="text-gray-600">Gas Type:</span><span className="font-medium">{gasType}</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Flow Required:</span><span className="font-medium">{operationalParams.flowRequired} Nm3/hr</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Gas Type:</span><span className="font-medium">{gasType.charAt(0).toUpperCase() + gasType.slice(1)}</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Flow Required:</span><span className="font-medium">{operationalParams.flowRequired} Nm<sup>3</sup>/hr</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Total Running Hours:</span><span className="font-medium">{operationalParams.totalRunningHours} hrs/year</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Power Cost:</span><span className="font-medium">{operationalParams.powerCostPerUnit} ₹/kWh</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Absstem Plant Cost:</span><span className="font-medium">{formatIndianCurrency(absstemPlantCost)}</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Absstem Utilization:</span><span className="font-medium">{absstemUtilization * 100}%</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Competition Flow:</span><span className="font-medium">{competitionData.flow} Nm3/hr</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Absstem Utilization:</span><span className="font-medium">{formatNumber(absstemUtilization, 2)}</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Competition Flow:</span><span className="font-medium">{competitionData.flow} Nm<sup>3</sup>/hr</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Competition Compressor KW:</span><span className="font-medium">{competitionData.compressorKW} kW</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Competition Plant Cost:</span><span className="font-medium">{formatIndianCurrency(competitionData.plantCost)}</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Competition Specific Power:</span><span className="font-medium">{competitionData.specificPower}</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Competition Utilization:</span><span className="font-medium">{competitionData.utilizationFactor * 100}%</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Competition Specific Power:</span><span className="font-medium">{formatNumber(results.competition.specificPower, 3)} kW/Nm<sup>3</sup></span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Competition Utilization:</span><span className="font-medium">{formatNumber(competitionData.utilizationFactor, 2)}</span></div>
       </div>
     </div>
   );
 
   const costComparisonContent = (
     <div className="grid md:grid-cols-2 gap-6">
-      <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-6 rounded-lg border">
-        <h3 className="font-semibold text-gray-900 mb-4">Absstem System Costs</h3>
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-6 rounded-lg border" style={lufgaRegularStyle}>
+        <h3 className="font-semibold text-gray-900 mb-4" style={lufgaSemiboldStyle}>Absstem System Costs</h3>
         <div className="space-y-3">
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Model:</span><span className="font-medium">{results.absstem.model?.name}</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Compressor:</span><span className="font-medium">{results.absstem.compressor?.name}</span></div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">{gasType === 'oxygen' ? 'Oxygen Supply:' : 'Nitrogen Supply:'}</span>
-            <span className="font-medium">{formatNumber(results.absstem.nitrogenSupply)} Nm3/hr</span>
+            <span className="font-medium">{formatNumber(results.absstem.nitrogenSupply)} Nm<sup>3</sup>/hr</span>
           </div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Compressor KW:</span><span className="font-medium">{formatNumber(results.absstem.compressorKW)} kW</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Total Input Power:</span><span className="font-medium">{formatNumber(results.absstem.totalInputPower)} kW</span></div>
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Specific Power:</span><span className="font-medium">{formatNumber(results.absstem.specificPower, 3)}</span></div>
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Utilization Factor:</span><span className="font-medium">{formatNumber(results.absstem.utilizationFactor * 100)}%</span></div>
+          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Specific Power:</span><span className="font-medium">{formatNumber(results.absstem.specificPower, 3)} kW/Nm<sup>3</sup></span></div>
+          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Utilization Factor:</span><span className="font-medium">{formatNumber(results.absstem.utilizationFactor, 2)}</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Annual Power Cost:</span><span className="font-medium">{formatIndianCurrency(results.absstem.annualPowerCost)}</span></div>
           <div className="border-t pt-3"><div className="flex justify-between items-center"><span className="font-medium text-gray-900">10 Year Cost:</span><span className="font-bold text-lg text-blue-600">{formatIndianCurrency(results.absstem.tenYearCost)}</span></div></div>
         </div>
       </div>
-      <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-lg border">
-        <h3 className="font-semibold text-gray-900 mb-4">Competition System Costs</h3>
+      <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-lg border" style={lufgaRegularStyle}>
+        <h3 className="font-semibold text-gray-900 mb-4" style={lufgaSemiboldStyle}>Competition System Costs</h3>
         <div className="space-y-3">
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">{gasType === 'oxygen' ? 'Oxygen Supply:' : 'Nitrogen Supply:'}</span>
-            <span className="font-medium">{formatNumber(results.competition.flow)} Nm3/hr</span>
+            <span className="font-medium">{formatNumber(results.competition.flow)} Nm<sup>3</sup>/hr</span>
           </div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Compressor KW:</span><span className="font-medium">{formatNumber(results.competition.compressorKW)} kW</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Total Input Power:</span><span className="font-medium">{formatNumber(results.competition.totalInputPower)} kW</span></div>
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Specific Power:</span><span className="font-medium">{formatNumber(results.competition.specificPower, 3)}</span></div>
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Utilization Factor:</span><span className="font-medium">{formatNumber(results.competition.utilizationFactor * 100)}%</span></div>
+          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Specific Power:</span><span className="font-medium">{formatNumber(results.competition.specificPower, 3)} kW/Nm<sup>3</sup></span></div>
+          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Utilization Factor:</span><span className="font-medium">{formatNumber(results.competition.utilizationFactor, 2)}</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Annual Power Cost:</span><span className="font-medium">{formatIndianCurrency(results.competition.annualPowerCost)}</span></div>
           <div className="border-t pt-3"><div className="flex justify-between items-center"><span className="font-medium text-gray-900">10 Year Cost:</span><span className="font-bold text-lg text-green-600">{formatIndianCurrency(results.competition.tenYearCost)}</span></div></div>
         </div>
@@ -156,12 +159,12 @@ function PSAVsAnyPSA() {
   const pageOneSystemResults = (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Absstem System Results */}
-      <div className="bg-blue-50 rounded-lg p-6 border-l-4 border-blue-500 shadow">
-        <h4 className="text-lg font-semibold text-blue-800 mb-4">Absstem System</h4>
+      <div className="bg-blue-50 rounded-lg p-6 border-l-4 border-blue-500 shadow" style={lufgaRegularStyle}>
+        <h4 className="text-lg font-semibold text-blue-800 mb-4" style={lufgaSemiboldStyle}>Absstem System</h4>
         <div className="space-y-3">
           <div className="flex justify-between">
             <span className="text-gray-600">Available {gasName} Flow:</span>
-            <span className="font-medium">{formatNumber(results.absstem.nitrogenSupply)} Nm3/hr</span>
+            <span className="font-medium">{formatNumber(results.absstem.nitrogenSupply)} Nm<sup>3</sup>/hr</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">Compressor Power:</span>
@@ -177,7 +180,7 @@ function PSAVsAnyPSA() {
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">Specific Power:</span>
-            <span className="font-medium">{formatNumber(results.absstem.specificPower, 2)} kW/Nm3</span>
+            <span className="font-medium">{formatNumber(results.absstem.specificPower, 2)} kW/Nm<sup>3</sup></span>
           </div>
           <div className="flex justify-between font-medium">
             <span className="text-gray-800">Plant Cost:</span>
@@ -195,12 +198,12 @@ function PSAVsAnyPSA() {
       </div>
 
       {/* Competition System Results */}
-      <div className="bg-orange-50 rounded-lg p-6 border-l-4 border-orange-500 shadow">
-        <h4 className="text-lg font-semibold text-orange-800 mb-4">Competition System</h4>
+      <div className="bg-orange-50 rounded-lg p-6 border-l-4 border-orange-500 shadow" style={lufgaRegularStyle}>
+        <h4 className="text-lg font-semibold text-orange-800 mb-4" style={lufgaSemiboldStyle}>Competition System</h4>
         <div className="space-y-3">
           <div className="flex justify-between">
             <span className="text-gray-600">Available {gasName} Flow:</span>
-            <span className="font-medium">{formatNumber(results.competition.flow)} Nm3/hr</span>
+            <span className="font-medium">{formatNumber(results.competition.flow)} Nm<sup>3</sup>/hr</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">Compressor Power:</span>
@@ -216,7 +219,7 @@ function PSAVsAnyPSA() {
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">Specific Power:</span>
-            <span className="font-medium">{formatNumber(results.competition.specificPower, 2)} kW/Nm3</span>
+            <span className="font-medium">{formatNumber(results.competition.specificPower, 2)} kW/Nm<sup>3</sup></span>
           </div>
           <div className="flex justify-between font-medium">
             <span className="text-gray-800">Plant Cost:</span>
@@ -264,7 +267,7 @@ function PSAVsAnyPSA() {
           <div className="bg-white p-6 rounded-lg shadow-md border">
             <div className="flex items-center space-x-2 mb-4">
               <Calculator className="h-6 w-6 text-blue-600" />
-              <h2 className="text-xl font-bold text-gray-800">Input Parameters</h2>
+              <h2 className="text-xl font-bold text-gray-800" style={lufgaSemiboldStyle}>Input Parameters</h2>
             </div>
             <OperationalParams 
               params={operationalParams} 
@@ -318,8 +321,8 @@ function PSAVsAnyPSA() {
           {/* Page 2: Financial Summary & Investment Analysis */}
           <div className="print-page space-y-8">
             <div className="avoid-break">
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-600 p-6 rounded-r-lg">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-600 p-6 rounded-r-lg" style={lufgaRegularStyle}>
+                <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center" style={lufgaSemiboldStyle}>
                   <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center mr-3">
                     <span className="text-white font-bold text-sm">2</span>
                   </div>
@@ -344,7 +347,7 @@ function PSAVsAnyPSA() {
 
             {/* 10-Year Cumulative Cost Projection (moved from Page 3) */}
             <div className="avoid-break">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">10-Year Cumulative Cost Projection</h3>
+              <h3 className="text-xl font-semibold text-gray-800 mb-4" style={lufgaSemiboldStyle}>10-Year Cumulative Cost Projection</h3>
               <div className="bg-white p-4 rounded-lg border shadow-sm">
                 <LineChart width={900} height={400} data={results.comparison.yearlyData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -360,7 +363,7 @@ function PSAVsAnyPSA() {
 
             {/* Total Input Power Comparison (kW) */}
             <div className="avoid-break">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">Total Input Power Comparison (kW)</h3>
+              <h3 className="text-xl font-semibold text-gray-800 mb-4" style={lufgaSemiboldStyle}>Total Input Power Comparison (kW)</h3>
               <div className="bg-white p-4 rounded-lg border shadow-sm">
                 <BarChart width={900} height={300} data={[{ name: 'Absstem', value: results.absstem.totalInputPower }, { name: 'Competition', value: results.competition.totalInputPower }]} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -379,8 +382,8 @@ function PSAVsAnyPSA() {
           {/* Page 3: Business Case & Recommendation */}
           <div className="print-page space-y-8">
             <div className="avoid-break">
-              <div className="bg-gradient-to-r from-slate-50 to-indigo-50 border-l-4 border-indigo-600 p-6 rounded-r-lg">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+              <div className="bg-gradient-to-r from-slate-50 to-indigo-50 border-l-4 border-indigo-600 p-6 rounded-r-lg" style={lufgaRegularStyle}>
+                <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center" style={lufgaSemiboldStyle}>
                   <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center mr-3">
                     <span className="text-white font-bold text-sm">3</span>
                   </div>
@@ -404,7 +407,7 @@ function PSAVsAnyPSA() {
             {/* 10-Year Cumulative Savings Table */}
             <div className="bg-white rounded-lg shadow border overflow-hidden">
               <div className="bg-gray-50 px-6 py-4 border-b">
-                <h3 className="font-semibold text-gray-900">10-Year Cumulative Savings</h3>
+              <h3 className="font-semibold text-gray-900" style={lufgaSemiboldStyle}>10-Year Cumulative Savings</h3>
               </div>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">

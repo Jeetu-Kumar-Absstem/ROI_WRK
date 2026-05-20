@@ -122,6 +122,11 @@ export default function PSAVsLiquid() {
   const breakEvenYearLabel = breakEvenYearIndex > 0 && breakEvenYearIndex <= 10 ? `Year ${breakEvenYearIndex}` : undefined;
 
   const availablePurities = inputs.gasType === 'oxygen' ? OXYGEN_PURITIES : PURITIES;
+  
+  // Helper to capitalize first letter for gas type display
+  const capitalizeFirstLetter = (string: string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  };
 
   // UI Chart Component (Recharts - stays the same)
   const monthlyAnnualCostComparisonChart = (
@@ -176,7 +181,7 @@ export default function PSAVsLiquid() {
     <div className="bg-white p-6 rounded-lg shadow border" style={{ breakInside: 'avoid' }}>
       <h3 className="text-gray-900 mb-4" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>Input Parameters</h3>
       <div className="space-y-2 text-sm">
-        <div className="flex justify-between"><span className="text-gray-600">Gas Type:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.gasType}</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Gas Type:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{capitalizeFirstLetter(inputs.gasType)}</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Daily Use:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.liquidUsedPerDay} {inputs.liquidUnit}</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Running Hours:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.plantRunningHours} hrs/day</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Working Days:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.workingDaysPerMonth} days/month</span></div>
@@ -317,7 +322,7 @@ export default function PSAVsLiquid() {
                 </tr>
               ))}
             </tbody>
-          </table>
+           </table>
         </div>
       </div>
     </div>
