@@ -337,7 +337,7 @@ export default function PSAVsCylinders() {
                 <div>
                   <label className="block text-sm text-gray-700 mb-1" style={lufgaRegularStyle}>Load Factor</label>
                   <select value={inputs.loadFactor} onChange={(e) => updateInput('loadFactor', Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" aria-label="Load Factor" style={lufgaRegularStyle}>
-                    {LOAD_FACTORS.map(factor => (<option key={factor} value={factor}>{factor}</option>))}
+                    {LOAD_FACTORS.map(factor => (<option key={factor} value={factor}>{factor.toFixed(2)}</option>))}
                   </select>
                 </div>
                 <InputField label="Cylinder Cost" value={inputs.cylinderCost} onChange={(value) => updateInput('cylinderCost', value)} unit="₹/cylinder" />
