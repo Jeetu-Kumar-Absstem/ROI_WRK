@@ -8,10 +8,7 @@ import { formatIndianCurrency, formatLoadFactor, formatNumber } from '../utils/f
 import { convertToNm3, getLiquidToGasConversionFactor } from '../utils/conversions';
 import { ReportLayout } from './ReportLayout';
 import DownloadPdfButton from './DownloadPdfButton';
-import { 
-  StaticMonthlyAnnualCostChart, 
-  CumulativeSavingsTable 
-} from './StaticChartComponents';
+import { StaticMonthlyAnnualCostChart } from './StaticChartComponents';
 
 // Lufga font faces
 const lufgaFontStyle = `
@@ -715,7 +712,28 @@ export default function PSAVsLiquid() {
               <div className="bg-gray-50 px-6 py-4 border-b">
                 <h3 className="text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>10-Year Cumulative Savings</h3>
               </div>
-              {isClient && <CumulativeSavingsTable data={yearlyData} />}
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Year</th>
+                      <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Current System Cost</th>
+                      <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>PSA System Cost</th>
+                      <th className="px-6 py-3 text-left text-xs text-gray-500 uppercase" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Cumulative Savings</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {yearlyData.map((row, index) => (
+                      <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{row.year}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(row['Current System Cost'])}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(row['PSA System Cost'])}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(row['Cumulative Savings'])}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </>

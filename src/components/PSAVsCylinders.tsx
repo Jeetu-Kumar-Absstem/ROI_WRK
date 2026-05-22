@@ -3,7 +3,6 @@ import { Database, Zap, DollarSign, IndianRupee } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
 import { CylinderInputs, CylinderResult, GAS_TYPES, CYLINDER_VOLUMES, LOAD_FACTORS, PURITIES, OXYGEN_PURITIES, INTEREST_RATES, DEPRECIATION_RATES } from '../types/calculator';
 import { calculateCylinderRoi } from '../utils/cylinderCalculations';
-import { findMatchingFlow, findMatchingCompressor } from '../utils/flowMatching';
 import { InputField } from './InputField';
 import { formatIndianCurrency } from '../utils/formatting';
 import { ReportLayout } from './ReportLayout';
@@ -28,8 +27,6 @@ export default function PSAVsCylinders() {
     loadFactor: 0.9,
     cylinderCost: 1000,
     powerCostPerUnit: 8,
-    psaPlantFlow: 10,
-    compressorKW: 5.5,
     cylinderOperatorCostMonth: 15000,
     psaOperatorCostMonth: 10000,
     rentalCost: 5000,
@@ -47,20 +44,6 @@ export default function PSAVsCylinders() {
     setResults(calculatedResults);
   }, [inputs]);
 
-  useEffect(() => {
-    const cylinderVolume = inputs.cylinderVolume === 'other' ? (inputs.cylinderVolumeCustom || 0) : Number(inputs.cylinderVolume);
-    if (!cylinderVolume || inputs.plantRunningHours <= 0) return;
-    const perHourConsumption = (inputs.cylindersPerDay * cylinderVolume) / inputs.plantRunningHours;
-    const matchedFlow = findMatchingFlow(perHourConsumption, inputs.purity, inputs.gasType);
-    if (matchedFlow) {
-      const matchedCompressor = findMatchingCompressor(matchedFlow.airRequirement);
-      const nextFlow = matchedFlow.flow;
-      const nextCompressorKw = matchedCompressor?.kw ?? inputs.compressorKW;
-      if (inputs.psaPlantFlow !== nextFlow || inputs.compressorKW !== nextCompressorKw) {
-        setInputs(prev => ({ ...prev, psaPlantFlow: nextFlow, compressorKW: nextCompressorKw }));
-      }
-    }
-  }, [inputs.cylindersPerDay, inputs.cylinderVolume, inputs.cylinderVolumeCustom, inputs.purity, inputs.gasType, inputs.plantRunningHours]);
 
   const updateInput = (key: keyof CylinderInputs, value: any) => {
     setInputs(prev => ({ ...prev, [key]: value }));
@@ -70,20 +53,9 @@ export default function PSAVsCylinders() {
 
   if (!results) return <div>Loading...</div>;
 
-  // --- PSA override logic ---
-  // When psaPlantFlow or compressorKW is missing / zero / negative:
-  //   Gas Cost per m³   → 0.00
-  //   Power Consumption → 0.00 kW
-  //   PSA Annual Cost   → psaOperatorCostYear + annualMaintenanceCost  (no power, no interest/depreciation)
-  const isPSAInvalid =
-    !inputs.psaPlantFlow || inputs.psaPlantFlow <= 0 ||
-    !inputs.compressorKW || inputs.compressorKW <= 0;
-
-  const effectiveUnitPricePSA  = isPSAInvalid ? 0 : (results.unitPricePSA ?? 0);
-  const effectivePower         = isPSAInvalid ? 0 : results.power;
-  const effectivePSAAnnualCost = isPSAInvalid
-    ? results.psaOperatorCostYear + (inputs.annualMaintenanceCost ?? 0)
-    : results.totalRunningCostPSA;
+  const effectiveUnitPricePSA  = results.unitPricePSA ?? 0;
+  const effectivePower         = results.power;
+  const effectivePSAAnnualCost = results.totalRunningCostPSA;
 
   // --- Yearly data (must be after isPSAInvalid is defined) ---
   const yearlyData = (() => {
@@ -94,10 +66,8 @@ export default function PSAVsCylinders() {
       const annualInterest     = wdv * ((inputs.interestRate ?? 0) / 100);
       const annualDepreciation = wdv * ((inputs.depreciationRate ?? 0) / 100);
 
-      // When PSA fields invalid: only operator + maintenance (flat every year, no wdv decay effect)
-      const psaCost = isPSAInvalid
-        ? results.psaOperatorCostYear + (inputs.annualMaintenanceCost ?? 0)
-        : (results.annualPowerCost ?? 0) + results.psaOperatorCostYear + (inputs.annualMaintenanceCost ?? 0) + annualInterest - annualDepreciation;
+      // PSA cost: power + operator + maintenance + interest - depreciation
+      const psaCost = (results.annualPowerCost ?? 0) + results.psaOperatorCostYear + (inputs.annualMaintenanceCost ?? 0) + annualInterest - annualDepreciation;
 
       const netCashFlow = results.totalRunningCostCylinder - psaCost;
       cumulativeCashFlow += netCashFlow;
@@ -356,8 +326,34 @@ export default function PSAVsCylinders() {
                     {DEPRECIATION_RATES.map(r => (<option key={r} value={r}>{r}%</option>))}
                   </select>
                 </div>
-                <InputField label="PSA Plant Flow" value={inputs.psaPlantFlow} onChange={(value) => updateInput('psaPlantFlow', value)} unit="m³/hr" />
-                <InputField label="Compressor KW" value={inputs.compressorKW} onChange={(value) => updateInput('compressorKW', value)} unit="kW" />
+                <div>
+  <label className="block text-sm text-gray-700 mb-1" style={lufgaRegularStyle}>PSA Plant Flow</label>
+  <div className="flex items-center gap-2">
+    <input
+      type="number"
+      value={results.psaPlantFlow ?? 0}
+      readOnly
+      className="w-full rounded-md border-gray-300 bg-gray-100 shadow-sm cursor-not-allowed text-gray-600"
+      style={lufgaRegularStyle}
+    />
+    <span className="text-sm text-gray-500 whitespace-nowrap">m³/hr</span>
+  </div>
+  <p className="text-xs text-gray-400 mt-1">Auto matched from consumption</p>
+</div>
+<div>
+  <label className="block text-sm text-gray-700 mb-1" style={lufgaRegularStyle}>Compressor KW</label>
+  <div className="flex items-center gap-2">
+    <input
+      type="number"
+      value={results.matchedCompressorKW ?? 0}
+      readOnly
+      className="w-full rounded-md border-gray-300 bg-gray-100 shadow-sm cursor-not-allowed text-gray-600"
+      style={lufgaRegularStyle}
+    />
+    <span className="text-sm text-gray-500 whitespace-nowrap">kW</span>
+  </div>
+  <p className="text-xs text-gray-400 mt-1">Auto matched from consumption</p>
+</div>
                 <InputField label="Cylinder Operator Cost (Monthly)" value={inputs.cylinderOperatorCostMonth} onChange={(value) => updateInput('cylinderOperatorCostMonth', value)} unit="₹/month" />
                 <InputField label="PSA Operator Cost (Monthly)" value={inputs.psaOperatorCostMonth} onChange={(value) => updateInput('psaOperatorCostMonth', value)} unit="₹/month" />
                 <InputField label="Rental Cost (Monthly)" value={inputs.rentalCost} onChange={(value) => updateInput('rentalCost', value)} unit="₹/month" />

@@ -6,40 +6,52 @@ export const calculateCylinderRoi = (inputs: CylinderInputs): CylinderResult => 
     ? (inputs.cylinderVolumeCustom || 0)
     : Number(inputs.cylinderVolume);
 
-  // Basic Calculations
+  // ─── Step 1: Per Hour Consumption ───
+  // Driven purely by cylinder inputs — psaPlantFlow and compressorKW are derived from this
   const perHourConsumption =
-    inputs.plantRunningHours > 0 ? (inputs.cylindersPerDay * cylinderVolume) / inputs.plantRunningHours : 0;
+    inputs.plantRunningHours > 0
+      ? (inputs.cylindersPerDay * cylinderVolume) / inputs.plantRunningHours
+      : 0;
 
-  // Find matching flow and air requirement
+  // ─── Step 2: Auto-match PSA Plant Flow from perHourConsumption ───
+  // Never taken from user input — always derived from cylinder inputs
   const matchedFlow = findMatchingFlow(perHourConsumption, inputs.purity, inputs.gasType);
   const airRequirement = matchedFlow ? matchedFlow.airRequirement : 0;
+  const autoPlantFlow = matchedFlow ? matchedFlow.flow : 0;
 
-  // Find matching compressor
+  // ─── Step 3: Auto-match Compressor from airRequirement ───
+  // Never taken from user input — always derived from matched plant flow
   const matchedCompressor = findMatchingCompressor(airRequirement);
-  const compressorAirFlow = matchedCompressor ? matchedCompressor.airFlow : 0;
+  const autoCompressorKW = matchedCompressor ? matchedCompressor.kw : 0;
+  const autoCompressorAirFlow = matchedCompressor ? matchedCompressor.airFlow : 0;
 
-  // Calculate utilization factor (Air Requirement / Compressed Air Flow)
-  const utilizationFactor = compressorAirFlow > 0 ? (airRequirement / compressorAirFlow) : 0;
+  // ─── Step 4: Utilization Factor ───
+  // Changes only when perHourConsumption changes (i.e. cylinder inputs change)
+  const utilizationFactor = autoCompressorAirFlow > 0
+    ? (airRequirement / autoCompressorAirFlow)
+    : 0;
 
+  // ─── Step 5: Cylinder Side Costs ───
   const unitPricePerM3 = cylinderVolume > 0 ? (inputs.cylinderCost / cylinderVolume) : 0;
   const monthlyConsumption = inputs.plantRunningHours * perHourConsumption * inputs.plantRunningDays;
   const monthlyExpenseCylinder = unitPricePerM3 * monthlyConsumption;
+  const annualRentalCost = inputs.rentalCost * 12;
+  const cylinderOperatorCostYear = inputs.cylinderOperatorCostMonth * 12;
+  const psaOperatorCostYear = inputs.psaOperatorCostMonth * 12;
+  const totalRunningCostCylinder =
+    (monthlyExpenseCylinder * 12) + cylinderOperatorCostYear + annualRentalCost;
 
-  // PSA Calculations - incorporating utilization factor
-  const power = inputs.compressorKW * inputs.loadFactor;
-  const unitPricePSA =
-    inputs.psaPlantFlow > 0 ? (power * inputs.powerCostPerUnit * utilizationFactor) / inputs.psaPlantFlow : 0;
+  // ─── Step 6: PSA Side Costs ───
+  // power uses autoCompressorKW — NOT inputs.compressorKW
+  // unitPricePSA uses autoPlantFlow — NOT inputs.psaPlantFlow
+  const power = autoCompressorKW * inputs.loadFactor;
+  const unitPricePSA = autoPlantFlow > 0
+    ? (power * inputs.powerCostPerUnit * utilizationFactor) / autoPlantFlow
+    : 0;
   const savingsPerM3 = unitPricePerM3 - unitPricePSA;
   const monthlySavingsPSA = monthlyConsumption * savingsPerM3;
   const yearlySavingsPSA = monthlySavingsPSA * 12;
 
-  // Annual rental cost
-  const annualRentalCost = inputs.rentalCost * 12;
-
-  // Operating Costs
-  const cylinderOperatorCostYear = inputs.cylinderOperatorCostMonth * 12;
-  const psaOperatorCostYear = inputs.psaOperatorCostMonth * 12;
-  const totalRunningCostCylinder = (monthlyExpenseCylinder * 12) + cylinderOperatorCostYear + annualRentalCost;
   const annualPowerCost =
     power *
     inputs.powerCostPerUnit *
@@ -47,15 +59,15 @@ export const calculateCylinderRoi = (inputs: CylinderInputs): CylinderResult => 
     inputs.plantRunningHours *
     inputs.plantRunningDays *
     12;
+
   const annualMaintenance = inputs.annualMaintenanceCost ?? 0;
   const annualInterest = (inputs.investmentCost ?? 0) * ((inputs.interestRate ?? 0) / 100);
   const annualDepreciation = (inputs.investmentCost ?? 0) * ((inputs.depreciationRate ?? 0) / 100);
-  const totalRunningCostPSA = annualPowerCost + psaOperatorCostYear + annualMaintenance + annualInterest - annualDepreciation;
+  const totalRunningCostPSA =
+    annualPowerCost + psaOperatorCostYear + annualMaintenance + annualInterest - annualDepreciation;
 
-  // Annual Savings
+  // ─── Step 7: Savings & ROI ───
   const annualSavings = totalRunningCostCylinder - totalRunningCostPSA;
-
-  // ROI and Payback
   const investmentCost = inputs.investmentCost ?? 0;
   const roiPercentage = investmentCost > 0 ? (annualSavings / investmentCost) * 100 : 0;
   const paybackPeriodMonths = annualSavings > 0 ? investmentCost / (annualSavings / 12) : 0;
@@ -82,6 +94,10 @@ export const calculateCylinderRoi = (inputs: CylinderInputs): CylinderResult => 
     annualInterest,
     annualDepreciation,
     roiPercentage,
-    paybackPeriodMonths
+    paybackPeriodMonths,
+    // Auto-matched values — UI displays these as read-only fields
+    matchedCompressorKW: autoCompressorKW,
+    matchedCompressorAirFlow: autoCompressorAirFlow,
+    psaPlantFlow: autoPlantFlow,
   };
 };
