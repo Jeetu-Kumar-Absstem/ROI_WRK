@@ -144,7 +144,7 @@ export default function PSAVsCylinders() {
       <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-6 rounded-lg border">
         <div className="flex items-center space-x-2 mb-4"><Zap className="h-5 w-5 text-blue-600" /><h3 className="font-semibold text-gray-900">PSA System Costs</h3></div>
         <div className="space-y-3">
-          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Flow Required:</span><span className="font-medium">{results.perHourConsumption.toFixed(2)} m³/hr</span></div>
+          <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Flow Required Per Hour:</span><span className="font-medium">{results.perHourConsumption.toFixed(2)} m³/hr</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Gas Cost per m³:</span><span className="font-medium">₹{effectiveUnitPricePSA.toFixed(2)}/-</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Power Consumption:</span><span className="font-medium">{effectivePower.toFixed(2)} kW</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Operator Cost (Annual):</span><span className="font-medium">{formatIndianCurrency(results.psaOperatorCostYear)}</span></div>
