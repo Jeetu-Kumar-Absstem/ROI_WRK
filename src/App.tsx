@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './utils/supabaseClient';
 import { Session } from '@supabase/supabase-js';
-import { Database, Settings, LogOut } from 'lucide-react';
+import { Calculator, Database, LogOut, Settings } from 'lucide-react';
 import PSAVsLiquid from './components/PSAVsLiquid';
 import PSAVsCylinders from './components/PSAVsCylinders';
 import PSAVsAnyPSA from './components/PSAVsAnyPSA';
 import PSAVsPSADeoxo from './components/PSAVsPSADeoxo';
+import { CmcApp } from './components/cmc';
 import SiteHeader from './components/SiteHeader';
 import SiteFooter from './components/SiteFooter';
 import Login from './components/Login';
@@ -76,7 +77,8 @@ export default function App() {
     { id: 'psa-vs-liquid', label: 'PSA Vs Liquid', icon: Database },
     { id: 'psa-vs-cylinders', label: 'PSA Vs Cylinders', icon: Settings },
     { id: 'psa-vs-any-psa', label: 'PSA vs Any PSA', icon: Settings },
-    { id: 'psa-vs-psa-deoxo', label: 'PSA vs PSA + Deoxo', icon: Settings }
+    { id: 'psa-vs-psa-deoxo', label: 'PSA vs PSA + Deoxo', icon: Settings },
+    { id: 'shield', label: 'SHIELD', icon: Calculator }
   ];
 
   // Show recovery screen if on /reset-password path (user not logged in yet)
@@ -135,6 +137,7 @@ export default function App() {
             {activeTab === 'psa-vs-cylinders' && <PSAVsCylinders />}
             {activeTab === 'psa-vs-any-psa' && <PSAVsAnyPSA />}
             {activeTab === 'psa-vs-psa-deoxo' && <PSAVsPSADeoxo />}
+            {activeTab === 'shield' && <CmcApp />}
           </div>
         </div>
       </div>

@@ -9,6 +9,7 @@ function getArg(name, defVal) {
 
 const baseUrl = getArg('url', 'http://localhost:5174/');
 const tab = getArg('tab', 'psa-vs-liquid');
+const calc = getArg('calc', 'calculator-1');
 const out = getArg('out', `exports/Report-${tab}-${new Date().toISOString().replace(/[:.]/g, '-')}.pdf`);
 
 const TAB_LABELS = {
@@ -16,6 +17,16 @@ const TAB_LABELS = {
   'psa-vs-cylinders': 'PSA Vs Cylinders',
   'psa-vs-any-psa': 'PSA vs Any PSA',
   'psa-vs-psa-deoxo': 'PSA vs PSA+Deoxo',
+  cmc: 'CMC',
+};
+
+const CMC_CALC_LABELS = {
+  'calculator-1': 'Calculator 1',
+  'calculator_1': 'Calculator 1',
+  '1': 'Calculator 1',
+  'calculator-2': 'Calculator 2',
+  'calculator_2': 'Calculator 2',
+  '2': 'Calculator 2',
 };
 
 (async () => {
@@ -34,6 +45,19 @@ const TAB_LABELS = {
     if (txt.includes(targetLabel)) {
       await btn.click();
       break;
+    }
+  }
+
+  if (tab === 'cmc') {
+    const targetCalcLabel = CMC_CALC_LABELS[calc] || 'Calculator 1';
+    await page.waitForSelector('[data-cmc-calculator-tabs] button');
+    const calcButtons = await page.$$('[data-cmc-calculator-tabs] button');
+    for (const btn of calcButtons) {
+      const txt = (await btn.textContent()) || '';
+      if (txt.includes(targetCalcLabel)) {
+        await btn.click();
+        break;
+      }
     }
   }
 
