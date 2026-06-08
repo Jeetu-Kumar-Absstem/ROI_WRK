@@ -12,7 +12,8 @@ import {
   YAxis,
 } from 'recharts';
 import DownloadPdfButton from '../DownloadPdfButton';
-import { ReportLayout } from '../ReportLayout';
+// import { ReportLayout } from '../ReportLayout';
+import { ReportLayoutShield } from '../ReportLayoutShield';
 import { Card, DerivedBox, Field, MetricCard, NumberInput, TextInput, Verdict } from './UI';
 import { fmtINR, fmtLakh, n2f } from './format';
 
@@ -214,6 +215,7 @@ export default function CMCCalculator2() {
         <DownloadPdfButton
           contentToPrint={reportRef}
           tabName="CMC_CALCULATOR_2"
+          letterheadPath="/absstem_shield_letterhead.jpg"
           inputs={{
             meta,
             mode,
@@ -455,7 +457,7 @@ export default function CMCCalculator2() {
       </div>
 
       <div className="print:hidden">
-        <ReportLayout
+        <ReportLayoutShield
           ref={reportRef}
           title="Plant / Revamp vs Buying Oxygen"
           summary={reportSummary}
@@ -656,7 +658,7 @@ export default function CMCCalculator2() {
               </div>
             </Card>
           </div>
-        </ReportLayout>
+        </ReportLayoutShield>
       </div>
     </div>
   );

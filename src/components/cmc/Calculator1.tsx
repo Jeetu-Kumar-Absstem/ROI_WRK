@@ -13,7 +13,8 @@ import {
   YAxis,
 } from 'recharts';
 import DownloadPdfButton from '../DownloadPdfButton';
-import { ReportLayout } from '../ReportLayout';
+// import { ReportLayout } from '../ReportLayout';
+import { ReportLayoutShield } from '../ReportLayoutShield';
 import BreakdownTable, { type BreakdownRow } from './BreakdownTable';
 import { Card, DerivedBox, Field, MetricCard, NumberInput, TextInput, Verdict, SectionPill } from './UI';
 import { fmtINR, fmtK, fmtLakh, n2f } from './format';
@@ -332,6 +333,7 @@ export default function CMCCalculator1() {
         <DownloadPdfButton
           contentToPrint={reportRef}
           tabName="CMC_CALCULATOR_1"
+          letterheadPath="/absstem_shield_letterhead.jpg"
           inputs={{
             meta,
             pmVisits,
@@ -604,7 +606,7 @@ export default function CMCCalculator1() {
       </div>
 
       <div className="print:hidden">
-        <ReportLayout
+        <ReportLayoutShield
           ref={reportRef}
           title="Existing Maintenance vs Absstem Shield CMC"
           summary={reportSummary}
@@ -725,7 +727,7 @@ export default function CMCCalculator1() {
               </div>
             </Card>
           </div>
-        </ReportLayout>
+        </ReportLayoutShield>
       </div>
     </div>
   );

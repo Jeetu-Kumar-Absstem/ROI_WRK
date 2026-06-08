@@ -9,9 +9,10 @@ interface DownloadPdfButtonProps {
   contentToPrint: React.RefObject<HTMLDivElement>;
   tabName: string;
   inputs?: any;
+  letterheadPath?: string;
 }
 
-const DownloadPdfButton: React.FC<DownloadPdfButtonProps> = ({ contentToPrint, tabName, inputs }) => {
+const DownloadPdfButton: React.FC<DownloadPdfButtonProps> = ({ contentToPrint, tabName, inputs, letterheadPath }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDownloadPdf = async () => {
@@ -36,7 +37,11 @@ const DownloadPdfButton: React.FC<DownloadPdfButtonProps> = ({ contentToPrint, t
           });
         };
 
-        const letterheadDataUrl = await toDataUrl('/letterhead.jpg.jpeg');
+        // Determine letterhead: prefer explicit prop, fall back to tabName heuristic
+        const resolvedLetterheadPath = letterheadPath
+          ?? (tabName.toLowerCase().includes('shield') ? '/absstem_shield_letterhead.jpg' : '/letterhead.jpg.jpeg');
+        const letterheadDataUrl = await toDataUrl(resolvedLetterheadPath);
+        console.log('Using letterhead:', resolvedLetterheadPath);
 
         const loadImage = (src: string) =>
           new Promise<HTMLImageElement>((resolve, reject) => {
@@ -78,8 +83,10 @@ const DownloadPdfButton: React.FC<DownloadPdfButtonProps> = ({ contentToPrint, t
 
         const marginLeft = 10;
         const marginRight = 10;
-        const topMargin = 22;
-        const bottomMargin = 30;
+        // Shield letterhead has a taller header and footer built into the image
+        const isShieldLetterhead = resolvedLetterheadPath.includes('shield');
+        const topMargin = isShieldLetterhead ? 38 : 22;
+        const bottomMargin = isShieldLetterhead ? 42 : 30;
 
         const contentWidth = pdfWidth - marginLeft - marginRight;
         const contentPageHeight = pdfHeight - topMargin - bottomMargin;

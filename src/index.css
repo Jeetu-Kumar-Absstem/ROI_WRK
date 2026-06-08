@@ -98,6 +98,21 @@
     background-size: cover;
     z-index: 0;
   }
+
+  /* Shield letterhead — used by ReportLayoutShield (SHIELD tab) */
+  .print-letterhead-shield-fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: url('/absstem_shield_letterhead.jpg') no-repeat top center !important;
+    background-size: cover !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    z-index: 0;
+  }
+
   .print-container, .report-content { position: relative; z-index: 1; }
   
   /* Ensure large-screen grids collapse to single column in print */
