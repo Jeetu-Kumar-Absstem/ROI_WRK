@@ -18,6 +18,8 @@ import BreakdownTable, { type BreakdownRow } from './BreakdownTable';
 import { Card, DerivedBox, Field, MetricCard, NumberInput, TextInput, Verdict, SectionPill } from './UI';
 import { fmtINR, fmtK, fmtLakh, n2f } from './format';
 
+const fmtCost = (v: number) => `${fmtINR(v)}/-`;
+
 type DtMode = 'cylinder' | 'liquid';
 type PrintMeta = {
   client: string;
@@ -148,25 +150,25 @@ export default function CMCCalculator1() {
 
     const tableRows: BreakdownRow[] = [
       { label: 'CURRENT AD-HOC COSTS', current: '', cmc: '', section: true },
-      { label: `Scheduled PM visits (${pv} × ${fmtINR(pe)}/visit)`, current: fmtINR(pm), cmc: 'Included in CMC' },
-      { label: 'Consumables purchased separately', current: fmtINR(co), cmc: 'Included in CMC' },
-      { label: `Breakdown call-out charges (×${bdc})`, current: fmtINR(bdl * bdc), cmc: 'Included in CMC' },
-      { label: `Breakdown spare parts (×${bdc})`, current: fmtINR(bds * bdc), cmc: 'Included in CMC' },
-      { label: `Downtime — oxygen backup (${bdc} breakdown × ${dd} day(s))`, current: fmtINR(oxyAnnual), cmc: 'Included in CMC' },
-      { label: `  ↳ ${dq} ${dtMode === 'cylinder' ? 'cyl' : 'tank'}(s)/day × ${fmtINR(dc)}/${dtMode === 'cylinder' ? 'cyl' : 'tank'} × ${bdc}×${dd} days`, current: fmtINR(oxyAnnual), cmc: '' },
-      { label: `  ↳ Gas consumed: ${gasAnnual.toFixed(0)} m³/yr @ ${fmtINR(unitPriceDt)}/m³`, current: '', cmc: '' },
-      { label: `Downtime — other costs (${bdc}×${dd} days × ${fmtINR(dother)}/day)`, current: fmtINR(otherAnnual), cmc: 'Included in CMC' },
-      { label: 'Purity lab certificate', current: fmtINR(lv), cmc: 'Included in CMC' },
-      { label: 'TOTAL — CURRENT', current: fmtINR(current), cmc: '—', section: true },
+      { label: `Scheduled PM visits (${pv} × ${fmtCost(pe)}/visit)`, current: fmtCost(pm), cmc: 'Included in CMC' },
+      { label: 'Consumables purchased separately', current: fmtCost(co), cmc: 'Included in CMC' },
+      { label: `Breakdown call-out charges (×${bdc})`, current: fmtCost(bdl * bdc), cmc: 'Included in CMC' },
+      { label: `Breakdown spare parts (×${bdc})`, current: fmtCost(bds * bdc), cmc: 'Included in CMC' },
+      { label: `Downtime — oxygen backup (${bdc} breakdown × ${dd} day(s))`, current: fmtCost(oxyAnnual), cmc: 'Included in CMC' },
+      { label: `  ↳ ${dq} ${dtMode === 'cylinder' ? 'cyl' : 'tank'}(s)/day × ${fmtCost(dc)}/${dtMode === 'cylinder' ? 'cyl' : 'tank'} × ${bdc}×${dd} days`, current: fmtCost(oxyAnnual), cmc: '' },
+      { label: `  ↳ Gas consumed: ${gasAnnual.toFixed(0)} m³/yr @ ${fmtCost(unitPriceDt)}/m³`, current: '', cmc: '' },
+      { label: `Downtime — other costs (${bdc}×${dd} days × ${fmtCost(dother)}/day)`, current: fmtCost(otherAnnual), cmc: 'Included in CMC' },
+      { label: 'Purity lab certificate', current: fmtCost(lv), cmc: 'Included in CMC' },
+      { label: 'TOTAL — CURRENT', current: fmtCost(current), cmc: '—', section: true },
       { label: 'CMC CONTRACT', current: '', cmc: '', section: true },
-      { label: 'CMC base value (ex-GST)', current: '—', cmc: fmtINR(cmc) },
-      { label: `GST @ ${(gst * 100).toFixed(0)}%`, current: '—', cmc: fmtINR(cmc * gst) },
-      { label: `Residual downtime cost under CMC (${cbd} breakdown × ${cdd} day(s))`, current: '—', cmc: fmtINR(cmcDowntime) },
-      { label: 'TOTAL — CMC', current: '—', cmc: fmtINR(cmcTotal), section: true },
+      { label: 'CMC base value (ex-GST)', current: '—', cmc: fmtCost(cmc) },
+      { label: `GST @ ${(gst * 100).toFixed(0)}%`, current: '—', cmc: fmtCost(cmc * gst) },
+      { label: `Residual downtime cost under CMC (${cbd} breakdown × ${cdd} day(s))`, current: '—', cmc: fmtCost(cmcDowntime) },
+      { label: 'TOTAL — CMC', current: '—', cmc: fmtCost(cmcTotal), section: true },
       {
         label: 'NET SAVING / (EXTRA COST)',
-        current: fmtINR(annualSavings >= 0 ? annualSavings : 0),
-        cmc: fmtINR(annualSavings < 0 ? Math.abs(annualSavings) : 0),
+        current: fmtCost(annualSavings >= 0 ? annualSavings : 0),
+        cmc: fmtCost(annualSavings < 0 ? Math.abs(annualSavings) : 0),
         section: true,
       },
     ];
@@ -232,8 +234,8 @@ export default function CMCCalculator1() {
   const verdictType = calculations.annualSavings >= 0 ? 'save' : 'loss';
   const verdictText =
     calculations.annualSavings >= 0
-      ? `Switching to CMC saves ${fmtINR(calculations.annualSavings)} per year. Over 5 years that is ${fmtINR(calculations.save5yr)} in total savings.`
-      : `The CMC costs ${fmtINR(Math.abs(calculations.annualSavings))} more per year than current ad-hoc spend. Review breakdown frequency inputs.`;
+      ? `Switching to CMC saves ${fmtCost(calculations.annualSavings)} per year. Over 5 years that is ${fmtCost(calculations.save5yr)} in total savings.`
+      : `The CMC costs ${fmtCost(Math.abs(calculations.annualSavings))} more per year than current ad-hoc spend. Review breakdown frequency inputs.`;
 
   const reportSummary = (
     <p className="text-justify">
@@ -268,33 +270,33 @@ export default function CMCCalculator1() {
         <div className="space-y-2 text-[13px] text-slate-700">
           <div className="flex items-start justify-between gap-4">
             <span>Scheduled PM visits</span>
-            <span>{fmtINR(calculations.pm)}</span>
+            <span>{fmtCost(calculations.pm)}</span>
           </div>
           <div className="flex items-start justify-between gap-4">
             <span>Consumables purchased separately</span>
-            <span>{fmtINR(calculations.co)}</span>
+            <span>{fmtCost(calculations.co)}</span>
           </div>
           <div className="flex items-start justify-between gap-4">
             <span>Breakdown call-out charges</span>
-            <span>{fmtINR(calculations.bdl * calculations.bdc)}</span>
+            <span>{fmtCost(calculations.bdl * calculations.bdc)}</span>
           </div>
           <div className="flex items-start justify-between gap-4">
             <span>Breakdown spare parts</span>
-            <span>{fmtINR(calculations.bds * calculations.bdc)}</span>
+            <span>{fmtCost(calculations.bds * calculations.bdc)}</span>
           </div>
           <div className="flex items-start justify-between gap-4">
             <span>Downtime oxygen backup</span>
-            <span>{fmtINR(calculations.oxyAnnual)}</span>
+            <span>{fmtCost(calculations.oxyAnnual)}</span>
           </div>
           <div className="flex items-start justify-between gap-4">
             <span>Purity lab certificate</span>
-            <span>{fmtINR(calculations.lv)}</span>
+            <span>{fmtCost(calculations.lv)}</span>
           </div>
         </div>
         <div className="mt-4 border-t border-slate-200 pt-4">
           <div className="flex items-start justify-between gap-4 text-lg font-bold text-blue-800">
             <span>Total Current Cost</span>
-            <span>{fmtINR(calculations.current)}</span>
+            <span>{fmtCost(calculations.current)}</span>
           </div>
         </div>
       </Card>
@@ -303,21 +305,21 @@ export default function CMCCalculator1() {
         <div className="space-y-2 text-[13px] text-slate-700">
           <div className="flex items-start justify-between gap-4">
             <span>CMC base value (ex-GST)</span>
-            <span>{fmtINR(calculations.cmc)}</span>
+            <span>{fmtCost(calculations.cmc)}</span>
           </div>
           <div className="flex items-start justify-between gap-4">
             <span>GST</span>
-            <span>{fmtINR(calculations.cmc * calculations.gst)}</span>
+            <span>{fmtCost(calculations.cmc * calculations.gst)}</span>
           </div>
           <div className="flex items-start justify-between gap-4">
             <span>Residual downtime cost</span>
-            <span>{fmtINR(calculations.cmcDowntime)}</span>
+            <span>{fmtCost(calculations.cmcDowntime)}</span>
           </div>
         </div>
         <div className="mt-4 border-t border-slate-200 pt-4">
           <div className="flex items-start justify-between gap-4 text-lg font-bold text-emerald-800">
             <span>Total CMC Cost</span>
-            <span>{fmtINR(calculations.cmcTotal)}</span>
+            <span>{fmtCost(calculations.cmcTotal)}</span>
           </div>
         </div>
       </Card>
@@ -395,8 +397,8 @@ export default function CMCCalculator1() {
             </Field>
             {calculations.pv > 0 ? (
               <DerivedBox>
-                Annual PM cost: <strong className="text-[#1F4E79]">{fmtINR(calculations.pm)}</strong>{' '}
-                ({calculations.pv} visit{calculations.pv !== 1 ? 's' : ''} × {fmtINR(calculations.pe)}/visit)
+                Annual PM cost: <strong className="text-[#1F4E79]">{fmtCost(calculations.pm)}</strong>{' '}
+                ({calculations.pv} visit{calculations.pv !== 1 ? 's' : ''} × {fmtCost(calculations.pe)}/visit)
               </DerivedBox>
             ) : null}
             <Field label="Consumables purchased separately ₹" hint="Filters, sensors, oil, separator, grease etc.">
@@ -452,19 +454,19 @@ export default function CMCCalculator1() {
                 Gas consumed: <strong className="text-slate-700">{calculations.gasPerBd.toFixed(1)} m³</strong>
               </div>
               <div>
-                Oxygen cost: <strong className="text-[#A32D2D]">{fmtINR(calculations.oxyPerBd)}</strong> ({calculations.dq} × {fmtINR(calculations.dc)} × {calculations.dd} days)
+                Oxygen cost: <strong className="text-[#A32D2D]">{fmtCost(calculations.oxyPerBd)}</strong> ({calculations.dq} × {fmtCost(calculations.dc)} × {calculations.dd} days)
               </div>
               <div>
                 Unit price during downtime: <strong className="text-[#A32D2D]">{fmtINR(calculations.unitPriceDt)}/m³</strong>
               </div>
               <div>
-                Other costs: <strong className="text-slate-700">{fmtINR(calculations.dother * calculations.dd)}</strong> ({fmtINR(calculations.dother)}/day × {calculations.dd} days)
+                Other costs: <strong className="text-slate-700">{fmtCost(calculations.dother * calculations.dd)}</strong> ({fmtCost(calculations.dother)}/day × {calculations.dd} days)
               </div>
               <div className="mt-2 border-t border-slate-200 pt-2 font-bold">
-                Cost per breakdown: <strong className="text-[#A32D2D]">{fmtINR(calculations.oxyPerBd + calculations.dother * calculations.dd)}</strong>
+                Cost per breakdown: <strong className="text-[#A32D2D]">{fmtCost(calculations.oxyPerBd + calculations.dother * calculations.dd)}</strong>
               </div>
               <div className="font-bold">
-                Annual ({calculations.bdc} breakdown{calculations.bdc !== 1 ? 's' : ''}): <strong className="text-[#A32D2D]">{fmtINR(calculations.dtTotal)}</strong>
+                Annual ({calculations.bdc} breakdown{calculations.bdc !== 1 ? 's' : ''}): <strong className="text-[#A32D2D]">{fmtCost(calculations.dtTotal)}</strong>
               </div>
             </DerivedBox>
             <Field label="Annual purity lab certificate ₹" hint="Included in CMC — enter your current annual lab test cost">
@@ -487,13 +489,13 @@ export default function CMCCalculator1() {
             </Field>
             <DerivedBox>
               <div>
-                CMC total (incl. GST): <strong className="text-[#1F4E79]">{fmtINR(calculations.cmcGross)}</strong>
+                CMC total (incl. GST): <strong className="text-[#1F4E79]">{fmtCost(calculations.cmcGross)}</strong>
               </div>
               <div>
-                Residual downtime under CMC: <strong className="text-slate-700">{fmtINR(calculations.cmcDowntime)}</strong>
+                Residual downtime under CMC: <strong className="text-slate-700">{fmtCost(calculations.cmcDowntime)}</strong>
               </div>
               <div className="mt-2 border-t border-slate-200 pt-2 font-bold">
-                Total CMC cost: <strong className="text-[#1F4E79]">{fmtINR(calculations.cmcTotal)}</strong>
+                Total CMC cost: <strong className="text-[#1F4E79]">{fmtCost(calculations.cmcTotal)}</strong>
               </div>
             </DerivedBox>
           </Card>
@@ -501,14 +503,14 @@ export default function CMCCalculator1() {
 
         <SectionPill label="Key results" />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <MetricCard label="Current annual cost" value={fmtINR(calculations.current)} color="var(--red)" />
-          <MetricCard label="CMC annual cost (incl. GST)" value={fmtINR(calculations.cmcTotal)} />
+          <MetricCard label="Current annual cost" value={fmtCost(calculations.current)} color="var(--red)" />
+          <MetricCard label="CMC annual cost (incl. GST)" value={fmtCost(calculations.cmcTotal)} />
           <MetricCard
             label={calculations.annualSavings >= 0 ? 'Annual saving' : 'Extra cost'}
-            value={fmtINR(Math.abs(calculations.annualSavings))}
+            value={fmtCost(Math.abs(calculations.annualSavings))}
             color={calculations.annualSavings >= 0 ? 'var(--green)' : 'var(--red)'}
           />
-          <MetricCard label="5-year saving" value={fmtINR(Math.abs(calculations.save5yr))} color={calculations.save5yr >= 0 ? 'var(--green)' : 'var(--red)'} />
+          <MetricCard label="5-year saving" value={fmtCost(Math.abs(calculations.save5yr))} color={calculations.save5yr >= 0 ? 'var(--green)' : 'var(--red)'} />
         </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <MetricCard
@@ -527,7 +529,7 @@ export default function CMCCalculator1() {
             value={roiMetrics.roiPercentage !== null ? `${roiMetrics.roiPercentage.toFixed(1)}%` : 'N/A'}
             color="var(--navy)"
           />
-          <MetricCard label="CMC over 5 years" value={fmtINR(calculations.cmcGross * 5)} />
+          <MetricCard label="CMC over 5 years" value={fmtCost(calculations.cmcGross * 5)} />
         </div>
 
         <Verdict type={verdictType}>{verdictText}</Verdict>
@@ -550,7 +552,7 @@ export default function CMCCalculator1() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                   <XAxis dataKey="name" interval={0} tick={{ fontSize: 11 }} />
                   <YAxis tickFormatter={(value) => fmtK(Number(value))} width={78} />
-                  <Tooltip formatter={(value: number) => fmtINR(value)} />
+                  <Tooltip formatter={(value: number) => fmtCost(value)} />
                   <Legend />
                   <Bar dataKey="current" name="Current" fill="#E24B4A" radius={[8, 8, 0, 0]} isAnimationActive={false}>
                     {calculations.chartData.map((entry) => (
@@ -586,7 +588,7 @@ export default function CMCCalculator1() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                   <XAxis dataKey="year" />
                   <YAxis tickFormatter={(value) => fmtLakh(Number(value))} width={78} />
-                  <Tooltip formatter={(value: number) => fmtINR(value)} />
+                  <Tooltip formatter={(value: number) => fmtCost(value)} />
                   <Legend />
                   <Line type="monotone" dataKey="current" name="Current" stroke="#E24B4A" strokeWidth={3} dot={{ r: 3 }} />
                   <Line type="monotone" dataKey="cmc" name="Under CMC" stroke="#3B6D11" strokeWidth={3} dot={{ r: 3 }} />
@@ -617,11 +619,11 @@ export default function CMCCalculator1() {
             <Card title="Savings Analysis" className="border-green-200 bg-gradient-to-r from-green-50 to-emerald-50">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div className="rounded-lg border border-green-200 bg-white p-4 text-center shadow-sm">
-                  <div className="mb-2 text-[28px] font-bold text-green-600">{fmtINR(calculations.annualSavings)}</div>
+                  <div className="mb-2 text-[28px] font-bold text-green-600">{fmtCost(calculations.annualSavings)}</div>
                   <div className="text-sm text-green-800">Annual Operating Cost Savings</div>
                 </div>
                 <div className="rounded-lg border border-blue-200 bg-white p-4 text-center shadow-sm">
-                  <div className="mb-2 text-[28px] font-bold text-blue-600">{fmtINR(calculations.save5yr)}</div>
+                  <div className="mb-2 text-[28px] font-bold text-blue-600">{fmtCost(calculations.save5yr)}</div>
                   <div className="text-sm text-blue-800">Total 5-Year Savings</div>
                 </div>
                 <div className="rounded-lg border border-violet-200 bg-white p-4 text-center shadow-sm">
@@ -646,7 +648,7 @@ export default function CMCCalculator1() {
                         <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                         <XAxis dataKey="name" interval={0} tick={{ fontSize: 11 }} />
                         <YAxis tickFormatter={(value) => fmtK(Number(value))} width={78} />
-                        <Tooltip formatter={(value: number) => fmtINR(value)} />
+                        <Tooltip formatter={(value: number) => fmtCost(value)} />
                         <Legend />
                         <Bar dataKey="current" name="Current" fill="#E24B4A" radius={[8, 8, 0, 0]} isAnimationActive={false}>
                           {calculations.chartData.map((entry) => (
@@ -670,7 +672,7 @@ export default function CMCCalculator1() {
                         <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                         <XAxis dataKey="year" />
                         <YAxis tickFormatter={(value) => fmtLakh(Number(value))} width={78} />
-                        <Tooltip formatter={(value: number) => fmtINR(value)} />
+                        <Tooltip formatter={(value: number) => fmtCost(value)} />
                         <Legend />
                         <Line type="monotone" dataKey="current" name="Current" stroke="#E24B4A" strokeWidth={3} dot={{ r: 3 }} isAnimationActive={false} />
                         <Line type="monotone" dataKey="cmc" name="Under CMC" stroke="#3B6D11" strokeWidth={3} dot={{ r: 3 }} isAnimationActive={false} />
@@ -687,8 +689,8 @@ export default function CMCCalculator1() {
               <div className="space-y-3 text-justify text-[14px] leading-7 text-slate-700">
                 <p>
                   This comparison shows the lifecycle impact of upgrading from a standalone PSA maintenance approach to an Absstem Shield CMC contract.
-                  The projected annual operating-cost difference is <span className="font-bold text-green-700">{fmtINR(calculations.annualSavings)}</span>, with a five-year savings impact of{' '}
-                  <span className="font-bold text-green-700">{fmtINR(calculations.save5yr)}</span>.
+                  The projected annual operating-cost difference is <span className="font-bold text-green-700">{fmtCost(calculations.annualSavings)}</span>, with a five-year savings impact of{' '}
+                  <span className="font-bold text-green-700">{fmtCost(calculations.save5yr)}</span>.
                 </p>
                 <p>
                   Beyond direct operating cost, the CMC option reduces breakdown downtime and simplifies upkeep by bundling preventive maintenance,

@@ -16,6 +16,8 @@ import { ReportLayout } from '../ReportLayout';
 import { Card, DerivedBox, Field, MetricCard, NumberInput, TextInput, Verdict } from './UI';
 import { fmtINR, fmtLakh, n2f } from './format';
 
+const fmtCost = (v: number) => `${fmtINR(v)}/-`;
+
 type Mode = 'cylinder' | 'liquid';
 type CostMode = 'new' | 'repair';
 type PrintMeta = {
@@ -148,8 +150,8 @@ export default function CMCCalculator2() {
     const verdictType = totalSaving >= 0 ? 'save' : 'loss';
     const verdictText =
       totalSaving >= 0
-        ? `PSA plant can save ${fmtINR(monthlySaving)} per month. Over ${life} years, the projected total saving is ${fmtINR(totalSaving)}.`
-        : `Over ${life} years, buying oxygen is cheaper by ${fmtINR(Math.abs(totalSaving))}. Review inputs.`;
+        ? `PSA plant can save ${fmtCost(monthlySaving)} per month. Over ${life} years, the projected total saving is ${fmtCost(totalSaving)}.`
+        : `Over ${life} years, buying oxygen is cheaper by ${fmtCost(Math.abs(totalSaving))}. Review inputs.`;
 
     return {
       qty,
@@ -309,13 +311,13 @@ export default function CMCCalculator2() {
             </Field>
             <DerivedBox>
               <div>
-                Electricity/month: <strong className="text-slate-700">{fmtINR(calculations.elecPerMonth)}</strong>
+                Electricity/month: <strong className="text-slate-700">{fmtCost(calculations.elecPerMonth)}</strong>
               </div>
               <div>
-                PSA unit price: <strong className="text-[#3B6D11]">{fmtINR(calculations.unitPricePSA)}/m³</strong>
+                PSA unit price: <strong className="text-[#3B6D11]">{fmtCost(calculations.unitPricePSA)}/m³</strong>
               </div>
               <div>
-                Saving per m³: <strong className="text-[#3B6D11]">{fmtINR(calculations.savingPerM3)}</strong>
+                Saving per m³: <strong className="text-[#3B6D11]">{fmtCost(calculations.savingPerM3)}</strong>
               </div>
             </DerivedBox>
           </Card>
@@ -342,25 +344,25 @@ export default function CMCCalculator2() {
             </Field>
             <DerivedBox>
               <div>
-                CMC over {calculations.life} years: <strong className="text-slate-700">{fmtINR(calculations.cmcTotal)}</strong>
+                CMC over {calculations.life} years: <strong className="text-slate-700">{fmtCost(calculations.cmcTotal)}</strong>
               </div>
             </DerivedBox>
           </Card>
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <MetricCard label="Monthly oxygen cost (current)" value={fmtINR(calculations.oxyMonthCost)} color="var(--red)" />
-          <MetricCard label="Monthly electricity cost (PSA)" value={fmtINR(calculations.elecPerMonth)} color="var(--amber)" />
-          <MetricCard label="Monthly saving by using PSA" value={fmtINR(calculations.monthlySaving)} color="var(--green)" />
-          <MetricCard label="Yearly saving by using PSA" value={fmtINR(calculations.yearlySaving)} color="var(--green)" />
+          <MetricCard label="Monthly oxygen cost (current)" value={fmtCost(calculations.oxyMonthCost)} color="var(--red)" />
+          <MetricCard label="Monthly electricity cost (PSA)" value={fmtCost(calculations.elecPerMonth)} color="var(--amber)" />
+          <MetricCard label="Monthly saving by using PSA" value={fmtCost(calculations.monthlySaving)} color="var(--green)" />
+          <MetricCard label="Yearly saving by using PSA" value={fmtCost(calculations.yearlySaving)} color="var(--green)" />
         </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <MetricCard label="ROI period" value={calculations.roiLabel} color="var(--navy)" />
-          <MetricCard label={`Total saving over ${calculations.life} years`} value={fmtINR(calculations.totalSaving)} color={calculations.totalSaving >= 0 ? 'var(--green)' : 'var(--red)'} />
-          <MetricCard label={`CMC over ${calculations.life} years`} value={fmtINR(calculations.cmcTotal)} />
+          <MetricCard label={`Total saving over ${calculations.life} years`} value={fmtCost(calculations.totalSaving)} color={calculations.totalSaving >= 0 ? 'var(--green)' : 'var(--red)'} />
+          <MetricCard label={`CMC over ${calculations.life} years`} value={fmtCost(calculations.cmcTotal)} />
         </div>
 
-        <Verdict type={calculations.totalSaving >= 0 ? 'save' : 'loss'}>{calculations.totalSaving >= 0 ? `PSA plant can save ${fmtINR(calculations.monthlySaving)} per month. Over ${calculations.life} years, the projected total saving is ${fmtINR(calculations.totalSaving)}.` : `Over ${calculations.life} years, buying oxygen is cheaper by ${fmtINR(Math.abs(calculations.totalSaving))}. Review inputs.`}</Verdict>
+        <Verdict type={calculations.totalSaving >= 0 ? 'save' : 'loss'}>{calculations.totalSaving >= 0 ? `PSA plant can save ${fmtCost(calculations.monthlySaving)} per month. Over ${calculations.life} years, the projected total saving is ${fmtCost(calculations.totalSaving)}.` : `Over ${calculations.life} years, buying oxygen is cheaper by ${fmtCost(Math.abs(calculations.totalSaving))}. Review inputs.`}</Verdict>
 
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
           <Card title="Monthly cost comparison" className="bg-white">
@@ -370,7 +372,7 @@ export default function CMCCalculator2() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                   <XAxis dataKey="name" interval={0} tick={{ fontSize: 11 }} />
                   <YAxis tickFormatter={(value) => fmtLakh(Number(value))} width={78} />
-                  <Tooltip formatter={(value: number) => fmtINR(value)} />
+                  <Tooltip formatter={(value: number) => fmtCost(value)} />
                   <Legend />
                   <Bar dataKey="value" name="Value" fill="#1F4E79" radius={[8, 8, 0, 0]} isAnimationActive={false} />
                 </BarChart>
@@ -394,7 +396,7 @@ export default function CMCCalculator2() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                   <XAxis dataKey="label" interval={0} tick={{ fontSize: 11 }} />
                   <YAxis tickFormatter={(value) => fmtLakh(Number(value))} width={78} />
-                  <Tooltip formatter={(value: number) => fmtINR(value)} />
+                  <Tooltip formatter={(value: number) => fmtCost(value)} />
                   <Legend />
                   <Line type="monotone" dataKey="buy" name="Buy oxygen" stroke="#E24B4A" strokeWidth={3} dot={{ r: 3 }} />
                   <Line type="monotone" dataKey="psa" name="PSA plant" stroke="#3B6D11" strokeWidth={3} dot={{ r: 3 }} />
@@ -421,24 +423,24 @@ export default function CMCCalculator2() {
                   { label: mode === 'cylinder' ? 'Gas per cylinder' : 'Gas per tank', uom: 'm³', val: calculations.gv.toString() },
                   { label: 'Oxygen gas used / month', uom: 'm³', val: calculations.gasPerMonth.toFixed(0) },
                   { label: 'Per hour oxygen consumption', uom: 'm³/hr', val: calculations.gasPerHr.toFixed(3) },
-                  { label: mode === 'cylinder' ? 'Cost per cylinder' : 'Cost per tank', uom: '₹', val: fmtINR(calculations.uc) },
-                  { label: 'Unit price per m³ (current)', uom: '₹/m³', val: fmtINR(calculations.unitPriceOxy) },
-                  { label: 'Monthly oxygen expense', uom: '₹', val: fmtINR(calculations.oxyMonthCost) },
+                  { label: mode === 'cylinder' ? 'Cost per cylinder' : 'Cost per tank', uom: '₹', val: fmtCost(calculations.uc) },
+                  { label: 'Unit price per m³ (current)', uom: '₹/m³', val: fmtCost(calculations.unitPriceOxy) },
+                  { label: 'Monthly oxygen expense', uom: '₹', val: fmtCost(calculations.oxyMonthCost) },
                   { label: 'PSA OXYGEN PLANT', uom: '', val: '', section: true },
                   { label: 'PSA plant flow rate', uom: 'm³/hr', val: calculations.pf.toString() },
                   { label: 'Power per m³ produced', uom: 'kW', val: calculations.ppm.toString() },
-                  { label: 'Electricity expense per month', uom: '₹', val: fmtINR(calculations.elecPerMonth) },
-                  { label: 'Unit price per m³ (PSA)', uom: '₹/m³', val: fmtINR(calculations.unitPricePSA) },
+                  { label: 'Electricity expense per month', uom: '₹', val: fmtCost(calculations.elecPerMonth) },
+                  { label: 'Unit price per m³ (PSA)', uom: '₹/m³', val: fmtCost(calculations.unitPricePSA) },
                   { label: 'SAVINGS', uom: '', val: '', section: true },
-                  { label: 'Monthly saving by using PSA', uom: '₹', val: fmtINR(calculations.monthlySaving) },
-                  { label: 'Yearly saving by using PSA', uom: '₹', val: fmtINR(calculations.yearlySaving) },
+                  { label: 'Monthly saving by using PSA', uom: '₹', val: fmtCost(calculations.monthlySaving) },
+                  { label: 'Yearly saving by using PSA', uom: '₹', val: fmtCost(calculations.yearlySaving) },
                   { label: 'ROI & INVESTMENT', uom: '', val: '', section: true },
-                  { label: calculations.costMode === 'new' ? 'Oxygen plant purchase cost' : 'Plant repair / restoration cost', uom: '₹', val: fmtINR(calculations.pc) },
+                  { label: calculations.costMode === 'new' ? 'Oxygen plant purchase cost' : 'Plant repair / restoration cost', uom: '₹', val: fmtCost(calculations.pc) },
                   { label: 'ROI period', uom: calculations.roiSheetUnit, val: calculations.roiSheetValue },
                   { label: 'Life of oxygen plant', uom: 'Years', val: calculations.life.toString() },
-                  { label: 'CMC charges per year', uom: '₹', val: fmtINR(calculations.cmc) },
-                  { label: `CMC charges for ${calculations.life} years`, uom: '₹', val: fmtINR(calculations.cmcTotal) },
-                  { label: `Total saving in ${calculations.life} years`, uom: '₹', val: fmtINR(calculations.totalSaving), section: true },
+                  { label: 'CMC charges per year', uom: '₹', val: fmtCost(calculations.cmc) },
+                  { label: `CMC charges for ${calculations.life} years`, uom: '₹', val: fmtCost(calculations.cmcTotal) },
+                  { label: `Total saving in ${calculations.life} years`, uom: '₹', val: fmtCost(calculations.totalSaving), section: true },
                 ].map((row, index) => (
                   <tr key={`${row.label}-${index}`} className={row.section ? 'bg-slate-50' : index % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'}>
                     <td className={`border-b border-slate-100 px-3 py-2 ${row.section ? 'font-bold text-[#1F4E79]' : 'text-slate-700'}`}>{row.label}</td>
@@ -484,11 +486,11 @@ export default function CMCCalculator2() {
                     </div>
                     <div className="flex items-start justify-between gap-4">
                       <span>Monthly oxygen expense</span>
-                      <span>{fmtINR(calculations.oxyMonthCost)}</span>
+                      <span>{fmtCost(calculations.oxyMonthCost)}</span>
                     </div>
                     <div className="flex items-start justify-between gap-4">
                       <span>Unit price</span>
-                      <span>{fmtINR(calculations.unitPriceOxy)}/m³</span>
+                      <span>{fmtCost(calculations.unitPriceOxy)}/m³</span>
                     </div>
                   </div>
                 </Card>
@@ -504,7 +506,7 @@ export default function CMCCalculator2() {
                     </div>
                     <div className="flex items-start justify-between gap-4">
                       <span>Electricity expense/month</span>
-                      <span>{fmtINR(calculations.elecPerMonth)}</span>
+                      <span>{fmtCost(calculations.elecPerMonth)}</span>
                     </div>
                   </div>
                 </Card>
@@ -512,15 +514,15 @@ export default function CMCCalculator2() {
                   <div className="space-y-2 text-[13px] text-slate-700">
                     <div className="flex items-start justify-between gap-4">
                       <span>Plant purchase / repair</span>
-                      <span>{fmtINR(calculations.pc)}</span>
+                      <span>{fmtCost(calculations.pc)}</span>
                     </div>
                     <div className="flex items-start justify-between gap-4">
                       <span>CMC charges per year</span>
-                      <span>{fmtINR(calculations.cmc)}</span>
+                      <span>{fmtCost(calculations.cmc)}</span>
                     </div>
                     <div className="flex items-start justify-between gap-4">
                       <span>Total saving in life cycle</span>
-                      <span>{fmtINR(calculations.totalSaving)}</span>
+                      <span>{fmtCost(calculations.totalSaving)}</span>
                     </div>
                   </div>
                 </Card>
@@ -532,11 +534,11 @@ export default function CMCCalculator2() {
             <Card title="Results Summary" className="border-green-200 bg-gradient-to-r from-green-50 to-emerald-50">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
                 <div className="rounded-lg border border-green-200 bg-white p-4 text-center shadow-sm">
-                  <div className="mb-2 text-[28px] font-bold text-green-600">{fmtINR(calculations.monthlySaving)}</div>
+                  <div className="mb-2 text-[28px] font-bold text-green-600">{fmtCost(calculations.monthlySaving)}</div>
                   <div className="text-sm text-green-800">Monthly Saving</div>
                 </div>
                 <div className="rounded-lg border border-blue-200 bg-white p-4 text-center shadow-sm">
-                  <div className="mb-2 text-[28px] font-bold text-blue-600">{fmtINR(calculations.yearlySaving)}</div>
+                  <div className="mb-2 text-[28px] font-bold text-blue-600">{fmtCost(calculations.yearlySaving)}</div>
                   <div className="text-sm text-blue-800">Yearly Saving</div>
                 </div>
                 <div className="rounded-lg border border-violet-200 bg-white p-4 text-center shadow-sm">
@@ -546,7 +548,7 @@ export default function CMCCalculator2() {
                   <div className="text-sm text-violet-800">ROI Period</div>
                 </div>
                 <div className="rounded-lg border border-slate-200 bg-white p-4 text-center shadow-sm">
-                  <div className="mb-2 text-[28px] font-bold text-slate-700">{fmtINR(calculations.totalSaving)}</div>
+                  <div className="mb-2 text-[28px] font-bold text-slate-700">{fmtCost(calculations.totalSaving)}</div>
                   <div className="text-sm text-slate-700">Total Saving over {calculations.life} years</div>
                 </div>
               </div>
@@ -562,7 +564,7 @@ export default function CMCCalculator2() {
                         <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                         <XAxis dataKey="name" interval={0} tick={{ fontSize: 11 }} />
                         <YAxis tickFormatter={(value) => fmtLakh(Number(value))} width={78} />
-                        <Tooltip formatter={(value: number) => fmtINR(value)} />
+                        <Tooltip formatter={(value: number) => fmtCost(value)} />
                         <Legend />
                         <Bar dataKey="value" name="Value" fill="#1F4E79" radius={[8, 8, 0, 0]} isAnimationActive={false} />
                       </BarChart>
@@ -577,7 +579,7 @@ export default function CMCCalculator2() {
                         <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                         <XAxis dataKey="label" interval={0} />
                         <YAxis tickFormatter={(value) => fmtLakh(Number(value))} width={78} />
-                        <Tooltip formatter={(value: number) => fmtINR(value)} />
+                        <Tooltip formatter={(value: number) => fmtCost(value)} />
                         <Legend />
                         <Line type="monotone" dataKey="buy" name="Buy oxygen" stroke="#E24B4A" strokeWidth={3} dot={{ r: 3 }} />
                         <Line type="monotone" dataKey="psa" name="PSA plant" stroke="#3B6D11" strokeWidth={3} dot={{ r: 3 }} />
@@ -593,12 +595,12 @@ export default function CMCCalculator2() {
             <Card title="Business Case & Recommendation" className="bg-white">
               <div className="space-y-3 text-justify text-[14px] leading-7 text-slate-700">
                 <p>
-                  The PSA plant can deliver a monthly saving of <span className="font-bold text-green-700">{fmtINR(calculations.monthlySaving)}</span>{' '}
+                  The PSA plant can deliver a monthly saving of <span className="font-bold text-green-700">{fmtCost(calculations.monthlySaving)}</span>{' '}
                   compared with buying oxygen. Over {calculations.life} years, the projected total saving is{' '}
-                  <span className="font-bold text-green-700">{fmtINR(calculations.totalSaving)}</span>.
+                  <span className="font-bold text-green-700">{fmtCost(calculations.totalSaving)}</span>.
                 </p>
                 <p>
-                  The analysis also includes CMC charges of <span className="font-bold text-[#1F4E79]">{fmtINR(calculations.cmcTotal)}</span>{' '}
+                  The analysis also includes CMC charges of <span className="font-bold text-[#1F4E79]">{fmtCost(calculations.cmcTotal)}</span>{' '}
                   across the analysis period, which should be considered alongside plant purchase or revamp cost.
                 </p>
                 <p className="font-bold text-[#1F4E79]">
@@ -624,24 +626,24 @@ export default function CMCCalculator2() {
                       { label: mode === 'cylinder' ? 'Gas per cylinder' : 'Gas per tank', uom: 'm³', val: calculations.gv.toString() },
                       { label: 'Oxygen gas used / month', uom: 'm³', val: calculations.gasPerMonth.toFixed(0) },
                       { label: 'Per hour oxygen consumption', uom: 'm³/hr', val: calculations.gasPerHr.toFixed(3) },
-                      { label: mode === 'cylinder' ? 'Cost per cylinder' : 'Cost per tank', uom: '₹', val: fmtINR(calculations.uc) },
-                      { label: 'Unit price per m³ (current)', uom: '₹/m³', val: fmtINR(calculations.unitPriceOxy) },
-                      { label: 'Monthly oxygen expense', uom: '₹', val: fmtINR(calculations.oxyMonthCost) },
+                      { label: mode === 'cylinder' ? 'Cost per cylinder' : 'Cost per tank', uom: '₹', val: fmtCost(calculations.uc) },
+                      { label: 'Unit price per m³ (current)', uom: '₹/m³', val: fmtCost(calculations.unitPriceOxy) },
+                      { label: 'Monthly oxygen expense', uom: '₹', val: fmtCost(calculations.oxyMonthCost) },
                       { label: 'PSA OXYGEN PLANT', uom: '', val: '', section: true },
                       { label: 'PSA plant flow rate', uom: 'm³/hr', val: calculations.pf.toString() },
                       { label: 'Power per m³ produced', uom: 'kW', val: calculations.ppm.toString() },
-                      { label: 'Electricity expense per month', uom: '₹', val: fmtINR(calculations.elecPerMonth) },
-                      { label: 'Unit price per m³ (PSA)', uom: '₹/m³', val: fmtINR(calculations.unitPricePSA) },
+                      { label: 'Electricity expense per month', uom: '₹', val: fmtCost(calculations.elecPerMonth) },
+                      { label: 'Unit price per m³ (PSA)', uom: '₹/m³', val: fmtCost(calculations.unitPricePSA) },
                       { label: 'SAVINGS', uom: '', val: '', section: true },
-                      { label: 'Monthly saving by using PSA', uom: '₹', val: fmtINR(calculations.monthlySaving) },
-                      { label: 'Yearly saving by using PSA', uom: '₹', val: fmtINR(calculations.yearlySaving) },
+                      { label: 'Monthly saving by using PSA', uom: '₹', val: fmtCost(calculations.monthlySaving) },
+                      { label: 'Yearly saving by using PSA', uom: '₹', val: fmtCost(calculations.yearlySaving) },
                       { label: 'ROI & INVESTMENT', uom: '', val: '', section: true },
-                      { label: calculations.costMode === 'new' ? 'Oxygen plant purchase cost' : 'Plant repair / restoration cost', uom: '₹', val: fmtINR(calculations.pc) },
+                      { label: calculations.costMode === 'new' ? 'Oxygen plant purchase cost' : 'Plant repair / restoration cost', uom: '₹', val: fmtCost(calculations.pc) },
                       { label: 'ROI period', uom: calculations.roiSheetUnit, val: calculations.roiSheetValue },
                       { label: 'Life of oxygen plant', uom: 'Years', val: calculations.life.toString() },
-                      { label: 'CMC charges per year', uom: '₹', val: fmtINR(calculations.cmc) },
-                      { label: `CMC charges for ${calculations.life} years`, uom: '₹', val: fmtINR(calculations.cmcTotal) },
-                      { label: `Total saving in ${calculations.life} years`, uom: '₹', val: fmtINR(calculations.totalSaving), section: true },
+                      { label: 'CMC charges per year', uom: '₹', val: fmtCost(calculations.cmc) },
+                      { label: `CMC charges for ${calculations.life} years`, uom: '₹', val: fmtCost(calculations.cmcTotal) },
+                      { label: `Total saving in ${calculations.life} years`, uom: '₹', val: fmtCost(calculations.totalSaving), section: true },
                     ].map((row, index) => (
                       <tr key={`${row.label}-${index}`} className={row.section ? 'bg-slate-50' : index % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'}>
                         <td className={`border-b border-slate-100 px-3 py-2 ${row.section ? 'font-bold text-[#1F4E79]' : 'text-slate-700'}`}>{row.label}</td>
