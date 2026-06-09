@@ -21,7 +21,7 @@ const DownloadPdfButton: React.FC<DownloadPdfButtonProps> = ({ contentToPrint, t
       try {
         contentToPrint.current.classList.add('export-mode');
 
-        const captureScale = 1.5;
+        const captureScale = 2;
         const pageJpegQuality = 0.82;
         // const letterheadJpegQuality = 0.75;
         // const letterheadTargetWidthPx = 1240;
