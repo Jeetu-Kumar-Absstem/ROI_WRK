@@ -23,9 +23,13 @@ const DownloadPdfButton: React.FC<DownloadPdfButtonProps> = ({ contentToPrint, t
 
         const captureScale = 1.5;
         const pageJpegQuality = 0.82;
-        const letterheadJpegQuality = 0.75;
-        const letterheadTargetWidthPx = 1240;
-        const letterheadTargetHeightPx = 1754;
+        // const letterheadJpegQuality = 0.75;
+        // const letterheadTargetWidthPx = 1240;
+        // const letterheadTargetHeightPx = 1754;
+        // After:
+        const letterheadJpegQuality = 0.98;       // near-lossless, preserves logo sharpness
+        const letterheadTargetWidthPx = 2480;     // A4 at 300dpi — proper print resolution
+        const letterheadTargetHeightPx = 3508;    // A4 at 300dpi
 
         const toDataUrl = async (url: string) => {
           const res = await fetch(url);
