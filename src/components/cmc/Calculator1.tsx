@@ -588,7 +588,10 @@ export default function CMCCalculator1() {
                   margin={{ top: 10, right: 16, left: 0, bottom: 10 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                  <XAxis dataKey="year" />
+                  {/* <XAxis dataKey="year" label="Year" /> */}
+                  <XAxis dataKey="year" 
+  label={{ value: "Year", position: "insideBottom", offset: -4 }} 
+/>
                   <YAxis tickFormatter={(value) => fmtLakh(Number(value))} width={78} />
                   <Tooltip formatter={(value: number) => fmtCost(value)} />
                   <Legend />
