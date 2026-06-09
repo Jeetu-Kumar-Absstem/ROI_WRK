@@ -14,12 +14,12 @@ export const ReportLayoutShield = React.forwardRef<HTMLDivElement, ReportLayoutP
       {/* Shield Letterhead background — class defined in index.css */}
       <div className="print-letterhead-shield-fixed" aria-hidden="true" />
 
-      {/* Main Content — top padding clears letterhead header, bottom padding clears letterhead footer */}
-      <div className="px-7 report-content" style={{ paddingTop: '40px', paddingBottom: '80px' }}>
+      {/* Main Content — paddingTop:0 here; jsPDF topMargin handles offset from letterhead */}
+      <div className="px-7 report-content" style={{ paddingTop: '0px', paddingBottom: '80px' }}>
         <div className="print-page">
           {/* Title Section */}
-          <div className="text-center mb-8 border-b-4 border-blue-700 pb-7">
-            <h1 className="text-4xl text-gray-800 mb-3" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>{title}</h1>
+          <div className="text-center mb-4 border-b-4 border-blue-700 pb-3">
+            <h1 className="text-4xl text-gray-800 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>{title}</h1>
             <div className="w-32 h-1.5 bg-gradient-to-r from-blue-700 to-green-500 mx-auto rounded-full"></div>
           </div>
 

@@ -26,7 +26,6 @@ const DownloadPdfButton: React.FC<DownloadPdfButtonProps> = ({ contentToPrint, t
         const letterheadJpegQuality = 0.75;
         const letterheadTargetWidthPx = 1240;
         const letterheadTargetHeightPx = 1754;
-       
 
         const toDataUrl = async (url: string) => {
           const res = await fetch(url);
@@ -84,10 +83,11 @@ const DownloadPdfButton: React.FC<DownloadPdfButtonProps> = ({ contentToPrint, t
 
         const marginLeft = 10;
         const marginRight = 10;
-        // Shield letterhead has a taller header and footer built into the image
         const isShieldLetterhead = resolvedLetterheadPath.includes('shield');
-        const topMargin = isShieldLetterhead ? 38 : 22;
-        const bottomMargin = isShieldLetterhead ? 42 : 30;
+        // topMargin = space from top of PDF page to where content image starts (in mm)
+        // Must match the letterhead header height exactly
+        const topMargin = isShieldLetterhead ? 24 : 22;
+        const bottomMargin = isShieldLetterhead ? 38 : 30;
 
         const contentWidth = pdfWidth - marginLeft - marginRight;
         const contentPageHeight = pdfHeight - topMargin - bottomMargin;

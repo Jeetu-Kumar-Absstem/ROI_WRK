@@ -195,21 +195,29 @@
   margin: 0 auto !important;
 }
 
-.export-mode .print-letterhead-fixed {
-  display: none !important; /* hide CSS letterhead; we add it via jsPDF per page */
+.export-mode .print-letterhead-fixed,
+.export-mode .print-letterhead-shield-fixed {
+  display: none !important;
 }
 
 /* A4 page sizing for export captures */
 .export-mode .print-page {
-  width: 794px !important;   /* ~A4 width at 96dpi */
-  min-height: 1123px !important; /* ~A4 height at 96dpi */
+  width: 794px !important;
+  min-height: 1123px !important;
   box-sizing: border-box !important;
   margin: 0 auto !important;
   position: relative !important;
+  padding-top: 0 !important;
+}
+
+/* Kill top margin on first element inside each captured page */
+.export-mode .print-page > *:first-child {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
 }
 
 .export-mode .report-content {
-  padding-top: 18px !important;
+  padding-top: 0px !important;
   padding-bottom: 88px !important;
   background: #ffffff !important;
 }
