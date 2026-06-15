@@ -25,7 +25,7 @@ type FieldProps = {
 export function Field({ label, hint, children, className = '' }: FieldProps) {
   return (
     <div className={`mb-3 ${className}`}>
-      <label className="mb-1 block text-[13px] text-slate-600">{label}</label>
+      <label className="mb-1 block text-[15px] text-slate-600">{label}</label>
       {children}
       {hint ? <div className="mt-1 text-[11px] text-slate-400">{hint}</div> : null}
     </div>
