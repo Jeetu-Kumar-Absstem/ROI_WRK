@@ -560,7 +560,7 @@ export default function CMCCalculator1() {
                 </Field>
               </>
             )}
-            <Field label="Annual rental cost ₹" hint="Annual cylinder / LOX tank equipment rental charges">
+            <Field label="Annual Rental cost ₹" hint="Annual cylinder / LOX tank equipment rental charges">
               <NumberInput
                 value={loxRentalCost}
                 min={0}
