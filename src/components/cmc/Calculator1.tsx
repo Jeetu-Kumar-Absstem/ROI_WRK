@@ -311,12 +311,12 @@ export default function CMCCalculator1() {
             <span>{fmtCost(calculations.bds * calculations.bdc)}</span>
           </div>
           <div className="flex items-start justify-between gap-4">
-            <span>Downtime oxygen backup</span>
-            <span>{fmtCost(calculations.oxyAnnual)}</span>
+            <span>Downtime oxygen backup Cost</span>
+            <span>{fmtCost(calculations.oxyAnnual + calculations.otherAnnual)}</span>
           </div>
           {calculations.loxRental > 0 && (
             <div className="flex items-start justify-between gap-4">
-              <span>Annual rental cost</span>
+              <span>Annual Rental cost</span>
               <span>{fmtCost(calculations.loxRental)}</span>
             </div>
           )}
