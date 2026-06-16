@@ -102,11 +102,10 @@ export default function CMCCalculator1() {
   const [loxGasCostValue, setLoxGasCostValue] = useState(15);
   const [loxGasCostUnit, setLoxGasCostUnit] = useState<VolumeUnit>('Nm3');
   const [loxRentalCost, setLoxRentalCost] = useState(25000);
-  const [avgDowntimePerYear, setAvgDowntimePerYear] = useState(4);
+  const [avgDowntimePerYear, setAvgDowntimePerYear] = useState(20);
   const [dtOther, setDtOther] = useState(2000);
   const [cmcCost, setCmcCost] = useState(250000);
-  const [cmcBd, setCmcBd] = useState(0.5);
-  const [cmcDd, setCmcDd] = useState(1);
+  const [cmcDd, setCmcDd] = useState(2);
 
   const ml = DT_MODES[dtMode];
 
@@ -131,7 +130,7 @@ export default function CMCCalculator1() {
     const add = n2f(avgDowntimePerYear);
     const dother = n2f(dtOther);
     const cmc = n2f(cmcCost);
-    const cbd = n2f(cmcBd);
+    const cbd = 0.5;
     const cdd = n2f(cmcDd);
 
     let oxyPerDay: number;
@@ -188,7 +187,7 @@ export default function CMCCalculator1() {
       { label: 'TOTAL — CURRENT', current: fmtCost(current), cmc: '—', section: true },
       { label: 'CMC CONTRACT', current: '', cmc: '', section: true },
       { label: 'Annual CMC cost', current: '—', cmc: fmtCost(cmc) },
-      { label: `Residual downtime cost under CMC (${cbd} breakdown × ${cdd} day(s))`, current: '—', cmc: fmtCost(cmcDowntime) },
+      { label: `Residual downtime cost under CMC (${cdd} day(s))`, current: '—', cmc: fmtCost(cmcDowntime) },
       { label: 'TOTAL — CMC', current: '—', cmc: fmtCost(cmcTotal), section: true },
 {
   label: `NET SAVING / (EXTRA COST) = (${fmtCost(current)}) - (${fmtCost(cmcTotal)}) `,
@@ -253,7 +252,7 @@ export default function CMCCalculator1() {
       currentAdHocTotal,
       underCMCTotal,
     };
-  }, [avgDowntimePerYear, bdSpares, cmcBd, cmcCost, cmcDd, cons, dtCost, dtGpu, dtMode, dtOther, dtQty, pmEach, pmVisits, loxDailyUseValue, loxDailyUseUnit, loxGasCostValue, loxGasCostUnit, loxRentalCost]);
+  }, [avgDowntimePerYear, bdSpares, cmcCost, cmcDd, cons, dtCost, dtGpu, dtMode, dtOther, dtQty, pmEach, pmVisits, loxDailyUseValue, loxDailyUseUnit, loxGasCostValue, loxGasCostUnit, loxRentalCost]);
 
   const roiMetrics = getRoiMetrics(calculations.annualSavings, calculations.cmcTotal);
   const verdictType = calculations.annualSavings >= 0 ? 'save' : 'loss';
@@ -371,7 +370,6 @@ export default function CMCCalculator1() {
             avgDowntimePerYear,
             dtOther,
             cmcCost,
-            cmcBd,
             cmcDd,
           }}
         />
@@ -623,16 +621,6 @@ export default function CMCCalculator1() {
                 min={0} 
                 step={5000} 
                 onChange={(value) => setCmcCost(sanitizeNonNegative(value, 0))}
-                onFocus={(e) => e.target.value === '0' && e.target.select()}
-              />
-            </Field>
-            <Field label="Expected breakdowns per year under CMC" hint="0.5 = 1 breakdown in 2 years. Preventive maintenance reduces breakdown frequency.">
-              <NumberInput 
-                value={cmcBd} 
-                min={0} 
-                max={10} 
-                step={0.5} 
-                onChange={(value) => setCmcBd(sanitizeNonNegative(value, 0))}
                 onFocus={(e) => e.target.value === '0' && e.target.select()}
               />
             </Field>
