@@ -132,7 +132,7 @@ const Login = () => {
     // ✅ FIX 1: redirectTo now points to /reset-password so PasswordRecovery
     // component is rendered and can extract the session tokens from the URL hash.
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/forget-password`,
+      redirectTo: `${window.location.origin}/reset-password`,
     });
 
     if (error) {

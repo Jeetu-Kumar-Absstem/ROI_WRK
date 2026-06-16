@@ -40,7 +40,7 @@ export default function App() {
 
     // ✅ FIX: detect /reset-password path OR recovery hash type
     // if (path === '/reset-password' || hashParams.get('type') === 'recovery') {
-    if (path === '/forget-password' || hashParams.get('type') === 'recovery') {
+    if (path === '/reset-password' || hashParams.get('type') === 'recovery') {
       setIsRecoveryMode(true);
     }
 
