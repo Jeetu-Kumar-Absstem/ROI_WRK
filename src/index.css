@@ -183,6 +183,36 @@
   box-shadow: none !important;
 }
 
+/* Preserve breakdown-table row colors during export capture */
+/* These targeted rules win over the blanket wipe above because they */
+/* come later in the stylesheet and match a more specific selector. */
+.export-mode tr.pdf-row-section {
+  background-color: #dbeafe !important;
+}
+.export-mode tr.pdf-row-total {
+  background-color: #dcfce7 !important;
+}
+.export-mode tr.pdf-row-even {
+  background-color: #ffffff !important;
+}
+.export-mode tr.pdf-row-odd {
+  background-color: #f8fafc !important;
+}
+
+/* Preserve full calculation sheet row colors (Calculator2 report) during export capture */
+.export-mode tr.pdf-row-header2 {
+  background-color: #fda4af !important;
+}
+.export-mode tr.pdf-row-section2 {
+  background-color: #86efac !important;
+}
+.export-mode tr.pdf-row-total2 {
+  background-color: #22c55e !important;
+}
+.export-mode tr.pdf-row-data2 {
+  background-color: #ffffff !important;
+}
+
 .export-mode {
   display: block !important; /* override hidden on print container during capture */
   visibility: visible !important;

@@ -977,10 +977,10 @@ export default function CMCCalculator2() {
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-slate-200 text-[13px]">
                   <thead>
-                    <tr className="bg-slate-500">
-                      <th className="border border-slate-200 px-3 py-2 text-left text-[11px] font-lufga-bold uppercase tracking-[0.08em] text-slate-500">Parameter</th>
-                      <th className="border border-slate-200 px-3 py-2 text-left text-[11px] font-lufga-bold uppercase tracking-[0.08em] text-slate-500">UOM</th>
-                      <th className="border border-slate-200 px-3 py-2 text-right text-[11px] font-lufga-bold uppercase tracking-[0.08em] text-slate-500">Value</th>
+                    <tr className="pdf-row-header2" style={{ backgroundColor: '#fda4af' }}>
+                      <th style={{ border: '1px solid #e2e8f0', padding: '8px 12px', textAlign: 'left', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b' }}>Parameter</th>
+                      <th style={{ border: '1px solid #e2e8f0', padding: '8px 12px', textAlign: 'left', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b' }}>UOM</th>
+                      <th style={{ border: '1px solid #e2e8f0', padding: '8px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b' }}>Value</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1020,14 +1020,36 @@ export default function CMCCalculator2() {
                       { label: 'Life of oxygen plant', uom: 'Years', val: calculations.plantLife.toString(), section: false },
                       { label: `CMC charges for ${calculations.plantLife} years`, uom: '₹', val: fmtCost(calculations.cmcTotal), section: false },
                       { label: 'ROI period', uom: calculations.roiSheetUnit, val: calculations.roiSheetValue, section: false, highlight: true },
-                      { label: `Total saving in ${calculations.plantLife} years`, uom: '₹', val: fmtCost(calculations.totalSaving), section: true, highlight: true },
-                    ].map((row, index) => (
-                      <tr key={`${row.label}-${index}`} className={row.section ? 'bg-slate-50' : index % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'}>
-                        <td className={`border border-slate-200 px-3 py-2 ${row.section ? 'font-lufga-bold text-[#1F4E79]' : 'text-slate-700 font-lufga-regular'}`}>{row.label}</td>
-                        <td className="border border-slate-200 px-3 py-2 text-[12px] text-slate-500 font-lufga-regular">{row.uom}</td>
-                        <td className={`border border-slate-200 px-3 py-2 text-right ${row.section ? 'font-lufga-bold text-[#1F4E79]' : row.highlight ? 'font-lufga-bold text-slate-900' : 'text-slate-700 font-lufga-regular'}`}>{row.val}</td>
-                      </tr>
-                    ))}
+                      { label: `Total saving in ${calculations.plantLife} years`, uom: '₹', val: fmtCost(calculations.totalSaving), section: true, highlight: true, isTotal: true },
+                    ].map((row, index) => {
+                      const rowBg = row.isTotal
+                        ? '#22c55e'
+                        : row.section
+                          ? '#86efac'
+                          : '#ffffff';
+                      const rowClass = row.isTotal
+                        ? 'pdf-row-total2'
+                        : row.section
+                          ? 'pdf-row-section2'
+                          : 'pdf-row-data2';
+                      const textColor = (row.isTotal || row.section) ? '#000000' : '#334155';
+                      const uomColor = (row.isTotal || row.section) ? '#000000' : '#64748b';
+                      const fontWeight = (row.section || row.isTotal || row.highlight) ? 700 : 400;
+                      if (row.section && !row.isTotal) {
+                        return (
+                          <tr key={`${row.label}-${index}`} className={rowClass} style={{ backgroundColor: rowBg }}>
+                            <td colSpan={3} style={{ border: '1px solid #e2e8f0', padding: '8px 12px', color: textColor, fontWeight: 700, fontSize: 13 }}>{row.label}</td>
+                          </tr>
+                        );
+                      }
+                      return (
+                        <tr key={`${row.label}-${index}`} className={rowClass} style={{ backgroundColor: rowBg }}>
+                          <td style={{ border: '1px solid #e2e8f0', padding: '8px 12px', color: textColor, fontWeight, fontSize: 13 }}>{row.label}</td>
+                          <td style={{ border: '1px solid #e2e8f0', padding: '8px 12px', color: uomColor, fontSize: 12 }}>{row.uom}</td>
+                          <td style={{ border: '1px solid #e2e8f0', padding: '8px 12px', textAlign: 'right', color: textColor, fontWeight, fontSize: 13 }}>{row.val}</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

@@ -91,7 +91,7 @@ export default function CMCCalculator1() {
   const [pmEach, setPmEach] = useState(10000);
   const [cons, setCons] = useState(55000);
   const [bdSpares, setBdSpares] = useState(80000);
-  const [bdCount, setBdCount] = useState(2);
+  const [bdCount] = useState(1);
   const [dtMode, setDtMode] = useState<DtMode>('cylinder');
   const [dtQty, setDtQty] = useState(DT_MODES.cylinder.qtyDef);
   const [dtGpu, setDtGpu] = useState(DT_MODES.cylinder.gpuDef);
@@ -102,10 +102,9 @@ export default function CMCCalculator1() {
   const [loxGasCostValue, setLoxGasCostValue] = useState(15);
   const [loxGasCostUnit, setLoxGasCostUnit] = useState<VolumeUnit>('Nm3');
   const [loxRentalCost, setLoxRentalCost] = useState(25000);
-  const [avgDowntimePerYear, setAvgDowntimePerYear] = useState(2);
+  const [avgDowntimePerYear, setAvgDowntimePerYear] = useState(4);
   const [dtOther, setDtOther] = useState(2000);
   const [cmcCost, setCmcCost] = useState(250000);
-  const [gstRate, setGstRate] = useState(18);
   const [cmcBd, setCmcBd] = useState(0.5);
   const [cmcDd, setCmcDd] = useState(1);
 
@@ -125,14 +124,13 @@ export default function CMCCalculator1() {
     const pm = pv * pe;
     const co = n2f(cons);
     const bds = n2f(bdSpares);
-    const bdc = n2f(bdCount);
+    const bdc = 1;
     const dq = n2f(dtQty);
     const dg = n2f(dtGpu);
     const dc = n2f(dtCost);
     const add = n2f(avgDowntimePerYear);
     const dother = n2f(dtOther);
     const cmc = n2f(cmcCost);
-    const gst = n2f(gstRate) / 100;
     const cbd = n2f(cmcBd);
     const cdd = n2f(cmcDd);
 
@@ -172,7 +170,7 @@ export default function CMCCalculator1() {
     
     // Current ad hoc total (no breakdown call-out charges)
     const current = pm + co + bds * bdc + dtTotal + loxRental;
-    const cmcGross = cmc * (1 + gst);
+    const cmcGross = cmc;
     const cmcDowntime = dtCostPerDay * cdd * cbd;
     const cmcTotal = cmcGross + cmcDowntime;
     const annualSavings = current - cmcTotal;
@@ -182,15 +180,14 @@ export default function CMCCalculator1() {
       { label: 'CURRENT AD-HOC COSTS', current: '', cmc: '', section: true },
       { label: `Scheduled PM visits (${pv} × ${fmtCost(pe)}/visit)`, current: fmtCost(pm), cmc: 'Included in CMC' },
       { label: 'Consumables purchased separately', current: fmtCost(co), cmc: 'Included in CMC' },
-      { label: `Breakdown spare parts (×${bdc})`, current: fmtCost(bds * bdc), cmc: 'Included in CMC' },
-      { label: `Downtime — oxygen backup (${bdc} breakdown × ${add} day(s))`, current: fmtCost(oxyAnnual), cmc: 'Included in CMC' },
+      { label: `Breakdown spare parts`, current: fmtCost(bds * bdc), cmc: 'Included in CMC' },
+      { label: `Downtime — oxygen backup (${add} day(s))`, current: fmtCost(oxyAnnual), cmc: 'Included in CMC' },
       { label: `  ↳ ${gasConsumedLabel}`, current: fmtCost(oxyAnnual), cmc: '' },
-      { label: `Downtime — other costs (${bdc}×${add} days × ${fmtCost(dother)}/day)`, current: fmtCost(otherAnnual), cmc: 'Included in CMC' },
+      { label: `Downtime — other costs (${add} days × ${fmtCost(dother)}/day)`, current: fmtCost(otherAnnual), cmc: 'Included in CMC' },
       ...(loxRental > 0 ? [{ label: 'Annual rental cost', current: fmtCost(loxRental), cmc: 'Included in CMC' }] : []),
       { label: 'TOTAL — CURRENT', current: fmtCost(current), cmc: '—', section: true },
       { label: 'CMC CONTRACT', current: '', cmc: '', section: true },
-      { label: 'CMC base value (ex-GST)', current: '—', cmc: fmtCost(cmc) },
-      { label: `GST @ ${(gst * 100).toFixed(0)}%`, current: '—', cmc: fmtCost(cmc * gst) },
+      { label: 'Annual CMC cost', current: '—', cmc: fmtCost(cmc) },
       { label: `Residual downtime cost under CMC (${cbd} breakdown × ${cdd} day(s))`, current: '—', cmc: fmtCost(cmcDowntime) },
       { label: 'TOTAL — CMC', current: '—', cmc: fmtCost(cmcTotal), section: true },
 {
@@ -227,13 +224,11 @@ export default function CMCCalculator1() {
       co,
       bds,
       bdc,
-      dq,
-      dg,
+      dq,      dg,
       dc,
       add,
       dother,
       cmc,
-      gst,
       cbd,
       cdd,
       oxyPerDay,
@@ -258,7 +253,7 @@ export default function CMCCalculator1() {
       currentAdHocTotal,
       underCMCTotal,
     };
-  }, [avgDowntimePerYear, bdCount, bdSpares, cmcBd, cmcCost, cmcDd, cons, dtCost, dtGpu, dtMode, dtOther, dtQty, gstRate, pmEach, pmVisits, loxDailyUseValue, loxDailyUseUnit, loxGasCostValue, loxGasCostUnit, loxRentalCost]);
+  }, [avgDowntimePerYear, bdSpares, cmcBd, cmcCost, cmcDd, cons, dtCost, dtGpu, dtMode, dtOther, dtQty, pmEach, pmVisits, loxDailyUseValue, loxDailyUseUnit, loxGasCostValue, loxGasCostUnit, loxRentalCost]);
 
   const roiMetrics = getRoiMetrics(calculations.annualSavings, calculations.cmcTotal);
   const verdictType = calculations.annualSavings >= 0 ? 'save' : 'loss';
@@ -332,12 +327,8 @@ export default function CMCCalculator1() {
       <Card title="Absstem Shield CMC contract" className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-lime-50">
         <div className="space-y-2 text-[15px] text-black-700">
           <div className="flex items-start justify-between gap-4">
-            <span>CMC base value (ex-GST)</span>
+            <span>CMC annual cost</span>
             <span>{fmtCost(calculations.cmc)}</span>
-          </div>
-          <div className="flex items-start justify-between gap-4">
-            <span>GST</span>
-            <span>{fmtCost(calculations.cmc * calculations.gst)}</span>
           </div>
           <div className="flex items-start justify-between gap-4">
             <span>Residual downtime cost</span>
@@ -373,7 +364,6 @@ export default function CMCCalculator1() {
             pmEach,
             cons,
             bdSpares,
-            bdCount,
             dtMode,
             dtQty,
             dtGpu,
@@ -381,7 +371,6 @@ export default function CMCCalculator1() {
             avgDowntimePerYear,
             dtOther,
             cmcCost,
-            gstRate,
             cmcBd,
             cmcDd,
           }}
@@ -420,9 +409,9 @@ export default function CMCCalculator1() {
           </div>
         </Card>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 text-black-700">
           <Card title="Current ad-hoc costs (per year)" className="bg-white">
-            <Field label="Number of Service visits per year" hint="How many PM visits the vendor/engineer currently does per year">
+            <Field label="Number of Service visits per year" hint="How many visits the vendor/engineer currently does per year">
               <NumberInput 
                 value={pmVisits} 
                 min={0} 
@@ -431,7 +420,7 @@ export default function CMCCalculator1() {
                 onFocus={(e) => e.target.value === '0' && e.target.select()}
               />
             </Field>
-            <Field label="Cost per Service visit ₹" hint="Labour + travel charges per visit (incl. GST if applicable)">
+            <Field label="Cost per Service visit ₹" hint="Labour + travel charges per visit">
               <NumberInput 
                 value={pmEach} 
                 min={0} 
@@ -461,15 +450,6 @@ export default function CMCCalculator1() {
                 min={0} 
                 step={1000} 
                 onChange={(value) => setBdSpares(sanitizeNonNegative(value, 0))}
-                onFocus={(e) => e.target.value === '0' && e.target.select()}
-              />
-            </Field>
-            <Field label="Avg breakdowns per year">
-              <NumberInput 
-                value={bdCount} 
-                min={0} 
-                step={1} 
-                onChange={(value) => setBdCount(sanitizeNonNegative(value, 0))}
                 onFocus={(e) => e.target.value === '0' && e.target.select()}
               />
             </Field>
@@ -631,7 +611,7 @@ export default function CMCCalculator1() {
                 Cost per breakdown: <strong className="text-[#A32D2D]">{fmtCost(calculations.oxyPerBd + calculations.dother * calculations.add)}</strong>
               </div>
               <div className="font-lufga-bold">
-                Annual ({calculations.bdc} breakdown{calculations.bdc !== 1 ? 's' : ''}): <strong className="text-[#A32D2D]">{fmtCost(calculations.dtTotal)}</strong>
+                Annual downtime cost: <strong className="text-[#A32D2D]">{fmtCost(calculations.dtTotal)}</strong>
               </div>
             </DerivedBox>
           </Card>
@@ -643,16 +623,6 @@ export default function CMCCalculator1() {
                 min={0} 
                 step={5000} 
                 onChange={(value) => setCmcCost(sanitizeNonNegative(value, 0))}
-                onFocus={(e) => e.target.value === '0' && e.target.select()}
-              />
-            </Field>
-            <Field label="GST rate (%)">
-              <NumberInput 
-                value={gstRate} 
-                min={0} 
-                max={28} 
-                step={1} 
-                onChange={(value) => setGstRate(sanitizeNonNegative(value, 0))}
                 onFocus={(e) => e.target.value === '0' && e.target.select()}
               />
             </Field>
@@ -678,7 +648,7 @@ export default function CMCCalculator1() {
             </Field>
             <DerivedBox>
               <div>
-                CMC total (incl. GST): <strong className="text-[#1F4E79]">{fmtCost(calculations.cmcGross)}</strong>
+                Annual CMC cost: <strong className="text-[#1F4E79]">{fmtCost(calculations.cmcGross)}</strong>
               </div>
               <div>
                 Residual downtime under CMC: <strong className="text-slate-700">{fmtCost(calculations.cmcDowntime)}</strong>
@@ -693,7 +663,7 @@ export default function CMCCalculator1() {
         <SectionPill label="Key results" />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <MetricCard label="Current annual cost" value={fmtCost(calculations.current)} color="var(--red)" />
-          <MetricCard label="CMC annual cost (incl. GST)" value={fmtCost(calculations.cmcTotal)} />
+          <MetricCard label="CMC annual cost" value={fmtCost(calculations.cmcTotal)} />
           <MetricCard
             label={calculations.annualSavings >= 0 ? 'Annual saving' : 'Extra cost'}
             value={fmtCost(Math.abs(calculations.annualSavings))}
@@ -903,14 +873,36 @@ export default function CMCCalculator1() {
                       <th className="px-4 py-3 text-right text-[11px] font-lufga-bold uppercase tracking-[0.08em] text-slate-500">Under CMC</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 bg-white">
-                    {calculations.tableRows.map((row, index) => (
-                      <tr key={`report-row-${index}`} className={row.section ? 'bg-slate-50' : index % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'}>
-                        <td className={`px-4 py-3 ${row.section ? 'font-lufga-bold text-[#1F4E79]' : 'text-slate-700 font-lufga-regular'}`}>{row.label}</td>
-                        <td className={`px-4 py-3 text-right ${row.section ? 'font-lufga-bold text-[#1F4E79]' : 'text-slate-700 font-lufga-regular'}`}>{row.current}</td>
-                        <td className={`px-4 py-3 text-right ${row.section ? 'font-lufga-bold text-[#1F4E79]' : 'text-slate-700 font-lufga-regular'}`}>{row.cmc}</td>
-                      </tr>
-                    ))}
+                  <tbody>
+                    {calculations.tableRows.map((row, index) => {
+                      const rowBg = row.isTotalSavings
+                        ? '#dcfce7'
+                        : row.section
+                          ? '#dbeafe'
+                          : index % 2 === 0
+                            ? '#ffffff'
+                            : '#f8fafc';
+                      const cellColor = row.isTotalSavings
+                        ? '#15803d'
+                        : row.section
+                          ? '#1F4E79'
+                          : '#334155';
+                      const fontWeight = (row.section || row.isTotalSavings) ? 700 : 400;
+                      const rowClass = row.isTotalSavings
+                        ? 'pdf-row-total'
+                        : row.section
+                          ? 'pdf-row-section'
+                          : index % 2 === 0
+                            ? 'pdf-row-even'
+                            : 'pdf-row-odd';
+                      return (
+                        <tr key={`report-row-${index}`} className={rowClass} style={{ backgroundColor: rowBg, borderBottom: '1px solid #e2e8f0' }}>
+                          <td style={{ padding: '10px 16px', color: cellColor, fontWeight, fontSize: 13 }}>{row.label}</td>
+                          <td style={{ padding: '10px 16px', textAlign: 'right', color: cellColor, fontWeight, fontSize: 13 }}>{row.current}</td>
+                          <td style={{ padding: '10px 16px', textAlign: 'right', color: cellColor, fontWeight, fontSize: 13 }}>{row.cmc}</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

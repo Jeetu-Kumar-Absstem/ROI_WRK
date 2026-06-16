@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes, ReactNode } from 'react';
+import { useEffect, useState, type InputHTMLAttributes, type ReactNode } from 'react';
 
 type CardProps = {
   title?: string;
@@ -80,7 +80,11 @@ type DerivedBoxProps = {
 };
 
 export function DerivedBox({ children, className = '' }: DerivedBoxProps) {
-  return <div className={`mb-4 rounded-md bg-slate-50 px-3 py-2 text-[12px] leading-7 text-slate-500 ${className}`}>{children}</div>;
+  return (
+    <div className={`mb-4 rounded-md bg-slate-50 px-3 py-2 text-[12px] leading-7 text-slate-500 ${className}`}>
+      {children}
+    </div>
+  );
 }
 
 type SectionPillProps = {
@@ -95,7 +99,10 @@ export function SectionPill({ label }: SectionPillProps) {
   );
 }
 
-type NumberInputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'onChange' | 'value'> & {
+type NumberInputProps = Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  'type' | 'onChange' | 'value'
+> & {
   value: number | string;
   onChange?: (value: string) => void;
 };
@@ -103,22 +110,56 @@ type NumberInputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'on
 const INVALID_NUMBER_KEYS = new Set(['-', '+', 'e', 'E']);
 
 export function NumberInput({ value, onChange, ...rest }: NumberInputProps) {
+  const [displayValue, setDisplayValue] = useState(String(value));
+
+  useEffect(() => {
+    setDisplayValue(String(value));
+  }, [value]);
+
   return (
     <input
       type="number"
-      value={value}
+      value={displayValue}
       inputMode="decimal"
       onKeyDown={(event) => {
         if (INVALID_NUMBER_KEYS.has(event.key)) {
           event.preventDefault();
         }
       }}
+      onFocus={(event) => event.target.select()}
       onChange={(event) => {
         if (rest.readOnly) {
           return;
         }
-        const parsed = Number.parseFloat(event.target.value);
-        onChange?.(String(Number.isFinite(parsed) ? Math.max(0, parsed) : 0));
+
+        let raw = event.target.value;
+
+        if (raw === '') {
+          setDisplayValue('');
+          onChange?.('0');
+          return;
+        }
+
+        // Remove leading zeros
+        if (raw.length > 1) {
+          raw = raw.replace(/^0+/, '');
+
+          if (raw === '') {
+            raw = '0';
+          }
+        }
+
+        setDisplayValue(raw);
+
+        const parsed = Number.parseFloat(raw);
+
+        onChange?.(
+          String(
+            Number.isFinite(parsed)
+              ? Math.max(0, parsed)
+              : 0
+          )
+        );
       }}
       {...rest}
       className={`w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[14px] text-slate-900 outline-none transition focus:border-blue-600 focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 ${rest.className ?? ''}`}
