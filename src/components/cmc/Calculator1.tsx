@@ -181,7 +181,7 @@ export default function CMCCalculator1() {
       { label: 'Consumables purchased separately', current: fmtCost(co), cmc: 'Included in CMC' },
       { label: `Breakdown spare parts`, current: fmtCost(bds * bdc), cmc: 'Included in CMC' },
       { label: `Downtime — oxygen backup (${add} day(s))`, current: fmtCost(oxyAnnual), cmc: 'Included in CMC' },
-      { label: `  ↳ ${gasConsumedLabel}`, current: fmtCost(oxyAnnual), cmc: '' },
+      // { label: `  ↳ ${gasConsumedLabel}`, current: fmtCost(oxyAnnual), cmc: '' },
       { label: `Downtime — other costs (${add} days × ${fmtCost(dother)}/day)`, current: fmtCost(otherAnnual), cmc: 'Included in CMC' },
       ...(loxRental > 0 ? [{ label: 'Annual rental cost', current: fmtCost(loxRental), cmc: 'Included in CMC' }] : []),
       { label: 'TOTAL — CURRENT', current: fmtCost(current), cmc: '—', section: true },
