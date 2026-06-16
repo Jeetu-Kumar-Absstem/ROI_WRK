@@ -978,9 +978,6 @@ export default function CMCCalculator2() {
                 </div>
               </div>
             </Card>
-          </div>
-
-          <div className="print-page space-y-6">
             <Card title="Business Case & Recommendation" className="bg-white">
               <div className="space-y-3 text-justify text-[14px] leading-7 text-black-700 font-lufga-regular">
                 <p>
@@ -997,6 +994,9 @@ export default function CMCCalculator2() {
                 </p>
               </div>
             </Card>
+          </div>
+
+          <div className="print-page space-y-6">
 
             <Card title="Full calculation sheet" className="bg-white">
               <div className="overflow-x-auto">
