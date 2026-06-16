@@ -346,11 +346,33 @@ export default function CMCCalculator1() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-lufga-regular text-slate-900">
-      <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap');
-        .font-lufga-regular { font-family: 'Inter', sans-serif; font-weight: 400; }
-        .font-lufga-bold { font-family: 'Inter', sans-serif; font-weight: 700; }
-      `}</style>
+     <style jsx global>{`
+  @font-face {
+    font-family: 'Lufga';
+    src: url('/fonts/Lufga-Regular.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: 'Lufga';
+    src: url('/fonts/Lufga-SemiBold.otf') format('opentype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  .font-lufga-regular { 
+    font-family: 'Lufga', sans-serif; 
+    font-weight: 400; 
+  }
+  
+  .font-lufga-bold { 
+    font-family: 'Lufga', sans-serif; 
+    font-weight: 600; 
+  }
+`}</style>
       
       <div className="mb-4 flex justify-end print:hidden">
         <DownloadPdfButton
@@ -452,7 +474,7 @@ export default function CMCCalculator1() {
               />
             </Field>
 
-            <Field label="Backup oxygen source during breakdown" >
+            <Field label="Backup oxygen source during breakdown"  className="font-lufga-regular">
               <select
                 value={dtMode}
                 onChange={(event) => setDtMode(event.target.value as DtMode)}
