@@ -21,6 +21,7 @@ import { VolumeUnit, getUnitDisplay, getUnitSuperscript, convertToNm3, convertFr
 const fmtCost = (v: number) => `${fmtINR(v)}/-`;
 
 type DtMode = 'cylinder' | 'liquid';
+type MaintenanceMode = 'invoice' | 'scheduled';
 type PrintMeta = {
   client: string;
   by: string;
@@ -73,6 +74,14 @@ function sanitizeNonNegative(value: string, fallback = 0) {
   return Math.max(0, parsed);
 }
 
+function sanitizePositive(value: string, fallback = 160000) {
+  const parsed = Number.parseFloat(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return fallback;
+  }
+  return parsed;
+}
+
 function getRoiMetrics(annualSavings: number, plantCost: number) {
   if (annualSavings <= 0 || plantCost <= 0) {
     return { roiPercentage: null as number | null, paybackMonths: null as number | null };
@@ -87,6 +96,8 @@ function getRoiMetrics(annualSavings: number, plantCost: number) {
 export default function CMCCalculator1() {
   const reportRef = useRef<HTMLDivElement>(null);
   const [meta, setMeta] = useState<PrintMeta>({ client: '', by: '', plant: '' });
+  const [maintenanceMode, setMaintenanceMode] = useState<MaintenanceMode>('invoice');
+  const [invoiceCost, setInvoiceCost] = useState(160000);
   const [pmVisits, setPmVisits] = useState(4);
   const [pmEach, setPmEach] = useState(10000);
   const [cons, setCons] = useState(55000);
@@ -124,6 +135,8 @@ export default function CMCCalculator1() {
     const co = n2f(cons);
     const bds = n2f(bdSpares);
     const bdc = 1;
+    const invoiceVal = n2f(invoiceCost);
+    const maintenanceTotal = maintenanceMode === 'invoice' ? invoiceVal : pm + co + bds * bdc;
     const dq = n2f(dtQty);
     const dg = n2f(dtGpu);
     const dc = n2f(dtCost);
@@ -162,24 +175,30 @@ export default function CMCCalculator1() {
       gasConsumedLabel = `Gas consumed: ${gasAnnual.toFixed(0)} Nm³/yr @ ${fmtINR(unitPriceDt)}/Nm³`;
     }
 
-    const loxRental = n2f(loxRentalCost);
+    const loxRental = dtMode === 'cylinder' ? 0 : n2f(loxRentalCost);
     const otherAnnual = dother * add * bdc;
     const dtTotal = oxyAnnual + otherAnnual;
     const dtCostPerDay = oxyPerDay + dother;
     
     // Current ad hoc total (no breakdown call-out charges)
-    const current = pm + co + bds * bdc + dtTotal + loxRental;
+    const current = maintenanceTotal + dtTotal + loxRental;
     const cmcGross = cmc;
     const cmcDowntime = dtCostPerDay * cdd * cbd;
     const cmcTotal = cmcGross + cmcDowntime;
     const annualSavings = current - cmcTotal;
     const save5yr = annualSavings * 5;
 
+    const maintenanceRows: BreakdownRow[] = maintenanceMode === 'invoice'
+      ? [{ label: 'Invoice Cost', current: fmtCost(invoiceVal), cmc: 'Included in CMC' }]
+      : [
+          { label: `Scheduled PM visits (${pv} × ${fmtCost(pe)}/visit)`, current: fmtCost(pm), cmc: 'Included in CMC' },
+          { label: 'Consumables purchased separately', current: fmtCost(co), cmc: 'Included in CMC' },
+          { label: `Breakdown spare parts`, current: fmtCost(bds * bdc), cmc: 'Included in CMC' },
+        ];
+
     const tableRows: BreakdownRow[] = [
       { label: 'CURRENT AD-HOC COSTS', current: '', cmc: '', section: true },
-      { label: `Scheduled PM visits (${pv} × ${fmtCost(pe)}/visit)`, current: fmtCost(pm), cmc: 'Included in CMC' },
-      { label: 'Consumables purchased separately', current: fmtCost(co), cmc: 'Included in CMC' },
-      { label: `Breakdown spare parts`, current: fmtCost(bds * bdc), cmc: 'Included in CMC' },
+      ...maintenanceRows,
       { label: `Downtime — oxygen backup (${add} day(s))`, current: fmtCost(oxyAnnual), cmc: 'Included in CMC' },
       // { label: `  ↳ ${gasConsumedLabel}`, current: fmtCost(oxyAnnual), cmc: '' },
       { label: `Downtime — other costs (${add} days × ${fmtCost(dother)}/day)`, current: fmtCost(otherAnnual), cmc: 'Included in CMC' },
@@ -203,7 +222,7 @@ export default function CMCCalculator1() {
     const underCMCTotal = cmcTotal;
     
     const chartData = [
-      { name: 'Current\nAd-hoc', current: pm + co + bds * bdc + dtTotal + loxRental, cmc: 0 },
+      { name: 'Current\nAd-hoc', current, cmc: 0 },
       { name: 'Under\nCMC', current: 0, cmc: cmcDowntime + cmcGross },
     ];
     
@@ -223,6 +242,8 @@ export default function CMCCalculator1() {
       co,
       bds,
       bdc,
+      invoiceVal,
+      maintenanceTotal,
       dq,      dg,
       dc,
       add,
@@ -252,13 +273,16 @@ export default function CMCCalculator1() {
       currentAdHocTotal,
       underCMCTotal,
     };
-  }, [avgDowntimePerYear, bdSpares, cmcCost, cmcDd, cons, dtCost, dtGpu, dtMode, dtOther, dtQty, pmEach, pmVisits, loxDailyUseValue, loxDailyUseUnit, loxGasCostValue, loxGasCostUnit, loxRentalCost]);
+  }, [avgDowntimePerYear, bdSpares, cmcCost, cmcDd, cons, dtCost, dtGpu, dtMode, dtOther, dtQty, pmEach, pmVisits, loxDailyUseValue, loxDailyUseUnit, loxGasCostValue, loxGasCostUnit, loxRentalCost, maintenanceMode, invoiceCost]);
 
   const roiMetrics = getRoiMetrics(calculations.annualSavings, calculations.cmcTotal);
   const verdictType = calculations.annualSavings >= 0 ? 'save' : 'loss';
   const verdictText =
     calculations.annualSavings >= 0
-      ? `Switching to CMC saves ${fmtCost(calculations.annualSavings)} per year. Over 5 years that is ${fmtCost(calculations.save5yr)} in total savings.`
+      ? `Switching to CMC saves ${fmtCost(calculations.annualSavings)} per year. Over 5 years that is ${fmtCost(calculations.save5yr)} in total savings.Absstem gives 10 years warranty to your Molecular Sieves.
+      
+
+      `
       : `The CMC costs ${fmtCost(Math.abs(calculations.annualSavings))} more per year than current ad-hoc spend. Review breakdown frequency inputs.`;
 
   const reportSummary = (
@@ -292,18 +316,27 @@ export default function CMCCalculator1() {
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
       <Card title="Current ad-hoc costs (per year)" className="border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
         <div className="space-y-2 text-[15px] text-black-700">
-          <div className="flex items-start justify-between gap-4">
-            <span>Scheduled PM visits</span>
-            <span>{fmtCost(calculations.pm)}</span>
-          </div>
-          <div className="flex items-start justify-between gap-4">
-            <span>Consumables purchased separately</span>
-            <span>{fmtCost(calculations.co)}</span>
-          </div>
-          <div className="flex items-start justify-between gap-4">
-            <span>Breakdown spare parts</span>
-            <span>{fmtCost(calculations.bds * calculations.bdc)}</span>
-          </div>
+          {maintenanceMode === 'invoice' ? (
+            <div className="flex items-start justify-between gap-4">
+              <span>Invoice Cost</span>
+              <span>{fmtCost(calculations.invoiceVal)}</span>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-start justify-between gap-4">
+                <span>Scheduled PM visits</span>
+                <span>{fmtCost(calculations.pm)}</span>
+              </div>
+              <div className="flex items-start justify-between gap-4">
+                <span>Consumables purchased separately</span>
+                <span>{fmtCost(calculations.co)}</span>
+              </div>
+              <div className="flex items-start justify-between gap-4">
+                <span>Breakdown spare parts</span>
+                <span>{fmtCost(calculations.bds * calculations.bdc)}</span>
+              </div>
+            </>
+          )}
           <div className="flex items-start justify-between gap-4">
             <span>Downtime oxygen backup Cost</span>
             <span>{fmtCost(calculations.oxyAnnual + calculations.otherAnnual)}</span>
@@ -381,6 +414,8 @@ export default function CMCCalculator1() {
           letterheadPath="/absstem_shield_letterhead.jpg"
           inputs={{
             meta,
+            maintenanceMode,
+            invoiceCost,
             pmVisits,
             pmEach,
             cons,
@@ -391,6 +426,7 @@ export default function CMCCalculator1() {
             dtCost,
             avgDowntimePerYear,
             dtOther,
+            loxRentalCost,
             cmcCost,
             cmcDd,
           }}
@@ -399,7 +435,7 @@ export default function CMCCalculator1() {
 
       <div className="space-y-6 print:hidden">
         <p className="text-[19px] font-lufga-bold text-[#1F4E79]">Existing Maintenance vs Absstem Shield Premium</p>
-        <p className="text-[13px] text-black-500 font-lufga-regular">
+        <p className="text-[15px] text-black-500 font-lufga-regular">
           Enter your current annual maintenance costs to see how they compare to an Absstem Shield CMC contract.
         </p>
 
@@ -430,51 +466,76 @@ export default function CMCCalculator1() {
         </Card>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 text-black-700">
-          <Card title="Current ad-hoc costs (per year)" className="bg-white">
-            <Field label="Number of Service visits per year" hint="How many visits the vendor/engineer currently does per year">
-              <NumberInput 
-                value={pmVisits} 
-                min={0} 
-                step={1} 
-                onChange={(value) => setPmVisits(sanitizeNonNegative(value, 0))}
-                onFocus={(e) => e.target.value === '0' && e.target.select()}
-              />
+          <Card className="bg-white">
+            <div className="mb-4 text-[19px] font-lufga-bold text-[#1F4E79]">Current ad-hoc costs (per year)</div>
+            <Field label="Maintenance Cost" className="font-lufga-regular">
+              <select
+                value={maintenanceMode}
+                onChange={(event) => setMaintenanceMode(event.target.value as MaintenanceMode)}
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[14px] text-slate-900 outline-none transition focus:border-blue-600 focus:ring-4 focus:ring-blue-100 font-lufga-regular"
+              >
+                <option value="invoice">Invoice Cost</option>
+                <option value="scheduled">Scheduled Cost</option>
+              </select>
             </Field>
-            <Field label="Cost per Service visit ₹" hint="Labour + travel charges per visit">
-              <NumberInput 
-                value={pmEach} 
-                min={0} 
-                step={500} 
-                onChange={(value) => setPmEach(sanitizeNonNegative(value, 0))}
-                onFocus={(e) => e.target.value === '0' && e.target.select()}
-              />
-            </Field>
-            {calculations.pv > 0 ? (
-              <DerivedBox>
-                Annual PM cost: <strong className="text-[#1F4E79]">{fmtCost(calculations.pm)}</strong>{' '}
-                ({calculations.pv} visit{calculations.pv !== 1 ? 's' : ''} × {fmtCost(calculations.pe)}/visit)
-              </DerivedBox>
-            ) : null}
-            <Field label="Consumables purchased separately ₹" hint="Filters, sensors, oil, separator, grease etc.">
-              <NumberInput 
-                value={cons} 
-                min={0} 
-                step={1000} 
-                onChange={(value) => setCons(sanitizeNonNegative(value, 0))}
-                onFocus={(e) => e.target.value === '0' && e.target.select()}
-              />
-            </Field>
-            <Field label="Breakdown spare parts cost ₹">
-              <NumberInput 
-                value={bdSpares} 
-                min={0} 
-                step={1000} 
-                onChange={(value) => setBdSpares(sanitizeNonNegative(value, 0))}
-                onFocus={(e) => e.target.value === '0' && e.target.select()}
-              />
-            </Field>
+            {maintenanceMode === 'invoice' ? (
+              <Field label="Invoice Cost ₹" hint="Total annual maintenance invoice amount">
+                <NumberInput
+                  value={invoiceCost}
+                  min={1}
+                  step={1000}
+                  onChange={(value) => setInvoiceCost(sanitizePositive(value, 160000))}
+                  onFocus={(e) => e.target.value === '0' && e.target.select()}
+                />
+              </Field>
+            ) : (
+              <>
+                <Field label="Number of Service visits per year" hint="How many visits the vendor/engineer currently does per year">
+                  <NumberInput 
+                    value={pmVisits} 
+                    min={0} 
+                    step={1} 
+                    onChange={(value) => setPmVisits(sanitizeNonNegative(value, 0))}
+                    onFocus={(e) => e.target.value === '0' && e.target.select()}
+                  />
+                </Field>
+                <Field label="Cost per Service visit ₹" hint="Labour + travel charges per visit">
+                  <NumberInput 
+                    value={pmEach} 
+                    min={0} 
+                    step={500} 
+                    onChange={(value) => setPmEach(sanitizeNonNegative(value, 0))}
+                    onFocus={(e) => e.target.value === '0' && e.target.select()}
+                  />
+                </Field>
+                {calculations.pv > 0 ? (
+                  <DerivedBox>
+                    Annual PM cost: <strong className="text-[#1F4E79]">{fmtCost(calculations.pm)}</strong>{' '}
+                    ({calculations.pv} visit{calculations.pv !== 1 ? 's' : ''} × {fmtCost(calculations.pe)}/visit)
+                  </DerivedBox>
+                ) : null}
+                <Field label="Consumables purchased separately ₹" hint="Filters, sensors, oil, separator, grease etc.">
+                  <NumberInput 
+                    value={cons} 
+                    min={0} 
+                    step={1000} 
+                    onChange={(value) => setCons(sanitizeNonNegative(value, 0))}
+                    onFocus={(e) => e.target.value === '0' && e.target.select()}
+                  />
+                </Field>
+                <Field label="Breakdown spare parts cost ₹">
+                  <NumberInput 
+                    value={bdSpares} 
+                    min={0} 
+                    step={1000} 
+                    onChange={(value) => setBdSpares(sanitizeNonNegative(value, 0))}
+                    onFocus={(e) => e.target.value === '0' && e.target.select()}
+                  />
+                </Field>
+              </>
+            )}
 
-            <Field label="Backup oxygen source during breakdown"  className="font-lufga-regular">
+            <Field label="Backup Oxygen Source During Breakdown"  className="text-[18px] font-lufga-bold text-[#1F4E79]">
               <select
                 value={dtMode}
                 onChange={(event) => setDtMode(event.target.value as DtMode)}
@@ -560,15 +621,17 @@ export default function CMCCalculator1() {
                 </Field>
               </>
             )}
-            <Field label="Annual Rental cost ₹" hint="Annual cylinder / LOX tank equipment rental charges">
-              <NumberInput
-                value={loxRentalCost}
-                min={0}
-                step={1000}
-                onChange={(value) => setLoxRentalCost(sanitizeNonNegative(value, 0))}
-                onFocus={(e) => e.target.value === '0' && e.target.select()}
-              />
-            </Field>
+            {dtMode === 'liquid' ? (
+              <Field label="Annual Rental cost ₹" hint="Annual LOX tank equipment rental charges">
+                <NumberInput
+                  value={loxRentalCost}
+                  min={0}
+                  step={1000}
+                  onChange={(value) => setLoxRentalCost(sanitizeNonNegative(value, 0))}
+                  onFocus={(e) => e.target.value === '0' && e.target.select()}
+                />
+              </Field>
+            ) : null}
             <Field label="Avg breakdown/downtime Per Year (In Days)" hint="Total downtime days per year due to breakdowns">
               <NumberInput 
                 value={avgDowntimePerYear} 
@@ -627,18 +690,19 @@ export default function CMCCalculator1() {
                   Annual rental: <strong className="text-[#A32D2D]">{fmtCost(calculations.loxRental)}</strong>
                 </div>
               )}
-              <div className="mt-2 border-t border-slate-200 pt-2 font-lufga-bold">
+              {/* <div className="mt-2 border-t border-slate-200 pt-2 font-lufga-bold">
                 Cost per breakdown: <strong className="text-[#A32D2D]">{fmtCost(calculations.oxyPerBd + calculations.dother * calculations.add)}</strong>
-              </div>
+              </div> */}
               <div className="font-lufga-bold">
                 Annual downtime cost: <strong className="text-[#A32D2D]">{fmtCost(calculations.dtTotal)}</strong>
               </div>
             </DerivedBox>
           </Card>
 
-          <Card title="Absstem Shield CMC contract" className="bg-white">
+          <Card className="bg-white ">
+            <div className="mb-4 text-[18px] font-lufga-bold text-[#1F4E79]">Absstem Shield CMC contract</div>
             <Field label="Annual CMC Cost ₹">
-              <NumberInput 
+              <NumberInput
                 value={cmcCost} 
                 min={0} 
                 step={5000} 
@@ -667,7 +731,21 @@ export default function CMCCalculator1() {
                 Total CMC cost: <strong className="text-[#1F4E79]">{fmtCost(calculations.cmcTotal)}</strong>
               </div>
             </DerivedBox>
+             <DerivedBox>
+              <div className="font-lufga-bold text-green-500 text-[18px]">
+                Additional Features of Absstem Shield CMC:
+              </div>
+              <div className='text-black-500'>
+              <ul className="list-disc list-inside">
+                <li>10-Year Warranty on Molecular Sieves</li>
+                <li>Guaranteed Fixed Costs with Zero Hidden Charges</li>
+                <li>Priority Support and Faster Response Times</li>
+              </ul>
+              </div>
+            </DerivedBox>
+
           </Card>
+
         </div>
 
         <SectionPill label="Key results" />
@@ -681,18 +759,7 @@ export default function CMCCalculator1() {
           />
           <MetricCard label="5-year saving" value={fmtCost(Math.abs(calculations.save5yr))} color={calculations.save5yr >= 0 ? 'var(--green)' : 'var(--red)'} />
         </div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <MetricCard
-            label="ROI period"
-            value={
-              roiMetrics.roiPercentage !== null && roiMetrics.paybackMonths !== null
-                ? roiMetrics.paybackMonths < 12
-                  ? `${roiMetrics.paybackMonths.toFixed(2)} months`
-                  : `${(roiMetrics.paybackMonths / 12).toFixed(2)} years`
-                : 'N/A'
-            }
-            color="var(--navy)"
-          />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <MetricCard
             label="Annual savings percentage"
             value={roiMetrics.roiPercentage !== null ? `${roiMetrics.roiPercentage.toFixed(1)}%` : 'N/A'}
@@ -704,22 +771,29 @@ export default function CMCCalculator1() {
         <Verdict type={verdictType}>{verdictText}</Verdict>
 
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-          <Card title="Cost comparison by category" className="bg-white">
-            <div className="mb-3 flex flex-wrap gap-4 text-[12px] text-slate-500">
-              <span>
-                <span className="mr-1 inline-block h-2.5 w-2.5 rounded-sm bg-[#E24B4A]" />
-                Current ad-hoc cost 
+          <Card className="bg-white">
+            <div className="text-[14px] font-lufga-bold text-[#1F4E79]">Cost Comparison by Category</div>
+            <div className="mb-3 flex flex-wrap gap-6 text-[12px] text-slate-600">
+              <span className="flex items-center gap-2">
+                <span className="inline-block h-3 w-8 rounded-full bg-[#E24B4A]" />
+                <span>
+                  <span className="font-lufga-bold text-[#E24B4A]">Current</span>
+                  <span className="ml-1 text-slate-500">{fmtCost(calculations.current)} per year</span>
+                </span>
               </span>
-              <span>
-                <span className="mr-1 inline-block h-2.5 w-2.5 rounded-sm bg-[#3B6D11]" />
-                Under CMC 
+              <span className="flex items-center gap-2">
+                <span className="inline-block h-3 w-8 rounded-full bg-[#3B6D11]" />
+                <span>
+                  <span className="font-lufga-bold text-[#3B6D11]">Under CMC</span>
+                  <span className="ml-1 text-slate-500">{fmtCost(calculations.cmcTotal)} per year</span>
+                </span>
               </span>
             </div>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={calculations.chartData} margin={{ top: 10, right: 16, left: 0, bottom: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                  <XAxis dataKey="name" interval={0} tick={{ fontSize: 11 }} />
+                  <XAxis dataKey="name"  label={{ value: "Year", position: "insideBottom", offset: -4 }}  interval={0} tick={{ fontSize: 11 }} />
                   <YAxis tickFormatter={(value) => fmtK(Number(value))} width={78} />
                   <Tooltip formatter={(value: number) => fmtCost(value)} />
                   <Bar dataKey="current" name="Current ad-hoc cost" fill="#E24B4A" radius={[8, 8, 0, 0]} isAnimationActive={false} />
@@ -729,7 +803,7 @@ export default function CMCCalculator1() {
             </div>
           </Card>
           <Card title="Current vs CMC over 5 years" className="bg-white">
-            <div className="mb-3 flex flex-wrap gap-6 text-[12px] text-slate-600">
+            <div className="mb-3 flex flex-wrap gap-6 text-[14px] text-[#1F4E79]">
               <span className="flex items-center gap-2">
                 <span className="inline-block h-3 w-8 rounded-full bg-[#E24B4A]" />
                 <span>
@@ -765,7 +839,8 @@ export default function CMCCalculator1() {
           </Card>
         </div>
 
-        <Card title="Detailed cost breakdown" className="bg-white">
+        <Card className="bg-white">
+          <div className="text-[19px] font-lufga-bold text-[#1F4E79]">Detailed cost breakdown</div>
           <BreakdownTable rows={calculations.tableRows} />
         </Card>
       </div>
@@ -798,9 +873,6 @@ export default function CMCCalculator1() {
                     {roiMetrics.roiPercentage !== null ? `${roiMetrics.roiPercentage.toFixed(1)}%` : 'N/A'}
                   </div>
                   <div className="text-sm text-violet-800 font-lufga-regular">Return on Investment</div>
-                  <div className="text-sm text-violet-800 font-lufga-regular">
-                    {roiMetrics.paybackMonths !== null ? `Payback in ${roiMetrics.paybackMonths.toFixed(1)} months` : 'Payback unavailable'}
-                  </div>
                 </div>
               </div>
             </Card>
@@ -808,16 +880,22 @@ export default function CMCCalculator1() {
             <Card title="Cost Comparison Charts" className="bg-white">
               <div className="space-y-6">
                 <div>
-                  <div className="mb-3 text-sm font-lufga-bold text-slate-700">Cost comparison by category</div>
-                  <div className="mb-2 flex flex-wrap gap-3 text-[11px] text-slate-500">
-                    <span><span className="mr-1 inline-block h-2 w-2 rounded-sm bg-[#E24B4A]" /></span>
-                    <span><span className="mr-1 inline-block h-2 w-2 rounded-sm bg-[#3B6D11]" /></span>
+                  <div className="mb-3 text-sm font-lufga-bold text-[#1F4E79] text-[14px]">Cost comparison by category</div>
+                  <div className="mb-2 flex flex-wrap gap-4 text-[11px] text-slate-600">
+                    <span className="flex items-center gap-2 text-[15px]">
+                      <span className="inline-block h-2.5 w-6 rounded-full bg-[#E24B4A]" />
+                      <span><span className="font-lufga-bold text-[#E24B4A] text-[15px]">Current</span> — {fmtCost(calculations.current)} per year</span>
+                    </span>
+                    <span className="flex items-center gap-2 text-[15px]">
+                      <span className="inline-block h-2.5 w-6 rounded-full bg-[#3B6D11]" />
+                      <span><span className="font-lufga-bold text-[#3B6D11] text-[15px]">Under CMC</span> — {fmtCost(calculations.cmcTotal)} per year</span>
+                    </span>
                   </div>
-                  <div className="h-[220px]">
+                  <div className="h-[320px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={calculations.chartData} margin={{ top: 10, right: 16, left: 0, bottom: 10 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                        <XAxis dataKey="name" interval={0} tick={{ fontSize: 11 }} />
+                        <XAxis dataKey="name"  label={{ value: "Year", position: "insideBottom", offset: -4 }}  interval={0} tick={{ fontSize: 11 }} />
                         <YAxis tickFormatter={(value) => fmtK(Number(value))} width={78} />
                         <Tooltip formatter={(value: number) => fmtCost(value)} />
                         <Bar dataKey="current" name="Current ad-hoc cost" fill="#E24B4A" radius={[8, 8, 0, 0]} isAnimationActive={false} />
@@ -827,18 +905,18 @@ export default function CMCCalculator1() {
                   </div>
                 </div>
                 <div>
-                  <div className="mb-3 text-sm font-lufga-bold text-black-700">Current vs CMC over 5 years</div>
+                  <div className="mb-3 text-sm font-lufga-bold text-[#1F4E79]">Current vs CMC over 5 years</div>
                   <div className="mb-2 flex flex-wrap gap-4 text-[11px] text-slate-600">
-                    <span className="flex items-center gap-2 text-[15px">
+                    <span className="flex items-center gap-2 text-[15px]">
                       <span className="inline-block h-2.5 w-6 rounded-full bg-[#E24B4A]" />
                       <span><span className="font-lufga-bold text-[#E24B4A] text-[15px]">Current</span> — {fmtCost(calculations.current * 5)} over 5 yrs</span>
                     </span>
-                    <span className="flex items-center gap-2 text-[15px">
+                    <span className="flex items-center gap-2 text-[15px]">
                       <span className="inline-block h-2.5 w-6 rounded-full bg-[#3B6D11]" />
                       <span><span className="font-lufga-bold text-[#3B6D11] text-[15px]">Under CMC</span> — {fmtCost(calculations.cmcTotal * 5)} over 5 yrs</span>
                     </span>
                   </div>
-                  <div className="h-[220px]">
+                  <div className="h-[320px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={calculations.lineChartData} margin={{ top: 10, right: 30, left: 0, bottom: 10 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />

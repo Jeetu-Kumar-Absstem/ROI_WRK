@@ -4,7 +4,6 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Cell,
   Legend,
   Line,
   LineChart,
@@ -21,6 +20,37 @@ import { VolumeUnit, getUnitDisplay, getUnitSuperscript, convertToNm3, convertFr
 
 
 const fmtCost = (v: number) => `${fmtINR(v)}/-`;
+
+// Custom tooltip for the floating-bar Yearly Cost Comparison chart.
+// Reads the true value from the data point (not the stacked offset) so the
+// "Savings" bar — which floats on an invisible base — still shows its real amount.
+const BAR_SERIES_META: Record<string, { label: string; color: string }> = {
+  oxygen: { label: 'Oxygen Current Year Cost', color: '#E24B4A' },
+  psaCost: { label: 'PSA Operational Cost', color: '#2563EB' },
+  savings: { label: 'Savings', color: '#EAB308' },
+};
+
+// Custom tooltip for the stacked Yearly Cost Comparison chart.
+// Shows every non-zero segment in the hovered bar (e.g. the 2nd bar shows
+// both "PSA Operational Cost" and "Savings" since they're stacked together).
+function BarTooltipContent({ active, payload, label }: any) {
+  if (!active || !payload || !payload.length) return null;
+  const rows = payload.filter((p: any) => BAR_SERIES_META[p.dataKey] && Number(p.value) > 0);
+  if (!rows.length) return null;
+  return (
+    <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 12px', fontSize: 13, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+      <div style={{ fontWeight: 600, color: '#334155', marginBottom: 4 }}>{label}</div>
+      {rows.map((p: any) => {
+        const meta = BAR_SERIES_META[p.dataKey];
+        return (
+          <div key={p.dataKey} style={{ color: meta.color, fontWeight: 700 }}>
+            {meta.label}: {fmtCost(Number(p.value))}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 type CostMode = 'new' | 'repair';
 type PrintMeta = {
@@ -129,14 +159,23 @@ export default function CMCCalculator2() {
     const roiSheetUnit = Number.isFinite(roiYears) ? (roiYears < 1 ? 'Months' : 'Years') : 'N/A';
     
     // Yearly cost comparison data
-    const yearlyOxygenCost = oxyMonthCost * 12 + annualRentalCost;
+    // Rental cost only applies in "vs Liquid" mode (tank/equipment rental).
+    // In "vs Cylinder" mode there is no separate rental charge.
+    const yearlyOxygenCost = oxyMonthCost * 12 + (comparisonType === 'liquid' ? annualRentalCost : 0);
     const yearlyPSAGasCost = elecPerMonth * 12+cmcYr;
     const yearlySavings = yearlySaving;
     
+    // Two bars: the 1st is the Oxygen cost on its own; the 2nd stacks the PSA
+    // operational cost (blue) with the Savings (yellow) on top of it, so the
+    // stacked total reads as "PSA Operational Cost + Savings".
     const barData = [
-      { name: 'Oxygen Current Year Cost', value: yearlyOxygenCost, color: '#E24B4A' },
-      { name: 'PSA Operational cost', value: yearlyPSAGasCost, color: '#3B6D11' },
-      { name: 'Savings', value: yearlySavings, color: '#4CAF50' },
+      { name: 'Oxygen Current Year Cost', oxygen: yearlyOxygenCost, psaCost: 0, savings: 0 },
+      { name: 'PSA Operational Cost + Savings', oxygen: 0, psaCost: yearlyPSAGasCost, savings: yearlySavings },
+    ];
+    const barLegend = [
+      { key: 'oxygen', name: 'Oxygen Current Year Cost', color: '#E24B4A', value: yearlyOxygenCost, lightBg: 'bg-red-50', lightBorder: 'border-red-100' },
+      { key: 'psaCost', name: 'PSA Operational Cost', color: '#2563EB', value: yearlyPSAGasCost, lightBg: 'bg-blue-50', lightBorder: 'border-blue-100' },
+      { key: 'savings', name: 'Savings', color: '#EAB308', value: yearlySavings, lightBg: 'bg-yellow-50', lightBorder: 'border-yellow-100' },
     ];
     
     // Cumulative cost over plant life
@@ -149,7 +188,7 @@ export default function CMCCalculator2() {
     for (let year = 1; year <= plantLife; year += 1) {
       yLabels.push(`Yr ${year}`);
       const oxyThis = oxyMonthCost * 12 * Math.pow(1 + oxyEsc / 100, year - 1);
-      buySum += oxyThis + annualRentalCost;
+      buySum += oxyThis + (comparisonType === 'liquid' ? annualRentalCost : 0);
       psaSum += elecPerMonth * 12 + (year === 1 ? 0 : cmcYr);
       buyCumul.push(Math.round(buySum));
       psaCumul.push(Math.round(psaSum));
@@ -208,6 +247,7 @@ export default function CMCCalculator2() {
       roiSheetValue,
       roiSheetUnit,
       barData,
+      barLegend,
       lineChartData,
       verdictType,
       verdictText,
@@ -288,7 +328,7 @@ export default function CMCCalculator2() {
 
       <div className="space-y-6 print:hidden">
         <p className="text-[19px] font-lufga-bold text-[#1F4E79]">{reportTitle}</p>
-        <p className="text-[13px] text-black-500 font-lufga-regular">
+        <p className="text-[14px] text-black-500 font-lufga-regular">
           Based on Absstem's ROI logic. It calculates monthly saving, ROI period and total saving over the plant life.
         </p>
         
@@ -340,7 +380,9 @@ export default function CMCCalculator2() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-          <Card title="Oxygen Purchase (Current)" className="bg-white">
+
+          <Card className="bg-white">
+            <div className="text-[17px] font-lufga-bold text-[#1F4E79] ">Oxygen Purchase (Current)</div>
             {comparisonType === 'liquid' ? (
               <>
                 <Field label="Daily Use" hint="Cannot be less than 0">
@@ -438,18 +480,20 @@ export default function CMCCalculator2() {
                 onFocus={(e) => e.target.value === '0' && e.target.select()}
               />
             </Field>
-            <Field
-              label="Annual Rental Cost ₹"
-              hint={comparisonType === 'cylinder' ? 'Annual cylinder rental / deposit charges' : 'Annual tank/equipment rental for liquid supply'}
-            >
-              <NumberInput
-                value={annualRentalCost}
-                min={0}
-                step={1000}
-                onChange={(value) => setAnnualRentalCost(sanitizeNonNegative(value, 0))}
-                onFocus={(e) => e.target.value === '0' && e.target.select()}
-              />
-            </Field>
+            {comparisonType === 'liquid' && (
+              <Field
+                label="Annual Rental Cost ₹"
+                hint="Annual tank/equipment rental for liquid supply"
+              >
+                <NumberInput
+                  value={annualRentalCost}
+                  min={0}
+                  step={1000}
+                  onChange={(value) => setAnnualRentalCost(sanitizeNonNegative(value, 0))}
+                  onFocus={(e) => e.target.value === '0' && e.target.select()}
+                />
+              </Field>
+            )}
             <DerivedBox>
               <div>
                 Gas used/day: <strong className="text-slate-700">{calculations.gasPerDay.toFixed(1)} m³</strong>
@@ -466,7 +510,8 @@ export default function CMCCalculator2() {
             </DerivedBox>
           </Card>
 
-          <Card title="PSA Oxygen Plant" className="bg-white">
+          <Card className="bg-white">
+            <div className="text-[16px] font-lufga-bold text-[#1F4E79]">PSA Oxygen Plant</div>
             <Field label="PSA plant flow rate (m³/hr)" hint="Auto-calculated = Daily use / 24">
               <NumberInput value={calculations.plantFlow.toFixed(2)} readOnly />
             </Field>
@@ -506,7 +551,8 @@ export default function CMCCalculator2() {
             </DerivedBox>
           </Card>
 
-          <Card title="Plant investment & CMC Now" className="bg-white">
+          <Card  className="bg-white">
+            <div className="text-[16px] font-lufga-bold text-[#1F4E79]">Plant Investment & CMC Now</div>
             <Field label="Cost type">
               <select
                 value={costMode}
@@ -569,32 +615,33 @@ export default function CMCCalculator2() {
         <Verdict type={calculations.totalSaving >= 0 ? 'save' : 'loss'}>{calculations.verdictText}</Verdict>
 
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-          <Card title="Yearly Cost Comparison" className="bg-white">
+          <Card  className="bg-white">
+            <div className="text-[16px] font-lufga-bold text-[#1F4E79]">Yearly Cost Comparison</div>
             <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={calculations.barData} margin={{ top: 10, right: 30, left: 0, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                   <XAxis dataKey="name" interval={0} tick={{ fontSize: 11 }} />
                   <YAxis tickFormatter={(value) => fmtLakh(Number(value))} width={78} />
-                  <Tooltip formatter={(value: number) => fmtCost(value)} />
-                  <Bar dataKey="value" name="Value" radius={[8, 8, 0, 0]} isAnimationActive={false}>
-                    {calculations.barData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Bar>
+                  <Tooltip content={<BarTooltipContent />} />
+                  <Bar dataKey="oxygen" stackId="cost" name="Oxygen Current Year Cost" fill="#E24B4A" radius={[8, 8, 0, 0]} barSize={90} isAnimationActive={false} />
+                  <Bar dataKey="psaCost" stackId="cost" name="PSA Operational Cost" fill="#2563EB" barSize={60} isAnimationActive={false} />
+                  <Bar dataKey="savings" stackId="cost" name="Savings" fill="#EAB308" radius={[8, 8, 0, 0]} barSize={60} isAnimationActive={false} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <div className="mt-3 flex flex-wrap justify-center gap-5">
-              {calculations.barData.map((entry) => (
-                <span key={entry.name} className="flex items-center gap-1.5 text-[12px] text-slate-600">
+            <div className="mt-3 flex flex-wrap justify-center gap-3">
+              {calculations.barLegend.map((entry) => (
+                <div key={entry.key} className={`flex items-center gap-2 rounded-lg border ${entry.lightBorder} ${entry.lightBg} px-3 py-1.5`}>
                   <span className="inline-block h-3 w-3 rounded-sm" style={{ backgroundColor: entry.color }} />
-                  {entry.name}
-                </span>
+                  <span className="text-[12px] text-slate-600">{entry.name}</span>
+                  <span className="text-[12px] font-lufga-bold" style={{ color: entry.color }}>{fmtLakh(entry.value)}</span>
+                </div>
               ))}
             </div>
           </Card>
-          <Card title="Cumulative cost over plant life" className="bg-white">
+          <Card className="bg-white">
+            <div className="text-[16px] font-lufga-bold text-[#1F4E79]">Cumulative cost over plant life</div>
             <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={calculations.lineChartData} margin={{ top: 10, right: 30, left: 0, bottom: 5 }}>
@@ -627,7 +674,8 @@ export default function CMCCalculator2() {
           </Card>
         </div>
 
-        <Card title="Full calculation sheet" className="bg-white">
+        <Card  className="bg-white">
+          <div className="text-[19px] font-lufga-bold text-[#1F4E79]">Full Calculation Sheet</div>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse border border-slate-200 text-[13px]">
               <thead>
@@ -689,11 +737,13 @@ export default function CMCCalculator2() {
                   <td className="border border-slate-200 px-3 py-2 text-[12px] text-slate-500">₹</td>
                   <td className="border border-slate-200 px-3 py-2 text-right text-slate-700">{fmtCost(calculations.oxyMonthCost)}</td>
                 </tr>
-                <tr>
-                  <td className="border border-slate-200 px-3 py-2 text-slate-700">Annual Rental Cost</td>
-                  <td className="border border-slate-200 px-3 py-2 text-[12px] text-slate-500">₹</td>
-                  <td className="border border-slate-200 px-3 py-2 text-right text-slate-700">{fmtCost(annualRentalCost)}</td>
-                </tr>
+                {comparisonType === 'liquid' && (
+                  <tr>
+                    <td className="border border-slate-200 px-3 py-2 text-slate-700">Annual Rental Cost</td>
+                    <td className="border border-slate-200 px-3 py-2 text-[12px] text-slate-500">₹</td>
+                    <td className="border border-slate-200 px-3 py-2 text-right text-slate-700">{fmtCost(annualRentalCost)}</td>
+                  </tr>
+                )}
                 <tr>
                   <td className="border border-slate-200 px-3 py-2 font-lufga-bold text-slate-900">Oxygen Current Year Cost</td>
                   <td className="border border-slate-200 px-3 py-2 text-[12px] text-slate-500">₹</td>
@@ -774,10 +824,10 @@ export default function CMCCalculator2() {
                   <td className="border border-slate-200 px-3 py-2 text-[12px] text-slate-500">₹</td>
                   <td className="border border-slate-200 px-3 py-2 text-right text-slate-700">{fmtCost(calculations.cmcTotal)}</td>
                 </tr>
-                <tr>
-                  <td className="border border-slate-200 px-3 py-2 text-slate-700">ROI period</td>
-                  <td className="border border-slate-200 px-3 py-2 text-[12px] text-slate-500">{calculations.roiSheetUnit}</td>
-                  <td className="border border-slate-200 px-3 py-2 text-right font-lufga-bold text-slate-900">{calculations.roiSheetValue}</td>
+                <tr className="bg-cyan-300 ">
+                  <td className="border border-slate-200 px-3 py-2 text-black-700 ">ROI period</td>
+                  <td className="border border-slate-200 px-3 py-2 text-[12px] text-black-500">{calculations.roiSheetUnit}</td>
+                  <td className="border border-slate-200 px-3 py-2 text-right font-lufga-bold text-black-900">{calculations.roiSheetValue}</td>
                 </tr>
                 <tr className="bg-green-500">
                   <td className="border border-slate-200 px-3 py-2 font-lufga-bold text black">Total saving in {calculations.plantLife} years</td>
@@ -903,8 +953,8 @@ export default function CMCCalculator2() {
                   <div className="mb-2 text-[28px] font-lufga-bold text-blue-600">{fmtCost(calculations.yearlySaving)}</div>
                   
                 </div> */}
-                <div className="rounded-lg border border-violet-200 bg-white p-4 text-center shadow-sm">
-                   <div className="text-sm text-violet-800 font-lufga-regular">ROI Period</div>
+                <div className="rounded-lg border border-violet-300 bg-violet-100 p-4 text-center shadow-sm" style={{ backgroundColor: '#EDE9FE', borderColor: '#C4B5FD' }}>
+                   <div className="text-sm text-violet-800 font-lufga-regular ">ROI Period</div>
                   <div className="mb-2 text-[28px] font-lufga-bold text-violet-600">{calculations.roiLabel}</div>
                  
                 </div>
@@ -926,21 +976,20 @@ export default function CMCCalculator2() {
                         <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                         <XAxis dataKey="name" interval={0} tick={{ fontSize: 11 }} />
                         <YAxis tickFormatter={(value) => fmtLakh(Number(value))} width={78} />
-                        <Tooltip formatter={(value: number) => fmtCost(value)} />
-                        <Bar dataKey="value" name="Value" radius={[8, 8, 0, 0]} isAnimationActive={false}>
-                          {calculations.barData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Bar>
+                        <Tooltip content={<BarTooltipContent />} />
+                        <Bar dataKey="oxygen" stackId="cost" name="Oxygen Current Year Cost" fill="#E24B4A" radius={[8, 8, 0, 0]} barSize={80} isAnimationActive={false} />
+                        <Bar dataKey="psaCost" stackId="cost" name="PSA Operational Cost" fill="#2563EB" barSize={80} isAnimationActive={false} />
+                        <Bar dataKey="savings" stackId="cost" name="Savings" fill="#EAB308" radius={[8, 8, 0, 0]} barSize={80} isAnimationActive={false} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
-                  <div className="mt-2 flex flex-wrap justify-center gap-5">
-                    {calculations.barData.map((entry) => (
-                      <span key={entry.name} className="flex items-center gap-1.5 text-[11px] text-slate-600">
+                  <div className="mt-2 flex flex-wrap justify-center gap-3">
+                    {calculations.barLegend.map((entry) => (
+                      <div key={entry.key} className={`flex items-center gap-2 rounded-lg border ${entry.lightBorder} ${entry.lightBg} px-3 py-1.5`}>
                         <span className="inline-block h-3 w-3 rounded-sm" style={{ backgroundColor: entry.color }} />
-                        {entry.name}
-                      </span>
+                        <span className="text-[11px] text-slate-600">{entry.name}</span>
+                        <span className="text-[11px] font-lufga-bold" style={{ color: entry.color }}>{fmtLakh(entry.value)}</span>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -1026,7 +1075,10 @@ export default function CMCCalculator2() {
                       { label: 'Oxygen gas used / Month', uom: 'm³', val: calculations.gasPerMonth.toFixed(0), section: false },
                       { label: 'Unit price per m³ (current)', uom: '₹/m³', val: fmtINR(calculations.unitPriceOxy), section: false, highlight: true },
                       { label: 'Monthly Oxygen Expense', uom: '₹', val: fmtCost(calculations.oxyMonthCost), section: false },
-                      { label: 'Annual Rental Cost', uom: '₹', val: fmtCost(annualRentalCost), section: false },
+                      ...(comparisonType === 'liquid'
+                        ? [{ label: 'Annual Rental Cost', uom: '₹', val: fmtCost(annualRentalCost), section: false }]
+                        : []
+                      ),
                       { label: 'Oxygen Current Year Cost', uom: '₹', val: fmtCost(calculations.yearlyOxygenCost), section: false, highlight: true },
                       { label: 'PSA OXYGEN PLANT', uom: '', val: '', section: true },
                       { label: 'PSA plant flow rate', uom: 'm³/hr', val: calculations.plantFlow.toFixed(2), section: false },
