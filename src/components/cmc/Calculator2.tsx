@@ -87,7 +87,7 @@ export default function CMCCalculator2() {
   const [annualRentalCost, setAnnualRentalCost] = useState(25000);
   const [powerPerM3, setPowerPerM3] = useState(1.1);
   const [elecRate, setElecRate] = useState(8);
-  const [costMode, setCostMode] = useState<CostMode>('new');
+  const [costMode, setCostMode] = useState<CostMode>('repair');
   const [plantCost, setPlantCost] = useState(4599820);
   const [cmcYr, setCmcYr] = useState(425000);
   const [plantLife, setPlantLife] = useState(10);
