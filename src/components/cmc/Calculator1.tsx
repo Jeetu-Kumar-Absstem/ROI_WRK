@@ -279,7 +279,7 @@ export default function CMCCalculator1() {
   const verdictType = calculations.annualSavings >= 0 ? 'save' : 'loss';
   const verdictText =
     calculations.annualSavings >= 0
-      ? `Switching to CMC saves ${fmtCost(calculations.annualSavings)} per year. Over 5 years that is ${fmtCost(calculations.save5yr)} in total savings.Absstem gives 10 years warranty to your Molecular Sieves.
+      ? `Switching to CMC saves ${fmtCost(calculations.annualSavings)} per year. Over 5 years that is ${fmtCost(calculations.save5yr)} in total savings. Absstem gives 10 years warranty to your Molecular Sieves.
       
 
       `
@@ -731,7 +731,7 @@ export default function CMCCalculator1() {
                 Total CMC cost: <strong className="text-[#1F4E79]">{fmtCost(calculations.cmcTotal)}</strong>
               </div>
             </DerivedBox>
-             <DerivedBox>
+             {/* <DerivedBox>
               <div className="font-lufga-bold text-green-500 text-[18px]">
                 Additional Features of Absstem Shield CMC:
               </div>
@@ -742,7 +742,7 @@ export default function CMCCalculator1() {
                 <li>Priority Support and Faster Response Times</li>
               </ul>
               </div>
-            </DerivedBox>
+            </DerivedBox> */}
 
           </Card>
 
@@ -760,11 +760,7 @@ export default function CMCCalculator1() {
           <MetricCard label="5-year saving" value={fmtCost(Math.abs(calculations.save5yr))} color={calculations.save5yr >= 0 ? 'var(--green)' : 'var(--red)'} />
         </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <MetricCard
-            label="Annual savings percentage"
-            value={roiMetrics.roiPercentage !== null ? `${roiMetrics.roiPercentage.toFixed(1)}%` : 'N/A'}
-            color="var(--navy)"
-          />
+        
           <MetricCard label="CMC over 5 years" value={fmtCost(calculations.cmcGross * 5)} />
         </div>
 
@@ -859,7 +855,7 @@ export default function CMCCalculator1() {
         >
           <div className="print-page space-y-6">
             <Card title="Savings Analysis" className="border-green-200 bg-gradient-to-r from-green-50 to-emerald-50">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="rounded-lg border border-green-200 bg-white p-4 text-center shadow-sm">
                   <div className="mb-2 text-[28px] font-lufga-bold text-green-600">{fmtCost(calculations.annualSavings)}</div>
                   <div className="text-sm text-green-800 font-lufga-regular">Annual Operating Cost Savings</div>
@@ -868,12 +864,12 @@ export default function CMCCalculator1() {
                   <div className="mb-2 text-[28px] font-lufga-bold text-blue-600">{fmtCost(calculations.save5yr)}</div>
                   <div className="text-sm text-blue-800 font-lufga-regular">Total 5-Year Savings</div>
                 </div>
-                <div className="rounded-lg border border-violet-200 bg-white p-4 text-center shadow-sm">
+                {/* <div className="rounded-lg border border-violet-200 bg-white p-4 text-center shadow-sm">
                   <div className="mb-2 text-[28px] font-lufga-bold text-violet-600">
                     {roiMetrics.roiPercentage !== null ? `${roiMetrics.roiPercentage.toFixed(1)}%` : 'N/A'}
                   </div>
                   <div className="text-sm text-violet-800 font-lufga-regular">Return on Investment</div>
-                </div>
+                </div> */}
               </div>
             </Card>
 
@@ -948,6 +944,16 @@ export default function CMCCalculator1() {
                 <p className="font-lufga-bold text-[#1F4E79]">
                   Recommendation: Use CMC when the service coverage and downtime reduction justify the annual contract cost.
                 </p>
+                 <div className="font-lufga-bold text-green-500 text-[18px]">
+                Additional Features of Absstem Shield CMC:
+              </div>
+              <div className='text-black-500'>
+              <ul className="list-disc list-inside">
+                <li>10-Year Warranty on Molecular Sieves</li>
+                <li>Guaranteed Fixed Costs with Zero Hidden Charges</li>
+                <li>Priority Support and Faster Response Times</li>
+              </ul>
+              </div>
               </div>
             </Card>
 
