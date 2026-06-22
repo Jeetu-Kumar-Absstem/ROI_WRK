@@ -132,7 +132,8 @@ const Login = () => {
     // ✅ FIX 1: redirectTo now points to /reset-password so PasswordRecovery
     // component is rendered and can extract the session tokens from the URL hash.
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo:
+'https://returnoninvestmentmoduleforabsstem.vercel.app/reset-password',
     });
 
     if (error) {
@@ -184,7 +185,7 @@ const Login = () => {
         data: profilePayload,
         // ✅ FIX 2: emailRedirectTo tells Supabase where to send the user
         // after they click the confirmation link in their inbox.
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo:'https://absstem.com/calculators/',
       },
     });
 
