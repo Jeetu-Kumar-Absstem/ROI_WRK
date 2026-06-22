@@ -49,6 +49,7 @@ export  interface RoiInputs {
   powerCostPerUnit: number;
   psaPlantFlow: number;
   compressorKW: number;
+  selectedFlow?: number;
   investmentCost?: number;
   annualMaintenanceCost?: number;
   interestRate: number;
@@ -76,6 +77,7 @@ export interface CylinderInputs {
   annualMaintenanceCost?: number;
   interestRate?: number; // %
   depreciationRate?: number; // %
+  selectedFlow?: number; // user-chosen flow when perHourConsumption > 2362 (large-flow mode)
 }
 
 export interface CylinderResult {
@@ -106,6 +108,10 @@ export interface CylinderResult {
   matchedCompressorKW?: number;
   matchedCompressorAirFlow?: number;
   psaPlantFlow?: number;
+  psaPlantUnits: number;        // N identical units
+  psaTotalFlow: number;         // flow × N
+  matchedCompressorTotalKW: number; // kw × N
+  isLargeFlow?: boolean;        // true when perHourConsumption > 2362
 }
 
 
@@ -586,4 +592,3 @@ export  const OXYGEN_FLOW_DATA: FlowData[] = [
 export const INTEREST_RATES = [0, 6, 7, 8, 9, 10, 11, 12] as const;
 
 export const DEPRECIATION_RATES = [0, 5, 10, 15, 20] as const;
- 

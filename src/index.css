@@ -98,6 +98,21 @@
     background-size: cover;
     z-index: 0;
   }
+
+  /* Shield letterhead — used by ReportLayoutShield (SHIELD tab) */
+  .print-letterhead-shield-fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: url('/absstem_shield_letterhead.jpg') no-repeat top center !important;
+    background-size: cover !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    z-index: 0;
+  }
+
   .print-container, .report-content { position: relative; z-index: 1; }
   
   /* Ensure large-screen grids collapse to single column in print */
@@ -168,6 +183,36 @@
   box-shadow: none !important;
 }
 
+/* Preserve breakdown-table row colors during export capture */
+/* These targeted rules win over the blanket wipe above because they */
+/* come later in the stylesheet and match a more specific selector. */
+.export-mode tr.pdf-row-section {
+  background-color: #dbeafe !important;
+}
+.export-mode tr.pdf-row-total {
+  background-color: #dcfce7 !important;
+}
+.export-mode tr.pdf-row-even {
+  background-color: #ffffff !important;
+}
+.export-mode tr.pdf-row-odd {
+  background-color: #f8fafc !important;
+}
+
+/* Preserve full calculation sheet row colors (Calculator2 report) during export capture */
+.export-mode tr.pdf-row-header2 {
+  background-color: #fda4af !important;
+}
+.export-mode tr.pdf-row-section2 {
+  background-color: #86efac !important;
+}
+.export-mode tr.pdf-row-total2 {
+  background-color: #22c55e !important;
+}
+.export-mode tr.pdf-row-data2 {
+  background-color: #ffffff !important;
+}
+
 .export-mode {
   display: block !important; /* override hidden on print container during capture */
   visibility: visible !important;
@@ -180,21 +225,29 @@
   margin: 0 auto !important;
 }
 
-.export-mode .print-letterhead-fixed {
-  display: none !important; /* hide CSS letterhead; we add it via jsPDF per page */
+.export-mode .print-letterhead-fixed,
+.export-mode .print-letterhead-shield-fixed {
+  display: none !important;
 }
 
 /* A4 page sizing for export captures */
 .export-mode .print-page {
-  width: 794px !important;   /* ~A4 width at 96dpi */
-  min-height: 1123px !important; /* ~A4 height at 96dpi */
+  width: 794px !important;
+  min-height: 1123px !important;
   box-sizing: border-box !important;
   margin: 0 auto !important;
   position: relative !important;
+  padding-top: 0 !important;
+}
+
+/* Kill top margin on first element inside each captured page */
+.export-mode .print-page > *:first-child {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
 }
 
 .export-mode .report-content {
-  padding-top: 18px !important;
+  padding-top: 0px !important;
   padding-bottom: 88px !important;
   background: #ffffff !important;
 }

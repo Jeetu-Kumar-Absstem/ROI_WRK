@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Database, Zap, DollarSign, IndianRupee } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
-import { CylinderInputs, CylinderResult, GAS_TYPES, CYLINDER_VOLUMES, LOAD_FACTORS, PURITIES, OXYGEN_PURITIES, INTEREST_RATES, DEPRECIATION_RATES } from '../types/calculator';
+import { CylinderInputs, CylinderResult, GAS_TYPES, CYLINDER_VOLUMES, LOAD_FACTORS, PURITIES, OXYGEN_PURITIES, INTEREST_RATES, DEPRECIATION_RATES, FLOW_DATA, OXYGEN_FLOW_DATA, COMPRESSOR_DATA } from '../types/calculator';
 import { calculateCylinderRoi } from '../utils/cylinderCalculations';
 import { InputField } from './InputField';
 import { formatIndianCurrency } from '../utils/formatting';
@@ -33,7 +33,8 @@ export default function PSAVsCylinders() {
     investmentCost: 5000000,
     annualMaintenanceCost: 75000,
     interestRate: 0,
-    depreciationRate: 0
+    depreciationRate: 0,
+    selectedFlow: undefined,
   });
 
   const [results, setResults] = useState<CylinderResult | null>(null);
@@ -51,11 +52,28 @@ export default function PSAVsCylinders() {
 
   const availablePurities = inputs.gasType === 'oxygen' ? OXYGEN_PURITIES : PURITIES;
 
+  // All flows for the current purity/gasType — used in large-flow picker
+  // Only include flows whose airRequirement can be matched by an available compressor
+  const flowDataSource = inputs.gasType === 'oxygen' ? OXYGEN_FLOW_DATA : FLOW_DATA;
+  const maxCompressorAirFlow = Math.max(...COMPRESSOR_DATA.map(c => c.airFlow));
+  const availableFlows = flowDataSource
+    .filter(d => d.purity === inputs.purity && d.airRequirement <= maxCompressorAirFlow)
+    .map(d => d.flow)
+    .sort((a, b) => a - b);
+  // Threshold is the max single-unit flow for this gas+purity; matches cylinderCalculations.ts logic
+  // Oxygen (purity 95): ~250 NM³/hr  |  Nitrogen (purity-dependent): up to ~2362 NM³/hr
+  const LARGE_FLOW_THRESHOLD = availableFlows.length > 0 ? Math.max(...availableFlows) : 2362;
+
   if (!results) return <div>Loading...</div>;
 
   const effectiveUnitPricePSA  = results.unitPricePSA ?? 0;
   const effectivePower         = results.power;
   const effectivePSAAnnualCost = results.totalRunningCostPSA;
+  const displayPsaPlantFlow    = results.isLargeFlow && inputs.selectedFlow ? inputs.selectedFlow : results.psaPlantFlow;
+  // Always show PSA plant flow in the PSA System Costs panel.
+  // In large-flow mode the total flow (flow × N units) is shown; otherwise single-unit flow.
+  const displayPsaSystemCostFlow = results.isLargeFlow ? results.psaTotalFlow : results.psaPlantFlow;
+  const displayCompressorKW    = results.matchedCompressorKW ?? 0;
 
   // --- Yearly data (must be after isPSAInvalid is defined) ---
   const yearlyData = (() => {
@@ -98,8 +116,29 @@ export default function PSAVsCylinders() {
     }
   ];
 
-  // Helpers for print charts
-  const formatAxisINRShort = (value: number) => `₹${(Number(value) / 100000).toFixed(1)}L`;
+  // Helpers for print charts — auto-scales to Cr/L to keep axis labels short
+  const formatAxisINRShort = (value: number): string => {
+    const v = Number(value);
+    if (Math.abs(v) >= 1_00_00_000) return `₹${(v / 1_00_00_000).toFixed(1)}Cr`;
+    if (Math.abs(v) >= 1_00_000)    return `₹${(v / 1_00_000).toFixed(1)}L`;
+    if (Math.abs(v) >= 1_000)       return `₹${(v / 1_000).toFixed(1)}K`;
+    return `₹${v.toFixed(0)}`;
+  };
+  // Smart payback: shows hours/days when < 1 month
+  const formatPayback = (months: number): string => {
+    if (!months || months <= 0) return 'N/A';
+    if (months < 1 / 30) { const h = months * 30 * 24; return `${h.toFixed(1)} hrs`; }
+    if (months < 1)      { const d = months * 30;      return `${d.toFixed(1)} days`; }
+    return `${months.toFixed(1)} months`;
+  };
+  // Smart compact currency for summary cards
+  const formatCardCurrency = (value: number): string => {
+    const abs = Math.abs(value);
+    if (abs >= 1_00_00_00_000) return `₹${(value / 1_00_00_00_000).toFixed(2)} TCr`;
+    if (abs >= 1_00_00_000)    return `₹${(value / 1_00_00_000).toFixed(2)} Cr`;
+    if (abs >= 1_00_000)       return `₹${(value / 1_00_000).toFixed(2)} L`;
+    return `₹${value.toLocaleString('en-IN')}`;
+  };
   // Domains for print charts
   const cylinderAxisMax = Math.max(...chartData.map(item => item['Cylinder System'] || 0));
   const psaAxisMax = Math.max(...chartData.map(item => item['PSA System'] || 0));
@@ -125,6 +164,12 @@ export default function PSAVsCylinders() {
         <div className="flex justify-between"><span className="text-gray-600">Power Cost:</span><span className="font-medium">{inputs.powerCostPerUnit} ₹/kWh</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Investment Cost:</span><span className="font-medium">{formatIndianCurrency(inputs.investmentCost ?? 0)}</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Annual Maintenance:</span><span className="font-medium">{formatIndianCurrency(inputs.annualMaintenanceCost ?? 0)}</span></div>
+        {results.isLargeFlow && (
+          <>
+            <div className="flex justify-between"><span className="text-gray-600">Flow Required Per Hour:</span><span className="font-medium">{results.perHourConsumption.toFixed(2)} m³/hr</span></div>
+            <div className="flex justify-between"><span className="text-gray-600">PSA Plant Flow:</span><span className="font-medium">{displayPsaSystemCostFlow} m³/hr</span></div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -145,6 +190,10 @@ export default function PSAVsCylinders() {
         <div className="flex items-center space-x-2 mb-4"><Zap className="h-5 w-5 text-blue-600" /><h3 className="font-semibold text-gray-900">PSA System Costs</h3></div>
         <div className="space-y-3">
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Flow Required Per Hour:</span><span className="font-medium">{results.perHourConsumption.toFixed(2)} m³/hr</span></div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-600">PSA Plant Flow:</span>
+            <span className="font-semibold text-indigo-700">{displayPsaSystemCostFlow} m³/hr</span>
+          </div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Gas Cost per m³:</span><span className="font-medium">₹{effectiveUnitPricePSA.toFixed(2)}/-</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Power Consumption:</span><span className="font-medium">{effectivePower.toFixed(2)} kW</span></div>
           <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Operator Cost (Annual):</span><span className="font-medium">{formatIndianCurrency(results.psaOperatorCostYear)}</span></div>
@@ -183,8 +232,8 @@ export default function PSAVsCylinders() {
                   );
                 }}
               />
-              <YAxis yAxisId="left" orientation="left" tickFormatter={(value) => `₹${(value/100000).toFixed(1)}L`} domain={[0, cylinderAxisMax * 1.2]} tick={{ fill: '#000000', fontFamily: 'Lufga, sans-serif', fontSize: 12 }} />
-              <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => `₹${(value/100000).toFixed(1)}L`} domain={[0, psaAxisMax * 1.2]} tick={{ fill: '#000000', fontFamily: 'Lufga, sans-serif', fontSize: 12 }} />
+              <YAxis yAxisId="left" orientation="left" tickFormatter={(value) => formatAxisINRShort(Number(value))} domain={[0, cylinderAxisMax * 1.2]} tick={{ fill: '#000000', fontFamily: 'Lufga, sans-serif', fontSize: 12 }} />
+              <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => formatAxisINRShort(Number(value))} domain={[0, psaAxisMax * 1.2]} tick={{ fill: '#000000', fontFamily: 'Lufga, sans-serif', fontSize: 12 }} />
               <Tooltip formatter={(value) => formatIndianCurrency(Number(value))} />
               <Legend wrapperStyle={{ fontFamily: 'Lufga, sans-serif', fontWeight: 400 }} />
               <Bar yAxisId="left" dataKey="Cylinder System" fill="#3b82f6" name="Cylinder System" />
@@ -198,7 +247,7 @@ export default function PSAVsCylinders() {
             <LineChart data={roiData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="year" />
-              <YAxis tickFormatter={(value) => `₹${(value/100000).toFixed(1)}L`} />
+              <YAxis tickFormatter={(value) => formatAxisINRShort(Number(value))} />
               <Tooltip formatter={(value) => formatIndianCurrency(Number(value))} />
               <Legend />
               <ReferenceLine y={0} stroke="#000" strokeDasharray="3 3" />
@@ -279,7 +328,7 @@ export default function PSAVsCylinders() {
                       setInputs(prev => {
                         const allowedPurities = nextGasType === 'oxygen' ? OXYGEN_PURITIES : PURITIES;
                         const nextPurity = allowedPurities.includes(prev.purity as any) ? prev.purity : allowedPurities[0];
-                        return { ...prev, gasType: nextGasType, purity: nextPurity };
+                        return { ...prev, gasType: nextGasType, purity: nextPurity, selectedFlow: undefined };
                       });
                     }}
                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -327,12 +376,52 @@ export default function PSAVsCylinders() {
                     {DEPRECIATION_RATES.map(r => (<option key={r} value={r}>{r}%</option>))}
                   </select>
                 </div>
+
+                {/* ── Large-Flow Mode: Flow Picker ── */}
+                {results.isLargeFlow && (
+                  <>
+                    {/* Flow Required Per Hour — frozen */}
+                    <div>
+                      <label className="block text-sm text-gray-700 mb-1" style={lufgaRegularStyle}>Flow Required Per Hour</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          value={results.perHourConsumption.toFixed(2)}
+                          readOnly
+                          className="w-full rounded-md border-gray-300 bg-gray-100 shadow-sm cursor-not-allowed text-gray-600"
+                          style={lufgaRegularStyle}
+                        />
+                        <span className="text-sm text-gray-500 whitespace-nowrap">m³/hr</span>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-1">Auto calculated from consumption</p>
+                    </div>
+
+                    {/* Choose Flow heading + dropdown */}
+                    <div>
+                      <p className="text-sm font-semibold text-indigo-700 mb-2" style={lufgaSemiboldStyle}>Choose Flow</p>
+                      <label className="block text-sm text-gray-700 mb-1" style={lufgaRegularStyle}>Select Unit PSA Flow</label>
+                      <select
+                        value={inputs.selectedFlow ?? ''}
+                        onChange={(e) => updateInput('selectedFlow', e.target.value ? Number(e.target.value) : undefined)}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        aria-label="Choose Flow"
+                        style={lufgaRegularStyle}
+                      >
+                        <option value="">-- Select a flow --</option>
+                        {availableFlows.map(f => (
+                          <option key={f} value={f}>{f} m³/hr</option>
+                        ))}
+                      </select>
+                    </div>
+
+                  </>
+                )}
                 <div>
-  <label className="block text-sm text-gray-700 mb-1" style={lufgaRegularStyle}>PSA Plant Flow</label>
+  <label className="block text-sm text-gray-700 mb-1" style={lufgaRegularStyle}>PSA Plant Flow Per Unit:</label>
   <div className="flex items-center gap-2">
     <input
       type="number"
-      value={results.psaPlantFlow ?? 0}
+      value={displayPsaPlantFlow ?? 0}
       readOnly
       className="w-full rounded-md border-gray-300 bg-gray-100 shadow-sm cursor-not-allowed text-gray-600"
       style={lufgaRegularStyle}
@@ -342,11 +431,11 @@ export default function PSAVsCylinders() {
   <p className="text-xs text-gray-400 mt-1">Auto matched from consumption</p>
 </div>
 <div>
-  <label className="block text-sm text-gray-700 mb-1" style={lufgaRegularStyle}>Compressor KW</label>
+  <label className="block text-sm text-gray-700 mb-1" style={lufgaRegularStyle}>Compressor Unit kW</label>
   <div className="flex items-center gap-2">
     <input
       type="number"
-      value={results.matchedCompressorKW ?? 0}
+      value={displayCompressorKW}
       readOnly
       className="w-full rounded-md border-gray-300 bg-gray-100 shadow-sm cursor-not-allowed text-gray-600"
       style={lufgaRegularStyle}
@@ -377,9 +466,28 @@ export default function PSAVsCylinders() {
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-600 p-6 rounded-r-lg">
                 <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center"><div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center mr-3"><span className="text-white font-bold text-sm">2</span></div>Financial Summary & Investment Analysis</h2>
                 <div className="grid md:grid-cols-3 gap-6 text-center">
-                  <div className="bg-white p-6 rounded-lg border border-green-200 shadow-sm"><div className="text-4xl font-bold text-green-600 mb-2">{formatIndianCurrency(results.monthlySavingsPSA)}</div><div className="text-sm font-medium text-green-800">Estimated Monthly Savings</div></div>
-                  <div className="bg-white p-6 rounded-lg border border-blue-200 shadow-sm"><div className="text-4xl font-bold text-blue-600 mb-2">{formatIndianCurrency(results.annualSavings)}</div><div className="text-sm font-medium text-blue-800">Estimated Annual Savings</div></div>
-                  <div className="bg-white p-6 rounded-lg border border-purple-200 shadow-sm"><div className="text-4xl font-bold text-purple-600 mb-2">{results.roiPercentage?.toFixed(1)}%</div><div className="text-sm font-medium text-purple-800">Return on Investment (ROI)</div><div className="text-xs text-gray-500 mt-1">Payback in {results.paybackPeriodMonths?.toFixed(1)} months</div></div>
+                  <div className="bg-white p-4 rounded-lg border border-green-200 shadow-sm flex flex-col items-center justify-center min-h-[100px]">
+                    <div className="font-bold text-green-600 mb-1 break-all leading-tight"
+                      style={{ fontSize: results.monthlySavingsPSA > 1e9 ? '1.25rem' : results.monthlySavingsPSA > 1e7 ? '1.5rem' : '2rem' }}>
+                      {formatCardCurrency(results.monthlySavingsPSA)}
+                    </div>
+                    <div className="text-sm font-medium text-green-800">Estimated Monthly Savings</div>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg border border-blue-200 shadow-sm flex flex-col items-center justify-center min-h-[100px]">
+                    <div className="font-bold text-blue-600 mb-1 break-all leading-tight"
+                      style={{ fontSize: results.annualSavings > 1e9 ? '1.25rem' : results.annualSavings > 1e7 ? '1.5rem' : '2rem' }}>
+                      {formatCardCurrency(results.annualSavings)}
+                    </div>
+                    <div className="text-sm font-medium text-blue-800">Estimated Annual Savings</div>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg border border-purple-200 shadow-sm flex flex-col items-center justify-center min-h-[100px]">
+                    <div className="font-bold text-purple-600 mb-1 leading-tight"
+                      style={{ fontSize: (results.roiPercentage ?? 0) > 9999 ? '1.1rem' : (results.roiPercentage ?? 0) > 999 ? '1.5rem' : '2rem' }}>
+                      {results.roiPercentage && results.roiPercentage > 99999 ? `>${(99999).toLocaleString()}%` : `${results.roiPercentage?.toFixed(1)}%`}
+                    </div>
+                    <div className="text-sm font-medium text-purple-800">Return on Investment (ROI)</div>
+                    <div className="text-xs text-gray-500 mt-1">Payback in {formatPayback(results.paybackPeriodMonths ?? 0)}</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -437,7 +545,7 @@ export default function PSAVsCylinders() {
                 <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center"><div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center mr-3"><span className="text-white font-bold text-sm">3</span></div>Business Case & Recommendation</h2>
                 <div className="space-y-4 text-gray-700 leading-relaxed text-justify">
                   <p>Transitioning from cylinder supply to an on-site PSA plant presents a compelling financial and operational advantage. With projected monthly savings of <span className="font-semibold text-green-700">{formatIndianCurrency(results.monthlySavingsPSA)}</span> and annual savings of <span className="font-semibold text-green-700">{formatIndianCurrency(results.annualSavings)}</span>, the initial investment is quickly recovered, leading to significant long-term cost reduction.</p>
-                  <p>The calculated return on investment of <span className="font-semibold text-blue-700">{results.roiPercentage ? `${results.roiPercentage.toFixed(1)}%` : 'N/A'}</span>, with a payback period of just <span className="font-semibold text-blue-700">{results.paybackPeriodMonths ? `${results.paybackPeriodMonths.toFixed(1)} months` : 'N/A'}</span>, underscores the financial viability of this project. Beyond the numbers, on-site generation eliminates dependence on external suppliers, mitigates logistical risks, and reduces the carbon footprint associated with cylinder deliveries.</p>
+                  <p>The calculated return on investment of <span className="font-semibold text-blue-700">{results.roiPercentage ? `${results.roiPercentage.toFixed(1)}%` : 'N/A'}</span>, with a payback period of just <span className="font-semibold text-blue-700">{results.paybackPeriodMonths ? formatPayback(results.paybackPeriodMonths) : 'N/A'}</span>, underscores the financial viability of this project. Beyond the numbers, on-site generation eliminates dependence on external suppliers, mitigates logistical risks, and reduces the carbon footprint associated with cylinder deliveries.</p>
                   <p className="font-semibold">Recommendation: We strongly recommend proceeding with the implementation of the PSA generation system to realize immediate cost savings, improve operational efficiency, and achieve supply chain independence.</p>
                 </div>
               </div>
