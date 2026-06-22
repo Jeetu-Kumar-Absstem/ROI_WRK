@@ -8,11 +8,7 @@ import PSAVsCylinders from './components/PSAVsCylinders';
 import PSAVsAnyPSA from './components/PSAVsAnyPSA';
 import PSAVsPSADeoxo from './components/PSAVsPSADeoxo';
 
-import SiteHeader from './components/SiteHeader';
-import SiteFooter from './components/SiteFooter';
-
 import Login from './components/Login';
-import PasswordRecovery from './components/PasswordRecovery';
 
 const lufgaFontStyle = `
   @font-face {
@@ -39,111 +35,45 @@ export default function App() {
   const [activeTab, setActiveTab] =
     useState('psa-vs-liquid');
 
-  const [isRecoveryMode, setIsRecoveryMode] =
-    useState(false);
-
   useEffect(() => {
 
-    const path = window.location.pathname;
-
-    const hashParams =
-      new URLSearchParams(
-        window.location.hash.replace(/^#/, '')
+    // -------- HANDLE SUPABASE HASH --------
+    const hash = window.location.hash;
+    if (hash.includes('access_token')) {
+      const params = new URLSearchParams(
+        hash.replace(/^#/, '')
       );
-
-    const isPasswordRecovery =
-      path === '/reset-password' ||
-      hashParams.get('type') === 'recovery';
-
-    if (isPasswordRecovery) {
-
-      setIsRecoveryMode(true);
-
+      const access_token = params.get('access_token');
+      const refresh_token = params.get('refresh_token');
+      if (access_token && refresh_token) {
+        supabase.auth
+          .setSession({ access_token, refresh_token })
+          .then(() => {
+            window.history.replaceState({}, '', '/calculators');
+          });
+      }
     }
 
-    supabase.auth.getSession().then(
-      ({ data: { session } }) => {
-
-        // If we're in password recovery,
-        // allow the session.
-
-        if (isPasswordRecovery) {
-
-          setSession(session);
-
-          return;
-        }
-
-        // Detect email confirmation session.
-
-        const emailConfirmed =
-          session?.user?.email_confirmed_at;
-
-        if (emailConfirmed && !isPasswordRecovery) {
-
-          // Destroy auto login
-
-          supabase.auth.signOut();
-
-          setSession(null);
-
-          return;
-        }
-
-        setSession(session);
-
-      }
-    );
+    // -------- NORMAL SESSION --------
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
 
-        if (
-          event === 'PASSWORD_RECOVERY'
-        ) {
-
-          setIsRecoveryMode(true);
-
-          return;
-        }
-
-        if (
-          event === 'SIGNED_OUT'
-        ) {
-
-          setSession(null);
-
-          setIsRecoveryMode(false);
-
-          return;
-        }
-
-        setSession(session);
-
-      }
-    );
-
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
 
   }, []);
 
   const handleSignOut = async () => {
 
     await supabase.auth.signOut();
-
-  };
-
-  const handleRecoveryExit = () => {
-
-    setIsRecoveryMode(false);
-
-    window.history.replaceState(
-      null,
-      '',
-      '/'
-    );
 
   };
 
@@ -174,30 +104,6 @@ export default function App() {
     },
 
   ];
-
-  if (isRecoveryMode) {
-
-    return (
-
-      <div className="min-h-screen bg-slate-100 flex flex-col">
-
-        <SiteHeader />
-
-        <main className="flex-1">
-
-          <PasswordRecovery
-            onCancel={handleRecoveryExit}
-          />
-
-        </main>
-
-        <SiteFooter />
-
-      </div>
-
-    );
-
-  }
 
   if (!session) {
 
