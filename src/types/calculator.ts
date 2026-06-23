@@ -170,7 +170,7 @@ export  const GAS_TYPES = [
 
 // export const LIQUID_UNITS = ['Sm3', 'Nm3', 'Liters', 'Kg'] as const;
 export const LOAD_FACTORS = [0.8, 0.85, 0.9, 0.95, 1.0, 1.05, 1.10,] as const;
-export const LOAD_FACTORS_LIQUID = [0.8, 0.85, 0.9, 0.95, 1.0, 1.05, 1.10,1.15,1.20,1.25] as const;
+export const LOAD_FACTORS_LIQUID = [0.8, 0.85, 0.9, 0.95, 1.0, 1.05, 1.10,1.15,1.20,1.25,1.30,1.35] as const;
 export  const PURITIES = [95, 97, 98, 99, 99.5, 99.9, 99.95, 99.99, 99.995, 99.999] as const;
 export const OXYGEN_PURITIES = [95] as const;  
 
