@@ -6,7 +6,6 @@ import PSAVsLiquid from './components/PSAVsLiquid';
 import PSAVsCylinders from './components/PSAVsCylinders';
 import PSAVsAnyPSA from './components/PSAVsAnyPSA';
 import PSAVsPSADeoxo from './components/PSAVsPSADeoxo';
-import { CmcApp } from './components/cmc';
 import SiteHeader from './components/SiteHeader';
 import SiteFooter from './components/SiteFooter';
 import Login from './components/Login';
