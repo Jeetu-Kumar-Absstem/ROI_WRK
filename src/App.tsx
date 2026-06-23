@@ -6,7 +6,6 @@ import PSAVsLiquid from './components/PSAVsLiquid';
 import PSAVsCylinders from './components/PSAVsCylinders';
 import PSAVsAnyPSA from './components/PSAVsAnyPSA';
 import PSAVsPSADeoxo from './components/PSAVsPSADeoxo';
-import { CmcApp } from './components/cmc';
 import SiteHeader from './components/SiteHeader';
 import SiteFooter from './components/SiteFooter';
 import Login from './components/Login';
@@ -51,11 +50,16 @@ export default function App() {
       );
       const access_token = params.get('access_token');
       const refresh_token = params.get('refresh_token');
+      const type = params.get('type');
       if (access_token && refresh_token) {
         supabase.auth
           .setSession({ access_token, refresh_token })
           .then(() => {
-            window.history.replaceState({}, '', '/calculators');
+            if (type === 'recovery') {
+              window.location.href = '/reset-password';
+            } else {
+              window.history.replaceState({}, '', '/calculators');
+            }
           });
       }
     }
