@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './utils/supabaseClient';
 import { Session } from '@supabase/supabase-js';
-import { Database, Settings, LogOut } from 'lucide-react';
-
+import { Calculator, Database, LogOut, Settings } from 'lucide-react';
 import PSAVsLiquid from './components/PSAVsLiquid';
 import PSAVsCylinders from './components/PSAVsCylinders';
 import PSAVsAnyPSA from './components/PSAVsAnyPSA';
 import PSAVsPSADeoxo from './components/PSAVsPSADeoxo';
-
+import { CmcApp } from './components/cmc';
+import SiteHeader from './components/SiteHeader';
+import SiteFooter from './components/SiteFooter';
 import Login from './components/Login';
+import PasswordRecovery from './components/PasswordRecovery';
 
 const lufgaFontStyle = `
   @font-face {
@@ -32,10 +34,14 @@ export default function App() {
 
   const [session, setSession] = useState<Session | null>(null);
 
-  const [activeTab, setActiveTab] =
-    useState('psa-vs-liquid');
+  const [activeTab, setActiveTab] = useState('psa-vs-liquid');
+
+  const isRecoveryMode = window.location.pathname === '/reset-password';
+  const handleRecoveryExit = () => { window.location.href = '/'; };
 
   useEffect(() => {
+
+    if (isRecoveryMode) return;
 
     // -------- HANDLE SUPABASE HASH --------
     const hash = window.location.hash;
@@ -45,11 +51,16 @@ export default function App() {
       );
       const access_token = params.get('access_token');
       const refresh_token = params.get('refresh_token');
+      const type = params.get('type');
       if (access_token && refresh_token) {
         supabase.auth
           .setSession({ access_token, refresh_token })
           .then(() => {
-            window.history.replaceState({}, '', '/calculators');
+            if (type === 'recovery') {
+              window.location.href = '/reset-password';
+            } else {
+              window.history.replaceState({}, '', '/calculators');
+            }
           });
       }
     }
@@ -72,43 +83,31 @@ export default function App() {
   }, []);
 
   const handleSignOut = async () => {
-
     await supabase.auth.signOut();
-
   };
 
   const tabs = [
-
-    {
-      id: 'psa-vs-liquid',
-      label: 'PSA Vs Liquid',
-      icon: Database,
-    },
-
-    {
-      id: 'psa-vs-cylinders',
-      label: 'PSA Vs Cylinders',
-      icon: Settings,
-    },
-
-    {
-      id: 'psa-vs-any-psa',
-      label: 'PSA vs Any PSA',
-      icon: Settings,
-    },
-
-    {
-      id: 'psa-vs-psa-deoxo',
-      label: 'PSA vs PSA + Deoxo',
-      icon: Settings,
-    },
-
+    { id: 'psa-vs-liquid', label: 'PSA Vs Liquid', icon: Database },
+    { id: 'psa-vs-cylinders', label: 'PSA Vs Cylinders', icon: Settings },
+    { id: 'psa-vs-any-psa', label: 'PSA vs Any PSA', icon: Settings },
+    { id: 'psa-vs-psa-deoxo', label: 'PSA vs PSA + Deoxo', icon: Settings },
+    { id: 'shield', label: 'SHIELD', icon: Calculator }
   ];
 
+  if (isRecoveryMode) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex flex-col">
+        <SiteHeader />
+        <main className="flex-1">
+          <PasswordRecovery onCancel={handleRecoveryExit} />
+        </main>
+        <SiteFooter />
+      </div>
+    );
+  }
+
   if (!session) {
-
     return <Login />;
-
   }
 
   return (
@@ -142,26 +141,21 @@ export default function App() {
 
                   <button
                     key={tab.id}
-                    onClick={() =>
-                      setActiveTab(tab.id)
-                    }
+                    onClick={() => setActiveTab(tab.id)}
                     className={`${
                       activeTab === tab.id
                         ? 'border-blue-500 text-blue-600'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     } whitespace-nowrap py-4 px-1 border-b-2 text-sm flex items-center space-x-2`}
                     style={{
-                      fontFamily:
-                        "'Lufga', sans-serif",
+                      fontFamily: "'Lufga', sans-serif",
                       fontWeight: 600,
                     }}
                   >
 
                     <Icon className="h-4 w-4" />
 
-                    <span>
-                      {tab.label}
-                    </span>
+                    <span>{tab.label}</span>
 
                   </button>
 
@@ -181,14 +175,11 @@ export default function App() {
               <span
                 className="text-sm"
                 style={{
-                  fontFamily:
-                    "'Lufga', sans-serif",
+                  fontFamily: "'Lufga', sans-serif",
                   fontWeight: 400,
                 }}
               >
-
                 Sign Out
-
               </span>
 
             </button>
@@ -196,23 +187,11 @@ export default function App() {
           </div>
 
           <div className="p-6">
-
-            {activeTab ===
-              'psa-vs-liquid' &&
-              <PSAVsLiquid />}
-
-            {activeTab ===
-              'psa-vs-cylinders' &&
-              <PSAVsCylinders />}
-
-            {activeTab ===
-              'psa-vs-any-psa' &&
-              <PSAVsAnyPSA />}
-
-            {activeTab ===
-              'psa-vs-psa-deoxo' &&
-              <PSAVsPSADeoxo />}
-
+            {activeTab === 'psa-vs-liquid' && <PSAVsLiquid />}
+            {activeTab === 'psa-vs-cylinders' && <PSAVsCylinders />}
+            {activeTab === 'psa-vs-any-psa' && <PSAVsAnyPSA />}
+            {activeTab === 'psa-vs-psa-deoxo' && <PSAVsPSADeoxo />}
+            {activeTab === 'shield' && <CmcApp />}
           </div>
 
         </div>
@@ -222,5 +201,4 @@ export default function App() {
     </div>
 
   );
-
 }
