@@ -2,8 +2,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Calculator, DollarSign, Zap, IndianRupee } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
-import { RoiInputs, GAS_TYPES, LIQUID_UNITS, PURITIES, OXYGEN_PURITIES, INTEREST_RATES, DEPRECIATION_RATES, LOAD_FACTORS, FLOW_DATA, OXYGEN_FLOW_DATA, COMPRESSOR_DATA } from '../types/calculator';
-import { calculateLiquidRoi } from '../utils/liquidCalculations';
+import { RoiInputs, GAS_TYPES, LIQUID_UNITS, PURITIES, OXYGEN_PURITIES, INTEREST_RATES, DEPRECIATION_RATES, LOAD_FACTORS_LIQUID as LOAD_FACTORS } from '../types/calculator';
+import { calculateRoi } from '../utils/calculations';
 import { formatIndianCurrency, formatLoadFactor, formatNumber } from '../utils/formatting';
 import { convertToNm3, getLiquidToGasConversionFactor } from '../utils/conversions';
 import { ReportLayout } from './ReportLayout';
@@ -68,7 +68,7 @@ export default function PSAVsLiquid() {
 
   const unitPricePerNm3 = convertToNm3(inputs.gasCost, inputs.gasCostUnit, inputs.gasType);
   const gasUsedPerDay = (inputs.liquidUsedPerDay || 0) * getLiquidToGasConversionFactor(inputs.liquidUnit || 'Sm³', inputs.gasType);
-  const result = calculateLiquidRoi({...inputs, unitPricePerNm3, gasUsedPerDay});
+  const result = calculateRoi({...inputs, unitPricePerNm3, gasUsedPerDay});
   const monthlyMaintenanceCostPerMonth = (inputs.annualMaintenanceCost ?? 0) / 12;
   const monthlyPSACost = (result.monthlyConsumption ?? 0) * (result.unitPricePSA ?? 0) + monthlyMaintenanceCostPerMonth + ((result.annualInterest ?? 0) / 12) - ((result.annualDepreciation ?? 0) / 12);
   const monthlySavings = (result.monthlyExpenseCylinder ?? 0) - monthlyPSACost;
@@ -119,16 +119,6 @@ export default function PSAVsLiquid() {
   const breakEvenYearLabel = breakEvenYearIndex > 0 && breakEvenYearIndex <= 10 ? `Year ${breakEvenYearIndex}` : undefined;
 
   const availablePurities = inputs.gasType === 'oxygen' ? OXYGEN_PURITIES : PURITIES;
-  const maxCompressorAirFlow = Math.max(...COMPRESSOR_DATA.map((compressor) => compressor.airFlow));
-  const liquidFlowDataSource = inputs.gasType === 'oxygen' ? OXYGEN_FLOW_DATA : FLOW_DATA;
-  const availableLiquidFlows = liquidFlowDataSource
-    .filter((data) => data.purity === inputs.purity && data.airRequirement <= maxCompressorAirFlow)
-    .map((data) => data.flow)
-    .sort((a, b) => a - b);
-  const defaultLiquidUnitFlow = availableLiquidFlows[availableLiquidFlows.length - 1];
-  // Threshold = max single-unit flow for current gas+purity; matches liquidCalculations.ts logic
-  // Oxygen (purity 95): ~250 NM³/hr  |  Nitrogen (purity-dependent): up to ~2362 NM³/hr
-  const LARGE_FLOW_THRESHOLD = availableLiquidFlows.length > 0 ? Math.max(...availableLiquidFlows) : 2362;
   
   // Helper to capitalize first letter for gas type display
   const capitalizeFirstLetter = (string: string) => {
@@ -246,7 +236,7 @@ export default function PSAVsLiquid() {
             <span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatNumber(result.perHourConsumption)} Nm³/hr</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">PSA Plant Flow:</span>
+            <span className="text-sm text-gray-600">Plant Selected:</span>
             <span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{result.psaPlantFlow ? formatNumber(result.psaPlantFlow) : 'N/A'} Nm³/hr</span>
           </div>
           <div className="flex justify-between items-center">
@@ -355,7 +345,7 @@ export default function PSAVsLiquid() {
                   <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Gas Type</label>
                   <select
                     value={inputs.gasType ?? 'nitrogen'}
-                    onChange={(e) => setInputs({...inputs, gasType: e.target.value as 'nitrogen' | 'oxygen', purity: 95, selectedFlow: undefined})}
+                    onChange={(e) => setInputs({...inputs, gasType: e.target.value as 'nitrogen' | 'oxygen', purity: 95})}
                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     aria-label="Gas Type"
                     title="Gas Type"
@@ -463,7 +453,7 @@ export default function PSAVsLiquid() {
                   <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Purity (%)</label>
                   <select
                     value={inputs.purity ?? 95}
-                    onChange={(e) => setInputs({...inputs, purity: Number(e.target.value), selectedFlow: undefined})}
+                    onChange={(e) => setInputs({...inputs, purity: Number(e.target.value)})}
                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     aria-label="Purity"
                     title="Purity"
@@ -555,23 +545,6 @@ export default function PSAVsLiquid() {
                     ))}
                   </select>
                 </div>
-
-                {result.perHourConsumption > LARGE_FLOW_THRESHOLD && (
-                  <div>
-                    <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Select PSA Unit Flow</label>
-                    <select
-                      value={inputs.selectedFlow ?? defaultLiquidUnitFlow ?? ''}
-                      onChange={(e) => setInputs({...inputs, selectedFlow: e.target.value ? Number(e.target.value) : undefined})}
-                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      aria-label="Select PSA Unit Flow"
-                      title="Select PSA Unit Flow"
-                    >
-                      {availableLiquidFlows.map((flow) => (
-                        <option key={flow} value={flow}>{flow} Nm³/hr</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
               </div>
             </div>
             {resultsContent}
