@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Calculator, DollarSign, Zap, IndianRupee } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
-import { RoiInputs, GAS_TYPES, LIQUID_UNITS, PURITIES, OXYGEN_PURITIES, INTEREST_RATES, DEPRECIATION_RATES, LOAD_FACTORS, FLOW_DATA, OXYGEN_FLOW_DATA, COMPRESSOR_DATA } from '../types/calculator';
+import { RoiInputs, GAS_TYPES, LIQUID_UNITS, PURITIES, OXYGEN_PURITIES, INTEREST_RATES, DEPRECIATION_RATES, LOAD_FACTORS_LIQUID as LOAD_FACTORS, FLOW_DATA, OXYGEN_FLOW_DATA, COMPRESSOR_DATA } from '../types/calculator';
 import { calculateLiquidRoi } from '../utils/liquidCalculations';
 import { formatIndianCurrency, formatLoadFactor, formatNumber } from '../utils/formatting';
 import { convertToNm3, getLiquidToGasConversionFactor } from '../utils/conversions';
