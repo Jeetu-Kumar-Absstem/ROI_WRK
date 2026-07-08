@@ -91,12 +91,14 @@ export default function CMCCalculator2() {
   const [plantCost, setPlantCost] = useState(4599820);
   const [cmcYr, setCmcYr] = useState(425000);
   const [plantLife, setPlantLife] = useState(10);
-  const [plantCapacity, setPlantCapacity] = useState<number | ''>('');
+const [plantCapacity, setPlantCapacity] = useState<number | ''>(22);
   
   // Cylinder specific
   const [gasPerCylinder, setGasPerCylinder] = useState(7);
   const [costPerCylinder, setCostPerCylinder] = useState(400);
   const [cylindersPerDay, setCylindersPerDay] = useState(70);
+
+
 
   // Helper to get daily use in Nm³
   const dailyUseNm3 = useMemo(() => {
@@ -513,7 +515,7 @@ export default function CMCCalculator2() {
 
           <Card className="bg-white">
             <div className="text-[16px] font-lufga-bold text-[#1F4E79]">PSA Oxygen Plant</div>
-            <Field label="Plant Capacity (Nm³/hr)" hint="Enter the rated capacity of the PSA plant">
+            <Field label="Plant Capacity (Nm³/hr)" >
               <NumberInput
                 value={plantCapacity === '' ? '' : plantCapacity}
                 min={0.01}
@@ -526,7 +528,7 @@ export default function CMCCalculator2() {
                 onFocus={(e) => e.target.value === '0' && e.target.select()}
               />
             </Field>
-            <Field label="Oxygen flow rate (m³/hr)" hint="Auto-calculated = Daily use / 24">
+            <Field label="Oxygen flow rate (Nm³/hr)" hint="Auto-calculated = Daily use / 24">
               <NumberInput value={calculations.plantFlow.toFixed(2)} readOnly />
             </Field>
             <Field label="Power per m³ of oxygen produced (kW)" hint="Typically 1.0–1.2 kW/m³ for PSA plants">
@@ -775,7 +777,7 @@ export default function CMCCalculator2() {
                 </tr>
                 <tr>
                   <td className="border border-slate-200 px-3 py-2 text-slate-700">Oxygen flow rate</td>
-                  <td className="border border-slate-200 px-3 py-2 text-[12px] text-slate-500">m³/hr</td>
+                  <td className="border border-slate-200 px-3 py-2 text-[12px] text-slate-500">Nm³/hr</td>
                   <td className="border border-slate-200 px-3 py-2 text-right text-slate-700">{calculations.plantFlow.toFixed(2)}</td>
                 </tr>
                 <tr>
@@ -819,8 +821,8 @@ export default function CMCCalculator2() {
                   <td className="border border-slate-200 px-3 py-2 text-right text-slate-700">{fmtCost(calculations.cmcYr)}</td>
                 </tr>
                 <tr>
-                  <td className="border border-slate-200 px-3 py-2 text-slate-700">{costMode === 'repair' ? 'Yearly saving by using PSA (Monthly Savings * 12 - CMC Charges)' : 'Yearly saving by using PSA'}</td>
-                  <td className="border border-slate-200 px-3 py-2 text-[12px] text-slate-500">₹</td>
+                 <strong><td className="border border-slate-200 px-3 py-2 text-black-800">{costMode === 'repair' ? 'Yearly saving by using PSA (Monthly Savings * 12 - CMC Charges)' : 'Yearly saving by using PSA'}</td></strong> 
+                 <td className="border border-slate-200 px-3 py-2 text-[12px] text-black-700">₹</td>
                   <td className="border border-slate-200 px-3 py-2 text-right font-lufga-bold text-slate-900">{fmtCost(calculations.yearlySaving)}</td>
                 </tr>
               
@@ -905,8 +907,8 @@ export default function CMCCalculator2() {
             <span>{fmtCost(calculations.oxyMonthCost)}</span>
           </div>
           <div className="flex items-start justify-between gap-4">
-            <span>Unit price</span>
-            <span>{fmtCost(calculations.unitPriceOxy)}/m³</span>
+            <span>Unit Price</span>
+            <span>{fmtINR(calculations.unitPriceOxy)}/m³</span>
           </div>
         </div>
       </Card>
@@ -918,7 +920,7 @@ export default function CMCCalculator2() {
           </div>
           <div className="flex items-start justify-between gap-4">
             <span>Oxygen flow rate</span>
-            <span>{calculations.plantFlow.toFixed(2)} m³/hr</span>
+            <span>{calculations.plantFlow.toFixed(2)} Nm³/hr</span>
           </div>
           <div className="flex items-start justify-between gap-4">
             <span>Power per m³</span>

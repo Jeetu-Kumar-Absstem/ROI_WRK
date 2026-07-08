@@ -499,7 +499,7 @@ export default function CMCCalculator1() {
                     onFocus={(e) => e.target.value === '0' && e.target.select()}
                   />
                 </Field>
-                <Field label="Cost per Service visit ₹" hint="Labour + travel charges per visit">
+                <Field label="Cost per Service per visit ₹" hint="Labour + travel charges per visit">
                   <NumberInput 
                     value={pmEach} 
                     min={0} 
@@ -511,7 +511,7 @@ export default function CMCCalculator1() {
                 {calculations.pv > 0 ? (
                   <DerivedBox>
                     Annual PM cost: <strong className="text-[#1F4E79]">{fmtCost(calculations.pm)}</strong>{' '}
-                    ({calculations.pv} visit{calculations.pv !== 1 ? 's' : ''} × {fmtCost(calculations.pe)}/visit)
+                    ({calculations.pv} visit{calculations.pv !== 1 ? 's' : ''} × {fmtINR(calculations.pe)}/visit)
                   </DerivedBox>
                 ) : null}
                 <Field label="Consumables purchased separately ₹" hint="Filters, sensors, oil, separator, grease etc.">
