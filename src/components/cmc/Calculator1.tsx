@@ -183,7 +183,7 @@ export default function CMCCalculator1() {
     // Current ad hoc total (no breakdown call-out charges)
     const current = maintenanceTotal + dtTotal + loxRental;
     const cmcGross = cmc;
-    const cmcDowntime = dtCostPerDay * cdd * cbd;
+    const cmcDowntime = dtCostPerDay * cdd;
     const cmcTotal = cmcGross + cmcDowntime;
     const annualSavings = current - cmcTotal;
     const save5yr = annualSavings * 5;

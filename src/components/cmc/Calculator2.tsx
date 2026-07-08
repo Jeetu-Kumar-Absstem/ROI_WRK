@@ -91,6 +91,7 @@ export default function CMCCalculator2() {
   const [plantCost, setPlantCost] = useState(4599820);
   const [cmcYr, setCmcYr] = useState(425000);
   const [plantLife, setPlantLife] = useState(10);
+  const [plantCapacity, setPlantCapacity] = useState<number | ''>('');
   
   // Cylinder specific
   const [gasPerCylinder, setGasPerCylinder] = useState(7);
@@ -127,7 +128,7 @@ export default function CMCCalculator2() {
     const gasPerMonth = gasPerDay * 30;
     const gasPerHr = gasPerDay / 24;
     
-    // PSA Plant Flow rate = Daily use / 24
+    // Oxygen Flow rate = Daily use / 24
     const plantFlow = gasPerDay / 24;
     
     // Total plant power draw = Plant flow rate * Power per m³
@@ -512,7 +513,20 @@ export default function CMCCalculator2() {
 
           <Card className="bg-white">
             <div className="text-[16px] font-lufga-bold text-[#1F4E79]">PSA Oxygen Plant</div>
-            <Field label="PSA plant flow rate (m³/hr)" hint="Auto-calculated = Daily use / 24">
+            <Field label="Plant Capacity (Nm³/hr)" hint="Enter the rated capacity of the PSA plant">
+              <NumberInput
+                value={plantCapacity === '' ? '' : plantCapacity}
+                min={0.01}
+                step={1}
+                placeholder="Enter capacity"
+                onChange={(value) => {
+                  const parsed = Number.parseFloat(value);
+                  setPlantCapacity(Number.isFinite(parsed) && parsed > 0 ? parsed : '');
+                }}
+                onFocus={(e) => e.target.value === '0' && e.target.select()}
+              />
+            </Field>
+            <Field label="Oxygen flow rate (m³/hr)" hint="Auto-calculated = Daily use / 24">
               <NumberInput value={calculations.plantFlow.toFixed(2)} readOnly />
             </Field>
             <Field label="Power per m³ of oxygen produced (kW)" hint="Typically 1.0–1.2 kW/m³ for PSA plants">
@@ -543,7 +557,7 @@ export default function CMCCalculator2() {
                 PSA Operational Cost Monthly: <strong className="text-slate-700">{fmtCost(calculations.elecPerMonth)}</strong>
               </div>
               <div>
-                PSA unit price: <strong className="text-[#3B6D11]">{fmtCost(calculations.unitPricePSA)}/m³</strong>
+                PSA unit price: <strong className="text-[#3B6D11]">{fmtINR(calculations.unitPricePSA)}/m³</strong>
               </div>
               <div>
                 Saving per m³: <strong className="text-[#3B6D11]">{fmtCost(calculations.savingPerM3)}</strong>
@@ -755,7 +769,12 @@ export default function CMCCalculator2() {
                   <td colSpan={3} className="border border-slate-200 px-3 py-2 font-lufga-bold text black">PSA OXYGEN PLANT</td>
                 </tr>
                 <tr>
-                  <td className="border border-slate-200 px-3 py-2 text-slate-700">PSA plant flow rate</td>
+                  <td className="border border-slate-200 px-3 py-2 text-slate-700">Plant Capacity</td>
+                  <td className="border border-slate-200 px-3 py-2 text-[12px] text-slate-500">Nm³/hr</td>
+                  <td className="border border-slate-200 px-3 py-2 text-right text-slate-700">{plantCapacity !== '' ? plantCapacity : '—'}</td>
+                </tr>
+                <tr>
+                  <td className="border border-slate-200 px-3 py-2 text-slate-700">Oxygen flow rate</td>
                   <td className="border border-slate-200 px-3 py-2 text-[12px] text-slate-500">m³/hr</td>
                   <td className="border border-slate-200 px-3 py-2 text-right text-slate-700">{calculations.plantFlow.toFixed(2)}</td>
                 </tr>
@@ -794,11 +813,17 @@ export default function CMCCalculator2() {
                   <td className="border border-slate-200 px-3 py-2 text-[12px] text-slate-500">₹</td>
                   <td className="border border-slate-200 px-3 py-2 text-right text-slate-700">{fmtCost(calculations.monthlySaving)}</td>
                 </tr>
+                 <tr>
+                  <td className="border border-slate-200 px-3 py-2 text-slate-700">CMC charges per year</td>
+                  <td className="border border-slate-200 px-3 py-2 text-[12px] text-slate-500">₹</td>
+                  <td className="border border-slate-200 px-3 py-2 text-right text-slate-700">{fmtCost(calculations.cmcYr)}</td>
+                </tr>
                 <tr>
-                  <td className="border border-slate-200 px-3 py-2 text-slate-700">Yearly saving by using PSA</td>
+                  <td className="border border-slate-200 px-3 py-2 text-slate-700">{costMode === 'repair' ? 'Yearly saving by using PSA (Monthly Savings * 12 - CMC Charges)' : 'Yearly saving by using PSA'}</td>
                   <td className="border border-slate-200 px-3 py-2 text-[12px] text-slate-500">₹</td>
                   <td className="border border-slate-200 px-3 py-2 text-right font-lufga-bold text-slate-900">{fmtCost(calculations.yearlySaving)}</td>
                 </tr>
+              
 
                 {/* ROI & INVESTMENT Section */}
                 <tr className="bg-green-300">
@@ -809,11 +834,11 @@ export default function CMCCalculator2() {
                   <td className="border border-slate-200 px-3 py-2 text-[12px] text-slate-500">₹</td>
                   <td className="border border-slate-200 px-3 py-2 text-right text-slate-700">{fmtCost(calculations.plantCost)}</td>
                 </tr>
-                <tr>
+                {/* <tr>
                   <td className="border border-slate-200 px-3 py-2 text-slate-700">CMC charges per year</td>
                   <td className="border border-slate-200 px-3 py-2 text-[12px] text-slate-500">₹</td>
                   <td className="border border-slate-200 px-3 py-2 text-right text-slate-700">{fmtCost(calculations.cmcYr)}</td>
-                </tr>
+                </tr> */}
                 <tr>
                   <td className="border border-slate-200 px-3 py-2 text-slate-700">Life of oxygen plant</td>
                   <td className="border border-slate-200 px-3 py-2 text-[12px] text-slate-500">Years</td>
@@ -888,7 +913,11 @@ export default function CMCCalculator2() {
       <Card title="PSA Plant Specifications" className="border-slate-200 bg-white">
         <div className="space-y-2 text-[16px] text-black-700">
           <div className="flex items-start justify-between gap-4">
-            <span>Plant flow rate</span>
+            <span>Plant Capacity</span>
+            <span>{plantCapacity !== '' ? `${plantCapacity} Nm³/hr` : '—'}</span>
+          </div>
+          <div className="flex items-start justify-between gap-4">
+            <span>Oxygen flow rate</span>
             <span>{calculations.plantFlow.toFixed(2)} m³/hr</span>
           </div>
           <div className="flex items-start justify-between gap-4">
@@ -1081,6 +1110,7 @@ export default function CMCCalculator2() {
                       ),
                       { label: 'Oxygen Current Year Cost', uom: '₹', val: fmtCost(calculations.yearlyOxygenCost), section: false, highlight: true },
                       { label: 'PSA OXYGEN PLANT', uom: '', val: '', section: true },
+                      { label: 'Plant Capacity', uom: 'Nm³/hr', val: plantCapacity !== '' ? plantCapacity.toString() : '—', section: false },
                       { label: 'PSA plant flow rate', uom: 'm³/hr', val: calculations.plantFlow.toFixed(2), section: false },
                       { label: 'Power per m³ produced', uom: 'kW', val: calculations.powerPerM3.toString(), section: false },
                       { label: 'Total plant power draw', uom: 'kW', val: calculations.totalPowerKW.toFixed(2), section: false },
@@ -1089,7 +1119,7 @@ export default function CMCCalculator2() {
                       { label: 'Unit price per m³ (PSA)', uom: '₹/m³', val: fmtCost(calculations.unitPricePSA), section: false, highlight: true },
                       { label: 'SAVINGS', uom: '', val: '', section: true },
                       { label: 'Monthly saving by using PSA', uom: '₹', val: fmtCost(calculations.monthlySaving), section: false },
-                      { label: 'Yearly saving by using PSA', uom: '₹', val: fmtCost(calculations.yearlySaving), section: false, highlight: true },
+                      { label: costMode === 'repair' ? 'Yearly saving by using PSA (Monthly Savings * 12 - CMC Charges)' : 'Yearly saving by using PSA', uom: '₹', val: fmtCost(calculations.yearlySaving), section: false, highlight: true },
                       { label: 'ROI & INVESTMENT', uom: '', val: '', section: true },
                       { label: 'Cost type', uom: '', val: calculations.costMode === 'new' ? 'New plant purchase' : 'Repair / revamp of existing plant', section: false, highlight: true },
                       { label: calculations.costMode === 'new' ? 'Oxygen plant purchase cost' : 'Plant repair / restoration cost', uom: '₹', val: fmtCost(calculations.plantCost), section: false },
