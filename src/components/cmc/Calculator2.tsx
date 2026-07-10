@@ -144,10 +144,23 @@ const [plantCapacity, setPlantCapacity] = useState<number | ''>(22);
     const monthlySaving = savingPerM3 * gasPerMonth;
     const yearlySaving = monthlySaving * 12 - cmcYr;
     
-    const cmcTotal = cmcYr * (plantLife - 1);
+    // For repair/revamp: CMC is charged for ALL years (e.g. 10 × cmcYr for 10-year life)
+    // For new plant: CMC starts from year 2 onwards (plantLife - 1 years)
+    const cmcTotal = costMode === 'repair' ? cmcYr * plantLife : cmcYr * (plantLife - 1);
     const roiYears = yearlySaving > 0 ? plantCost / yearlySaving : Infinity;
     const roiMonths = roiYears * 12;
-    const totalSaving = yearlySaving * plantLife - cmcYr- plantCost;
+    // yearlySaving = monthlySaving*12 - cmcYr (deducts 1 year CMC each year)
+    // yearlySaving * plantLife → deducts cmcYr × plantLife in total
+    //
+    // Repair/revamp: CMC charged all 10 years → no correction needed
+    //   totalSaving = yearlySaving * plantLife - plantCost
+    //
+    // New plant: CMC charged only (plantLife - 1) years → over-deducted by 1 × cmcYr
+    //   so we ADD BACK cmcYr to correct:
+    //   totalSaving = yearlySaving * plantLife + cmcYr - plantCost
+    const totalSaving = costMode === 'repair'
+      ? yearlySaving * plantLife - plantCost
+      : yearlySaving * plantLife + cmcYr - plantCost;
     
     const roiLabel = Number.isFinite(roiYears)
       ? roiYears < 1
@@ -255,7 +268,7 @@ const [plantCapacity, setPlantCapacity] = useState<number | ''>(22);
       verdictType,
       verdictText,
     };
-  }, [comparisonType, cylindersPerDay, gasPerCylinder, costPerCylinder, dailyUseNm3, gasCostPerNm3, powerPerM3, elecRate, plantCost, cmcYr, plantLife, oxyEsc, annualRentalCost]);
+  }, [comparisonType, cylindersPerDay, gasPerCylinder, costPerCylinder, dailyUseNm3, gasCostPerNm3, powerPerM3, elecRate, plantCost, cmcYr, plantLife, oxyEsc, annualRentalCost, costMode]);
 
   const reportTitle =
     costMode === 'new'

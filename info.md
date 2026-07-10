@@ -1,0 +1,3 @@
+------------- branch-----------------
+- main branch is the main branch
+- current_working_br is the working branch we will implement everything here then merge to testing_merge so in future no conflictio while merging with the main branch
