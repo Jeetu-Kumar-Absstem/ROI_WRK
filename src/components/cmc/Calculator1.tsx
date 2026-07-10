@@ -278,14 +278,21 @@ export default function CMCCalculator1() {
   const roiMetrics = getRoiMetrics(calculations.annualSavings, calculations.cmcTotal);
   const verdictType = calculations.annualSavings >= 0 ? 'save' : 'loss';
   const verdictText =
-    calculations.annualSavings >= 0
-      ? `Switching to CMC saves ${fmtCost(calculations.annualSavings)} per year. Over 5 years that is ${fmtCost(calculations.save5yr)} in total savings. Absstem gives 10 years warranty to your Molecular Sieves . *T&C
-      
-      
-
-      `
-      : `The CMC costs ${fmtCost(Math.abs(calculations.annualSavings))} more per year than current ad-hoc spend. Review breakdown frequency inputs. *T&C`;
-
+  calculations.annualSavings >= 0
+    ? (
+        <>
+          Switching to CMC saves {fmtCost(calculations.annualSavings)} per year. Over 5 years that is {fmtCost(calculations.save5yr)} in total savings. Absstem gives 10 years warranty to your Molecular Sieves*.
+          <br />
+          *Terms & Conditions Apply.
+        </>
+      )
+    : (
+        <>
+          The CMC costs {fmtCost(Math.abs(calculations.annualSavings))} more per year than current ad-hoc spend. Review breakdown frequency inputs*.
+          <br />
+          *Terms & Conditions Apply.
+        </>
+      );
   const reportSummary = (
     <p className="text-justify text-black-500">
       This report compares the current annual maintenance spend of a PSA oxygen plant against an Absstem Shield CMC contract.
