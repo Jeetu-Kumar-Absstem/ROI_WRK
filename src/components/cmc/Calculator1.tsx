@@ -221,6 +221,7 @@ export default function CMCCalculator1() {
     const currentAdHocTotal = current;
     const underCMCTotal = cmcTotal;
     
+    
     const chartData = [
       { name: 'Current\nAd-hoc', current, cmc: 0 },
       { name: 'Under\nCMC', current: 0, cmc: cmcDowntime + cmcGross },
