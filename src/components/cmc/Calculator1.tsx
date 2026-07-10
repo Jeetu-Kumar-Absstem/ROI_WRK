@@ -201,7 +201,7 @@ export default function CMCCalculator1() {
       ...maintenanceRows,
       { label: `Downtime — oxygen backup (${add} day(s))`, current: fmtCost(oxyAnnual), cmc: 'Included in CMC' },
       // { label: `  ↳ ${gasConsumedLabel}`, current: fmtCost(oxyAnnual), cmc: '' },
-      { label: `Downtime — other costs (${add} days × ${fmtCost(dother)}/day)`, current: fmtCost(otherAnnual), cmc: 'Included in CMC' },
+      { label: `Downtime — other costs (${add} days × ${fmtINR(dother)}/day)`, current: fmtCost(otherAnnual), cmc: 'Included in CMC' },
       ...(loxRental > 0 ? [{ label: 'Annual rental cost', current: fmtCost(loxRental), cmc: 'Included in CMC' }] : []),
       { label: 'TOTAL — CURRENT', current: fmtCost(current), cmc: '—', section: true },
       { label: 'CMC CONTRACT', current: '', cmc: '', section: true },
@@ -279,11 +279,12 @@ export default function CMCCalculator1() {
   const verdictType = calculations.annualSavings >= 0 ? 'save' : 'loss';
   const verdictText =
     calculations.annualSavings >= 0
-      ? `Switching to CMC saves ${fmtCost(calculations.annualSavings)} per year. Over 5 years that is ${fmtCost(calculations.save5yr)} in total savings. Absstem gives 10 years warranty to your Molecular Sieves.
+      ? `Switching to CMC saves ${fmtCost(calculations.annualSavings)} per year. Over 5 years that is ${fmtCost(calculations.save5yr)} in total savings. Absstem gives 10 years warranty to your Molecular Sieves . *T&C
+      
       
 
       `
-      : `The CMC costs ${fmtCost(Math.abs(calculations.annualSavings))} more per year than current ad-hoc spend. Review breakdown frequency inputs.`;
+      : `The CMC costs ${fmtCost(Math.abs(calculations.annualSavings))} more per year than current ad-hoc spend. Review breakdown frequency inputs. *T&C`;
 
   const reportSummary = (
     <p className="text-justify text-black-500">
