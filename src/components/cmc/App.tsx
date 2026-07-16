@@ -6,7 +6,7 @@ type CalcTab = 'calculator_1' | 'calculator_2';
 
 const CALC_TABS: Array<{ id: CalcTab; label: string }> = [
   { id: 'calculator_1', label: 'Calculator 1 — Existing Maintenance vs Absstem Shield Premium' },
-  { id: 'calculator_2', label: 'Calculator 2 — Plant / Revamp vs Buying Oxygen' },
+  { id: 'calculator_2', label: 'Calculator 2 — Repair / Revamp vs Buying Oxygen' },
 ];
 
 export default function CmcApp() {
