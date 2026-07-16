@@ -342,6 +342,8 @@ const [plantCapacity, setPlantCapacity] = useState<number | ''>(22);
         />
       </div>
 
+
+
       <div className="space-y-6 print:hidden">
         <p className="text-[19px] font-lufga-bold text-black">{reportTitle}</p>
         <p className="text-[14px] text-black-500 font-lufga-regular">
