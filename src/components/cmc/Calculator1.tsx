@@ -692,7 +692,7 @@ export default function CMCCalculator1() {
                 </>
               )}
               <div>
-                Other costs: <strong className="text-slate-700">{fmtCost(calculations.dother * calculations.add)}</strong> ({fmtCost(calculations.dother)}/day × {calculations.add} days)
+                Other costs: <strong className="text-slate-700">{fmtCost(calculations.dother * calculations.add)}</strong> ({fmtINR(calculations.dother)}/day × {calculations.add} days)
               </div>
               {calculations.loxRental > 0 && (
                 <div>
