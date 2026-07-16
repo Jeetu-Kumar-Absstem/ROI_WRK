@@ -443,7 +443,7 @@ export default function CMCCalculator1() {
       </div>
 
       <div className="space-y-6 print:hidden">
-        <p className="text-[19px] font-lufga-bold text-[#1F4E79]">Existing Maintenance vs Absstem Shield Premium</p>
+        <p className="text-[19px] font-lufga-bold text-[#000000]">Existing Maintenance vs Absstem Shield Premium</p>
         <p className="text-[15px] text-black-500 font-lufga-regular">
           Enter your current annual maintenance costs to see how they compare to an Absstem Shield CMC contract.
         </p>

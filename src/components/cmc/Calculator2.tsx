@@ -343,7 +343,7 @@ const [plantCapacity, setPlantCapacity] = useState<number | ''>(22);
       </div>
 
       <div className="space-y-6 print:hidden">
-        <p className="text-[19px] font-lufga-bold text-[#1F4E79]">{reportTitle}</p>
+        <p className="text-[19px] font-lufga-bold text-black">{reportTitle}</p>
         <p className="text-[14px] text-black-500 font-lufga-regular">
           Based on Absstem's ROI logic. It calculates monthly saving, ROI period and total saving over the plant life.
         </p>
