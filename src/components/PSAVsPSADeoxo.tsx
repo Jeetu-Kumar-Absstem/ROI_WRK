@@ -640,7 +640,7 @@ function PSAVsPSADeoxo() {
         </div>
         <SystemConfigurationCard
           title="Absstem PSA + Deoxo Configuration"
-          titleClassName="text-emerald-800"
+          titleClassName="text-blue-800"
           borderClassName="border-emerald-200"
           purity={deoxoPurity}
           flow={deoxoPsaFlow}
@@ -657,7 +657,7 @@ function PSAVsPSADeoxo() {
           chosenPsaAnnualPowerCost={results?.deoxo.annualPowerCost ?? null}
           extraContent={
             <div className="mt-5 space-y-4 border-t border-slate-200 pt-5">
-              <h3 className="text-xl text-emerald-800" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
+              <h3 className="text-xl text-blue-800" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 600 }}>
                 Deoxo Data
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
