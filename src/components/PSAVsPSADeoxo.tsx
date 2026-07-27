@@ -79,6 +79,54 @@ const FIXED_PSA_PURITY = '99.999';
 const FIXED_DEOXO_BASE_PURITY = '99.5';
 const FIXED_DEOXO_FINAL_PURITY = '99.999';
 
+/**
+ * Given the PSA selected flow (at 99.999% purity), return the smallest
+ * 99.5% PSA flow that is >= psaFlow. This is the auto-derived Deoxo PSA flow.
+ */
+function getDeoxoPsaFlowForPsaFlow(psaFlow: number): string {
+  const options = FLOW_DATA
+    .filter((item) => item.purity === 99.5)
+    .sort((a, b) => a.flow - b.flow);
+  const match = options.find((item) => item.flow >= psaFlow);
+  return match ? String(match.flow) : (options[options.length - 1] ? String(options[options.length - 1].flow) : '');
+}
+
+/**
+ * Given the PSA selected flow (x), find the deoxo dataset entry whose flow is
+ * closest to x. If exact match exists use it. Otherwise bracket with x1 (largest
+ * below x) and x2 (smallest above x) and pick whichever is closer: min(x-x1, x2-x).
+ * Ties go to x2 (the next-up plant). Falls back to largest entry if none above x.
+ */
+function getDeoxoDataFlowForPsaFlow(psaFlow: number, dataset: DeoxoDataItem[]): string {
+  const sorted = [...dataset].sort((a, b) => a.flow - b.flow);
+  if (sorted.length === 0) return '';
+  // Exact match
+  const exact = sorted.find((item) => item.flow === psaFlow);
+  if (exact) return String(exact.flow);
+  // x2: smallest flow >= psaFlow
+  const x2 = sorted.find((item) => item.flow > psaFlow);
+  // x1: largest flow < psaFlow
+  const below = sorted.filter((item) => item.flow < psaFlow);
+  const x1 = below.length > 0 ? below[below.length - 1] : null;
+  if (!x2 && !x1) return '';
+  if (!x2) return String(x1!.flow);
+  if (!x1) return String(x2.flow);
+  // Pick closest; tie goes to x2
+  return (psaFlow - x1.flow) < (x2.flow - psaFlow) ? String(x1.flow) : String(x2.flow);
+}
+
+/**
+ * Given the user's required flow, find the smallest 99.999% purity plant flow >= flowRequired.
+ * Falls back to the largest plant if none qualifies.
+ */
+function getAutoSelectedPsaFlow(flowRequired: number): string {
+  const options = FLOW_DATA
+    .filter((item) => item.purity === 99.999)
+    .sort((a, b) => a.flow - b.flow);
+  const match = options.find((item) => item.flow >= flowRequired);
+  return match ? String(match.flow) : (options[options.length - 1] ? String(options[options.length - 1].flow) : '');
+}
+
 function getSuitableCompressors(model: NitrogenModel | null): CompressorData[] {
   if (!model) {
     return [];
@@ -242,38 +290,36 @@ function SystemConfigurationCard({
             <option value="nitrogen">Nitrogen</option>
           </select>
         </div>
-        <div>
-          <label className="block text-sm text-gray-700 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
-            Required Nitrogen Purity
-          </label>
-          <select
-            value={purity}
-            onChange={(event) => onPurityChange(event.target.value)}
-            disabled={title === 'Absstem PSA System Configuration' || title === 'Absstem PSA + Deoxo Configuration'}
-            className="w-full rounded-xl border border-slate-200 bg-green-50 px-4 py-3 text-gray-900"
-          >
-            {(title === 'Absstem PSA System Configuration'
-              ? [Number(FIXED_PSA_PURITY)]
-              : title === 'Absstem PSA + Deoxo Configuration'
-                ? [Number(FIXED_DEOXO_BASE_PURITY)]
-                : PURITIES
-            ).map((item) => (
-              <option key={item} value={item}>
-                {item}%
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* Required Nitrogen Purity is fixed (99.999% for PSA, 99.5% for Deoxo PSA) — not shown in UI */}
         <div>
           <label className="block text-sm text-gray-700 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
             Available Nitrogen Flow (Nm<sup>3</sup>/hr)
+            {title === 'Absstem PSA System Configuration' && (
+              <span className="ml-2 text-xs text-blue-600" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+                (auto-selected from required flow)
+              </span>
+            )}
+            {title === 'Absstem PSA + Deoxo Configuration' && (
+              <span className="ml-2 text-xs text-emerald-600" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+                (auto-derived from PSA selection)
+              </span>
+            )}
           </label>
           <select
             value={flow}
             onChange={(event) => onFlowChange(event.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-green-50 px-4 py-3 text-gray-900"
+            disabled={title === 'Absstem PSA System Configuration' || title === 'Absstem PSA + Deoxo Configuration'}
+            className={`w-full rounded-xl border border-slate-200 px-4 py-3 text-gray-900 ${
+              (title === 'Absstem PSA System Configuration' || title === 'Absstem PSA + Deoxo Configuration')
+                ? 'bg-slate-100 cursor-not-allowed'
+                : 'bg-green-50'
+            }`}
           >
-            <option value="">Select Flow Rate</option>
+            <option value="">
+              {title === 'Absstem PSA + Deoxo Configuration' && !flow
+                ? 'Select PSA flow first'
+                : 'Select Flow Rate'}
+            </option>
             {flowOptions.map((item) => (
               <option key={`${item.Purity}-${item.Flow}`} value={item.Flow}>
                 {item.Flow} Nm³/hr
@@ -382,23 +428,50 @@ function PSAVsPSADeoxo() {
   });
 
   const [psaPurity, setPsaPurity] = useState(FIXED_PSA_PURITY);
-  const [psaFlow, setPsaFlow] = useState('');
-  const [psaModel, setPsaModel] = useState<NitrogenModel | null>(null);
-  const [psaCompressor, setPsaCompressor] = useState<CompressorData | null>(null);
+
+  const [psaFlow, setPsaFlow] = useState<string>(() => getAutoSelectedPsaFlow(300));
+  const [psaModel, setPsaModel] = useState<NitrogenModel | null>(() => {
+    const flow = getAutoSelectedPsaFlow(300);
+    const opts = buildNitrogenModels(FIXED_PSA_PURITY);
+    return opts.find((m) => m.Flow === flow) ?? null;
+  });
+  const [psaCompressor, setPsaCompressor] = useState<CompressorData | null>(() => {
+    const flow = getAutoSelectedPsaFlow(300);
+    const opts = buildNitrogenModels(FIXED_PSA_PURITY);
+    const model = opts.find((m) => m.Flow === flow) ?? null;
+    return getSuitableCompressors(model)[0] ?? null;
+  });
   const [psaUtilizationFactor, setPsaUtilizationFactor] = useState(0.9);
   const [psaPlantCost, setPsaPlantCost] = useState(5000000);
 
   const [deoxoPurity, setDeoxoPurity] = useState(FIXED_DEOXO_BASE_PURITY);
   const [deoxoDataPurity, setDeoxoDataPurity] = useState(FIXED_DEOXO_FINAL_PURITY);
-  const [deoxoPsaFlow, setDeoxoPsaFlow] = useState('');
-  const [deoxoModel, setDeoxoModel] = useState<NitrogenModel | null>(null);
-  const [deoxoCompressor, setDeoxoCompressor] = useState<CompressorData | null>(null);
+  const [deoxoPsaFlow, setDeoxoPsaFlow] = useState<string>(() => {
+    const psaF = getAutoSelectedPsaFlow(300);
+    return getDeoxoPsaFlowForPsaFlow(parseFloat(psaF));
+  });
+  const [deoxoModel, setDeoxoModel] = useState<NitrogenModel | null>(() => {
+    const psaF = getAutoSelectedPsaFlow(300);
+    const deoxoF = getDeoxoPsaFlowForPsaFlow(parseFloat(psaF));
+    const opts = buildNitrogenModels(FIXED_DEOXO_BASE_PURITY);
+    return opts.find((m) => m.Flow === deoxoF) ?? null;
+  });
+  const [deoxoCompressor, setDeoxoCompressor] = useState<CompressorData | null>(() => {
+    const psaF = getAutoSelectedPsaFlow(300);
+    const deoxoF = getDeoxoPsaFlowForPsaFlow(parseFloat(psaF));
+    const opts = buildNitrogenModels(FIXED_DEOXO_BASE_PURITY);
+    const model = opts.find((m) => m.Flow === deoxoF) ?? null;
+    return getSuitableCompressors(model)[0] ?? null;
+  });
   const [deoxoUtilizationFactor, setDeoxoUtilizationFactor] = useState(0.9);
   const [deoxoPlantCost, setDeoxoPlantCost] = useState(5000000);
   const [reagentType, setReagentType] = useState<'hydrogen' | 'ammonia'>('hydrogen');
   const [reagentCostPerKg, setReagentCostPerKg] = useState(100);
   const [waterCostPerM3, setWaterCostPerM3] = useState(2);
-  const [selectedDeoxoFlow, setSelectedDeoxoFlow] = useState('');
+  const [selectedDeoxoFlow, setSelectedDeoxoFlow] = useState<string>(() => {
+    const psaF = getAutoSelectedPsaFlow(300);
+    return getDeoxoDataFlowForPsaFlow(parseFloat(psaF), deoxoDataForHydrogen);
+  });
 
   const [results, setResults] = useState<{
     psa: CalculatedPsaSystem;
@@ -417,50 +490,31 @@ function PSAVsPSADeoxo() {
   const deoxoDataOptions = reagentType === 'hydrogen' ? deoxoDataForHydrogen : deoxoDataForAmmonia;
   const deoxoPurityOptions = [Number(FIXED_DEOXO_FINAL_PURITY)];
 
+  // Runs on mount AND whenever flowRequired changes.
+  // Purity is always fixed so all the old purity-guard/clear effects are removed.
   useEffect(() => {
-    if (psaPurity !== FIXED_PSA_PURITY) {
-      setPsaPurity(FIXED_PSA_PURITY);
-    }
-  }, [psaPurity]);
+    const flowRequired = operationalParams.flowRequired;
+    const autoFlow = getAutoSelectedPsaFlow(flowRequired);
+    if (!autoFlow) return;
 
-  useEffect(() => {
-    if (deoxoPurity !== FIXED_DEOXO_BASE_PURITY) {
-      setDeoxoPurity(FIXED_DEOXO_BASE_PURITY);
-    }
-  }, [deoxoPurity]);
+    const psaOpts = buildNitrogenModels(FIXED_PSA_PURITY);
+    const model = psaOpts.find((item) => item.Flow === autoFlow) ?? null;
+    setPsaFlow(autoFlow);
+    setPsaModel(model);
+    setPsaCompressor(getSuitableCompressors(model)[0] ?? null);
 
-  useEffect(() => {
-    if (deoxoDataPurity !== FIXED_DEOXO_FINAL_PURITY) {
-      setDeoxoDataPurity(FIXED_DEOXO_FINAL_PURITY);
-    }
-  }, [deoxoDataPurity]);
+    const psaFlowNum = parseFloat(autoFlow);
+    const autoDeoxoFlow = getDeoxoPsaFlowForPsaFlow(psaFlowNum);
+    const deoxoOpts = buildNitrogenModels(FIXED_DEOXO_BASE_PURITY);
+    const deoxoMdl = deoxoOpts.find((item) => item.Flow === autoDeoxoFlow) ?? null;
+    setDeoxoPsaFlow(autoDeoxoFlow);
+    setDeoxoModel(deoxoMdl);
+    setDeoxoCompressor(getSuitableCompressors(deoxoMdl)[0] ?? null);
 
-  useEffect(() => {
-    setPsaFlow('');
-    setPsaModel(null);
-    setPsaCompressor(null);
-  }, [psaPurity]);
-
-  useEffect(() => {
-    setDeoxoPsaFlow('');
-    setDeoxoModel(null);
-    setDeoxoCompressor(null);
-    setSelectedDeoxoFlow('');
-  }, [deoxoPurity]);
-
-  useEffect(() => {
-    const currentPurityValue = Number(deoxoDataPurity);
-    const allowedPurities = PURITIES.filter((item) => item > Number(deoxoPurity));
-
-    if (allowedPurities.length === 0) {
-      setDeoxoDataPurity(deoxoPurity);
-      return;
-    }
-
-    if (!allowedPurities.includes(currentPurityValue)) {
-      setDeoxoDataPurity(String(allowedPurities[0]));
-    }
-  }, [deoxoPurity, deoxoDataPurity]);
+    const dataset = reagentType === 'hydrogen' ? deoxoDataForHydrogen : deoxoDataForAmmonia;
+    setSelectedDeoxoFlow(getDeoxoDataFlowForPsaFlow(psaFlowNum, dataset));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [operationalParams.flowRequired]);
 
   useEffect(() => {
     if (reagentType === 'hydrogen') {
@@ -471,15 +525,16 @@ function PSAVsPSADeoxo() {
   }, [reagentType]);
 
   useEffect(() => {
-    if (!selectedDeoxoFlow) {
-      return;
-    }
-
-    const exists = deoxoDataOptions.some((item) => String(item.flow) === selectedDeoxoFlow);
-    if (!exists) {
+    // When reagent type changes, re-derive deoxo data flow from current psaFlow
+    if (psaFlow) {
+      const dataset = reagentType === 'hydrogen' ? deoxoDataForHydrogen : deoxoDataForAmmonia;
+      const autoFlow = getDeoxoDataFlowForPsaFlow(parseFloat(psaFlow), dataset);
+      setSelectedDeoxoFlow(autoFlow);
+    } else {
       setSelectedDeoxoFlow('');
     }
-  }, [deoxoDataOptions, selectedDeoxoFlow]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reagentType]);
 
   useEffect(() => {
     if (!(psaModel && psaCompressor && deoxoModel && deoxoCompressor && selectedDeoxoFlow)) {
@@ -540,6 +595,27 @@ function PSAVsPSADeoxo() {
     setPsaModel(model);
     const compressors = getSuitableCompressors(model);
     setPsaCompressor(compressors[0] ?? null);
+
+    // Auto-derive Deoxo PSA flow: smallest 99.5% flow >= selected PSA flow
+    if (value) {
+      const psaFlowNum = parseFloat(value);
+      const autoDeoxoFlow = getDeoxoPsaFlowForPsaFlow(psaFlowNum);
+      setDeoxoPsaFlow(autoDeoxoFlow);
+      const deoxoModel = deoxoFlowOptions.find((item) => item.Flow === autoDeoxoFlow) ?? null;
+      setDeoxoModel(deoxoModel);
+      const deoxoCompressors = getSuitableCompressors(deoxoModel);
+      setDeoxoCompressor(deoxoCompressors[0] ?? null);
+
+      // Auto-derive Deoxo Data flow: smallest deoxo entry >= selected PSA flow
+      const dataset = reagentType === 'hydrogen' ? deoxoDataForHydrogen : deoxoDataForAmmonia;
+      const autoDeoxoDataFlow = getDeoxoDataFlowForPsaFlow(psaFlowNum, dataset);
+      setSelectedDeoxoFlow(autoDeoxoDataFlow);
+    } else {
+      setDeoxoPsaFlow('');
+      setDeoxoModel(null);
+      setDeoxoCompressor(null);
+      setSelectedDeoxoFlow('');
+    }
   };
 
   const handleDeoxoPsaFlowChange = (value: string) => {
@@ -650,7 +726,7 @@ function PSAVsPSADeoxo() {
           selectedCompressor={deoxoCompressor}
           flowOptions={deoxoFlowOptions}
           onPurityChange={setDeoxoPurity}
-          onFlowChange={handleDeoxoPsaFlowChange}
+          onFlowChange={() => {/* auto-derived from PSA flow */}}
           onUtilizationFactorChange={setDeoxoUtilizationFactor}
           onCompressorChange={(value) => handleCompressorSelection(value, deoxoModel, setDeoxoCompressor)}
           onPlantCostChange={setDeoxoPlantCost}
@@ -661,23 +737,7 @@ function PSAVsPSADeoxo() {
                 Deoxo Data
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-gray-700 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
-                    Required  Nitrogen Purity
-                  </label>
-                  <select
-                    value={deoxoDataPurity}
-                    onChange={(event) => setDeoxoDataPurity(event.target.value)}
-                    disabled
-                    className="w-full rounded-xl border border-slate-200 bg-green-50 px-4 py-3 text-gray-900"
-                  >
-                    {deoxoPurityOptions.map((item) => (
-                      <option key={`deoxo-purity-${item}`} value={item}>
-                        {item}%
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {/* Required Nitrogen Purity is fixed at 99.999% — not shown in UI */}
                 <div>
                   <label className="block text-sm text-gray-700 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
                     Hydrogen / Ammonia
@@ -720,13 +780,18 @@ function PSAVsPSADeoxo() {
                 <div>
                   <label className="block text-sm text-gray-700 mb-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
                     Deoxo Flow (Nm<sup>3</sup>/hr)
+                    <span className="ml-2 text-xs text-emerald-600" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+                      (auto-derived from PSA selection)
+                    </span>
                   </label>
                   <select
                     value={selectedDeoxoFlow}
-                    onChange={(event) => setSelectedDeoxoFlow(event.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-green-50 px-4 py-3 text-gray-900"
+                    disabled
+                    className="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-gray-900 cursor-not-allowed"
                   >
-                    <option value="">Select Flow Rate</option>
+                    <option value="">
+                      {!psaFlow ? 'Select PSA flow first' : 'Select Flow Rate'}
+                    </option>
                     {deoxoDataOptions.map((item) => (
                       <option key={`${reagentType}-${item.flow}`} value={item.flow}>
                         {item.flow} Nm³/hr
@@ -971,6 +1036,12 @@ function PSAVsPSADeoxo() {
     <div className="min-h-screen bg-gray-50" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
       <style>{lufgaFontStyle}</style>
       <div className="flex justify-end pb-6 print:hidden">
+        {!psaFlow && (
+          <div className="mr-3 flex items-center text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>
+            ⚠ Select PSA Available Nitrogen Flow to enable PDF download
+          </div>
+        )}
+        <div className={!psaFlow ? 'opacity-50 pointer-events-none' : ''} title={!psaFlow ? 'Select PSA flow first' : ''}>
         <DownloadPdfButton
           contentToPrint={reportRef}
           tabName="PSA_Vs_PSA_DEOXO"
@@ -999,6 +1070,7 @@ function PSAVsPSADeoxo() {
             },
           }}
         />
+        </div>
       </div>
 
       <div className="print:hidden">{screenContent}</div>
