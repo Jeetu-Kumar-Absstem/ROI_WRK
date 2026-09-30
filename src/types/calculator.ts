@@ -49,6 +49,7 @@ export  interface RoiInputs {
   powerCostPerUnit: number;
   psaPlantFlow: number;
   compressorKW: number;
+  boosterUnitKW: number;
   selectedFlow?: number;
   investmentCost?: number;
   annualMaintenanceCost?: number;
