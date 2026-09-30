@@ -52,6 +52,7 @@ export default function PSAVsLiquid() {
     powerCostPerUnit: 8,
     psaPlantFlow: 0,
     compressorKW: 0,
+    boosterUnitKW: 0,
     investmentCost: 5000000,
     annualMaintenanceCost: 75000,
     interestRate: 0,
@@ -252,6 +253,10 @@ export default function PSAVsLiquid() {
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Compressor KW:</span>
             <span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{result.compressorKW ? formatNumber(result.compressorKW) : 'N/A'} kW</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-600">Booster Unit KW:</span>
+            <span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatNumber(inputs.boosterUnitKW ?? 0)} kW</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Power Consumption:</span>
@@ -487,6 +492,45 @@ export default function PSAVsLiquid() {
                       <option key={factor} value={factor}>{formatLoadFactor(factor)}</option>
                     ))}
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>PSA Plant Flow</label>
+                  <input
+                    type="text"
+                    value={result.psaPlantFlow ? `${formatNumber(result.psaPlantFlow)} Nm³/hr` : 'N/A'}
+                    readOnly
+                    className="w-full rounded-md border-gray-300 bg-gray-50 shadow-sm"
+                    aria-label="PSA Plant Flow"
+                    title="PSA Plant Flow"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Compressor Unit kW</label>
+                  <input
+                    type="text"
+                    value={result.compressorKW ? `${formatNumber(result.compressorKW)} kW` : 'N/A'}
+                    readOnly
+                    className="w-full rounded-md border-gray-300 bg-gray-50 shadow-sm"
+                    aria-label="Compressor Unit kW"
+                    title="Compressor Unit kW"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Booster Unit KW</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value={inputs.boosterUnitKW || ''}
+                    onChange={(e) => setInputs({...inputs, boosterUnitKW: Math.max(0, Number(e.target.value))})}
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    aria-label="Booster Unit KW"
+                    title="Booster Unit KW"
+                    placeholder="Enter booster unit kW"
+                  />
                 </div>
 
                 <div>

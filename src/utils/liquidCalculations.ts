@@ -107,9 +107,11 @@ export function calculateLiquidRoi(inputs: RoiInputs): RoiResult {
     : 0;
 
   // ─── Step 5: Power ───
-  // Scale KW by N for total power, then apply loadFactor
-  const compressorKWTotal = compressorKWSingle * plantUnits;      // KW × N
-  const power = compressorKWTotal * inputs.loadFactor;
+  // Both compressor and booster are per-plant values, so each scales with N.
+  // A missing booster remains zero to preserve existing calculations.
+  const boosterUnitKW = Math.max(0, inputs.boosterUnitKW ?? 0);
+  const totalUnitKW = compressorKWSingle + boosterUnitKW;
+  const power = totalUnitKW * plantUnits * inputs.loadFactor;
 
   // ─── Step 6: PSA Unit Price ───
   // utilizationFactor applied here — same formula as cylinderCalculations.ts
