@@ -39,8 +39,12 @@ export default function App() {
   const [activeGroup, setActiveGroup] = useState<Group>('new-psa');
   const [activeTab, setActiveTab] = useState('psa-vs-liquid');
 
-  const isRecoveryMode = window.location.pathname === '/reset-password';
-  const handleRecoveryExit = () => { window.location.href = '/'; };
+  // Match both /calculators/reset-password (Hostinger) and /reset-password (Vercel)
+  // so both deployments continue to work during the migration period.
+  const isRecoveryMode =
+    window.location.pathname === '/calculators/reset-password' ||
+    window.location.pathname === '/reset-password';
+  const handleRecoveryExit = () => { window.location.href = '/calculators/'; };
 
   useEffect(() => {
 
@@ -60,7 +64,7 @@ export default function App() {
           .setSession({ access_token, refresh_token })
           .then(() => {
             if (type === 'recovery') {
-              window.location.href = '/reset-password';
+              window.location.href = '/calculators/reset-password';
             } else {
               window.history.replaceState({}, '', '/calculators');
             }

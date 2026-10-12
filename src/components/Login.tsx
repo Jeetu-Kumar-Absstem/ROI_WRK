@@ -129,11 +129,11 @@ const Login = () => {
 
     setResetLoading(true);
 
-    // ✅ FIX 1: redirectTo now points to /reset-password so PasswordRecovery
-    // component is rendered and can extract the session tokens from the URL hash.
+    // ✅ FIX 1: redirectTo points to /calculators/reset-password (Hostinger).
+    // This URL must also be added to the Supabase Auth redirect allowlist.
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
       redirectTo:
-'https://returnoninvestmentmoduleforabsstem.vercel.app/reset-password',
+'https://absstem.com/calculators/reset-password',
     });
 
     if (error) {
