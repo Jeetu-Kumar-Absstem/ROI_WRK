@@ -11,6 +11,8 @@ import DownloadPdfButton from './DownloadPdfButton';
 import { StaticMonthlyAnnualCostChart } from './StaticChartComponents';
 
 // Lufga font faces
+
+
 const lufgaFontStyle = `
   @font-face {
     font-family: 'Lufga';
