@@ -16,7 +16,7 @@ import PasswordRecovery from './components/PasswordRecovery';
 const lufgaFontStyle = `
   @font-face {
     font-family: 'Lufga';
-    src: url('/fonts/Lufga-Regular.otf') format('opentype');
+    src: url('${import.meta.env.BASE_URL}fonts/Lufga-Regular.otf') format('opentype');
     font-weight: 400;
     font-style: normal;
     font-display: swap;
@@ -24,7 +24,7 @@ const lufgaFontStyle = `
 
   @font-face {
     font-family: 'Lufga';
-    src: url('/fonts/Lufga-SemiBold.otf') format('opentype');
+    src: url('${import.meta.env.BASE_URL}fonts/Lufga-SemiBold.otf') format('opentype');
     font-weight: 600;
     font-style: normal;
     font-display: swap;
