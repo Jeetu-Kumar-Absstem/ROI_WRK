@@ -159,9 +159,9 @@ export default function PSAVsCylinders() {
         <div className="flex justify-between"><span className="text-gray-600">Cylinder Volume:</span><span className="font-medium">{inputs.cylinderVolume === 'other' ? inputs.cylinderVolumeCustom : inputs.cylinderVolume} m³</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Running Hours:</span><span className="font-medium">{inputs.plantRunningHours} hrs/day</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Running Days:</span><span className="font-medium">{inputs.plantRunningDays} days/month</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Cylinder Cost:</span><span className="font-medium">₹{inputs.cylinderCost} /cylinder</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Cylinder Cost:</span><span className="font-medium">₹{inputs.cylinderCost}/cylinder</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Purity:</span><span className="font-medium">{inputs.purity}%</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Power Cost:</span><span className="font-medium">₹{inputs.powerCostPerUnit} /kWh</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Power Cost:</span><span className="font-medium">₹{inputs.powerCostPerUnit}/kWh</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Investment Cost:</span><span className="font-medium">{formatIndianCurrency(inputs.investmentCost ?? 0)}</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Annual Maintenance:</span><span className="font-medium">{formatIndianCurrency(inputs.annualMaintenanceCost ?? 0)}</span></div>
         {results.isLargeFlow && (
