@@ -118,11 +118,18 @@ export const calculateCylinderRoi = (inputs: CylinderInputs): CylinderResult => 
   // power uses autoCompressorTotalKW (all units combined)
   // unitPricePSA uses autoTotalFlow (total capacity) for accurate per-m³ cost
   const power = autoCompressorTotalKW * inputs.loadFactor;
+  // Full-capacity electricity cost per Nm³ — utilizationFactor is NOT applied here.
+  // It is applied to the PSA-billed consumption below (and inside annualPowerCost).
   const unitPricePSA = autoTotalFlow > 0
-    ? (power * inputs.powerCostPerUnit * utilizationFactor) / autoTotalFlow
+    ? (power * inputs.powerCostPerUnit) / autoTotalFlow
     : 0;
   const savingsPerM3 = unitPricePerM3 - unitPricePSA;
-  const monthlySavingsPSA = monthlyConsumption * savingsPerM3;
+  // Consumption the PSA power cost is charged on: utilization-adjusted.
+  // monthlyConsumption itself stays untouched (cylinder-side cost + UI display use it).
+  const psaBilledConsumption = monthlyConsumption * utilizationFactor;
+  // Cylinder cost on full consumption minus PSA power cost on utilization-adjusted consumption
+  const monthlySavingsPSA =
+    monthlyConsumption * unitPricePerM3 - psaBilledConsumption * unitPricePSA;
   const yearlySavingsPSA = monthlySavingsPSA * 12;
 
   const annualPowerCost =
