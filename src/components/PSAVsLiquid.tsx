@@ -71,7 +71,9 @@ export default function PSAVsLiquid() {
   const gasUsedPerDay = (inputs.liquidUsedPerDay || 0) * getLiquidToGasConversionFactor(inputs.liquidUnit || 'Sm³', inputs.gasType);
   const result = calculateLiquidRoi({...inputs, unitPricePerNm3, gasUsedPerDay});
   const monthlyMaintenanceCostPerMonth = (inputs.annualMaintenanceCost ?? 0) / 12;
-  const monthlyPSACost = (result.monthlyConsumption ?? 0) * (result.unitPricePSA ?? 0) + monthlyMaintenanceCostPerMonth + ((result.annualInterest ?? 0) / 12) - ((result.annualDepreciation ?? 0) / 12);
+  // PSA power cost is charged on utilization-adjusted consumption (unitPricePSA is full-capacity cost/Nm³)
+  const monthlyPSAPowerCost = (result.monthlyConsumption ?? 0) * (result.utilizationFactor ?? 0) * (result.unitPricePSA ?? 0);
+  const monthlyPSACost = monthlyPSAPowerCost + monthlyMaintenanceCostPerMonth + ((result.annualInterest ?? 0) / 12) - ((result.annualDepreciation ?? 0) / 12);
   const monthlySavings = (result.monthlyExpenseCylinder ?? 0) - monthlyPSACost;
   
   // Axis tick formatter for INR in Lakhs (short form) - for UI bar chart
@@ -268,7 +270,7 @@ export default function PSAVsLiquid() {
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Monthly Power Cost:</span>
-            <span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency((result.monthlyConsumption ?? 0) * (result.unitPricePSA ?? 0))}</span>
+            <span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(monthlyPSAPowerCost)}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Monthly Maintenance:</span>
@@ -530,6 +532,18 @@ export default function PSAVsLiquid() {
                     aria-label="Booster Unit KW"
                     title="Booster Unit KW"
                     placeholder="Enter booster unit kW"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Total Power Consumption</label>
+                  <input
+                    type="text"
+                    value={result.power ? `${formatNumber(result.power)} kW` : 'N/A'}
+                    readOnly
+                    className="w-full rounded-md border-gray-300 bg-gray-50 shadow-sm"
+                    aria-label="Total Power Consumption"
+                    title="(Compressor kW + Booster kW) × Load Factor"
                   />
                 </div>
 

@@ -114,22 +114,29 @@ export function calculateLiquidRoi(inputs: RoiInputs): RoiResult {
   const power = totalUnitKW * plantUnits * inputs.loadFactor;
 
   // ─── Step 6: PSA Unit Price ───
-  // utilizationFactor applied here — same formula as cylinderCalculations.ts
+  // Full-capacity electricity cost per Nm³ — utilizationFactor is NOT applied here.
+  // It is applied to the PSA-billed consumption in Step 7 instead.
   // power already has N baked in; psaTotalFlow = flow × N; N cancels correctly
   const unitPricePSA = psaTotalFlow > 0
-    ? (power * inputs.powerCostPerUnit * utilizationFactor) / psaTotalFlow
+    ? (power * inputs.powerCostPerUnit) / psaTotalFlow
     : 0;
 
   // ─── Step 7: Liquid Side Costs ───
   const monthlyConsumption =
     perHourConsumption * inputs.plantRunningHours * inputs.workingDaysPerMonth;
 
+  // Consumption the PSA power cost is charged on: utilization-adjusted.
+  // monthlyConsumption itself stays untouched (liquid-side cost + UI display use it).
+  const psaBilledConsumption = monthlyConsumption * utilizationFactor;
+
   const monthlyExpenseCylinder =
     monthlyConsumption * (inputs.unitPricePerNm3 ?? 0) + (inputs.monthlyRentalCost ?? 0);
 
   // ─── Step 8: Savings ───
   const savingsPerM3 = (inputs.unitPricePerNm3 ?? 0) - unitPricePSA;
-  const monthlySavingsPSA = monthlyConsumption * savingsPerM3;
+  // Liquid cost on full consumption minus PSA power cost on utilization-adjusted consumption
+  const monthlySavingsPSA =
+    monthlyConsumption * (inputs.unitPricePerNm3 ?? 0) - psaBilledConsumption * unitPricePSA;
   const yearlySavingsPSA = monthlySavingsPSA * 12;
 
   // ─── Step 9: Annual Costs ───
@@ -138,7 +145,7 @@ export function calculateLiquidRoi(inputs: RoiInputs): RoiResult {
 
   const totalRunningCostCylinder = monthlyExpenseCylinder * 12;
   const totalRunningCostPSA =
-    monthlyConsumption * unitPricePSA * 12 +
+    psaBilledConsumption * unitPricePSA * 12 +
     (inputs.annualMaintenanceCost ?? 0) +
     annualInterest -
     annualDepreciation;
