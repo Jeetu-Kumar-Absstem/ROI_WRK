@@ -71,8 +71,7 @@ export default function PSAVsLiquid() {
   const gasUsedPerDay = (inputs.liquidUsedPerDay || 0) * getLiquidToGasConversionFactor(inputs.liquidUnit || 'Sm³', inputs.gasType);
   const result = calculateLiquidRoi({...inputs, unitPricePerNm3, gasUsedPerDay});
   const monthlyMaintenanceCostPerMonth = (inputs.annualMaintenanceCost ?? 0) / 12;
-  // PSA power cost is charged on utilization-adjusted consumption (unitPricePSA is full-capacity cost/Nm³)
-  const monthlyPSAPowerCost = (result.monthlyConsumption ?? 0) * (result.utilizationFactor ?? 0) * (result.unitPricePSA ?? 0);
+  const monthlyPSAPowerCost = (result.monthlyConsumption ?? 0) * (result.unitPricePSA ?? 0);
   const monthlyPSACost = monthlyPSAPowerCost + monthlyMaintenanceCostPerMonth + ((result.annualInterest ?? 0) / 12) - ((result.annualDepreciation ?? 0) / 12);
   const monthlySavings = (result.monthlyExpenseCylinder ?? 0) - monthlyPSACost;
   
