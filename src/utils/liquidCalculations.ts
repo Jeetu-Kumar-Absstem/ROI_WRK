@@ -114,10 +114,11 @@ export function calculateLiquidRoi(inputs: RoiInputs): RoiResult {
   const power = totalUnitKW * plantUnits * inputs.loadFactor;
 
   // ─── Step 6: PSA Unit Price ───
-  // utilizationFactor applied here — same formula as cylinderCalculations.ts
+  // Electricity cost per Nm³ — utilizationFactor is NOT applied anywhere in cost calculations.
+  // It is still computed/returned for display only.
   // power already has N baked in; psaTotalFlow = flow × N; N cancels correctly
   const unitPricePSA = psaTotalFlow > 0
-    ? (power * inputs.powerCostPerUnit * utilizationFactor) / psaTotalFlow
+    ? (power * inputs.powerCostPerUnit) / psaTotalFlow
     : 0;
 
   // ─── Step 7: Liquid Side Costs ───

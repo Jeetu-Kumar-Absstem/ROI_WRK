@@ -71,7 +71,8 @@ export default function PSAVsLiquid() {
   const gasUsedPerDay = (inputs.liquidUsedPerDay || 0) * getLiquidToGasConversionFactor(inputs.liquidUnit || 'Sm³', inputs.gasType);
   const result = calculateLiquidRoi({...inputs, unitPricePerNm3, gasUsedPerDay});
   const monthlyMaintenanceCostPerMonth = (inputs.annualMaintenanceCost ?? 0) / 12;
-  const monthlyPSACost = (result.monthlyConsumption ?? 0) * (result.unitPricePSA ?? 0) + monthlyMaintenanceCostPerMonth + ((result.annualInterest ?? 0) / 12) - ((result.annualDepreciation ?? 0) / 12);
+  const monthlyPSAPowerCost = (result.monthlyConsumption ?? 0) * (result.unitPricePSA ?? 0);
+  const monthlyPSACost = monthlyPSAPowerCost + monthlyMaintenanceCostPerMonth + ((result.annualInterest ?? 0) / 12) - ((result.annualDepreciation ?? 0) / 12);
   const monthlySavings = (result.monthlyExpenseCylinder ?? 0) - monthlyPSACost;
   
   // Axis tick formatter for INR in Lakhs (short form) - for UI bar chart
@@ -196,7 +197,7 @@ export default function PSAVsLiquid() {
         <div className="flex justify-between"><span className="text-gray-600">Current Gas Cost:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.gasCost} ₹/{inputs.gasCostUnit}</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Monthly Rental:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(inputs.monthlyRentalCost ?? 0)}</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Purity:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.purity}%</span></div>
-        <div className="flex justify-between"><span className="text-gray-600">Power Cost:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{inputs.powerCostPerUnit} ₹/kWh</span></div>
+        <div className="flex justify-between"><span className="text-gray-600">Power Cost:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>₹{inputs.powerCostPerUnit}/kWh</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Investment Cost:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(inputs.investmentCost ?? 0)}</span></div>
         <div className="flex justify-between"><span className="text-gray-600">Annual Maintenance:</span><span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(inputs.annualMaintenanceCost ?? 0)}</span></div>
       </div>
@@ -268,7 +269,7 @@ export default function PSAVsLiquid() {
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Monthly Power Cost:</span>
-            <span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency((result.monthlyConsumption ?? 0) * (result.unitPricePSA ?? 0))}</span>
+            <span className="" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>{formatIndianCurrency(monthlyPSAPowerCost)}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Monthly Maintenance:</span>
@@ -530,6 +531,18 @@ export default function PSAVsLiquid() {
                     aria-label="Booster Unit KW"
                     title="Booster Unit KW"
                     placeholder="Enter booster unit kW"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-700 mb-1" style={{ fontFamily: "'Lufga', sans-serif", fontWeight: 400 }}>Total Power Consumption</label>
+                  <input
+                    type="text"
+                    value={result.power ? `${formatNumber(result.power)} kW` : 'N/A'}
+                    readOnly
+                    className="w-full rounded-md border-gray-300 bg-gray-50 shadow-sm"
+                    aria-label="Total Power Consumption"
+                    title="(Compressor kW + Booster kW) × Load Factor"
                   />
                 </div>
 
